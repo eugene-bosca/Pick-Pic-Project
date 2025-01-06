@@ -1,5 +1,9 @@
 # CS446/ECE452 Team Project
 
+Team name:
+Project name:
+
+
 ## Team Member Information
 
 **Jordan Jamali**  
