@@ -4,6 +4,10 @@ Team name:
 
 Project name:
 
+Team number:
+
+Project description:
+
 
 ## Team Member Information
 
