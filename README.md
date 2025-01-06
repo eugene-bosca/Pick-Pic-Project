@@ -1,36 +1,35 @@
-# cs446-ece452
+# CS446/ECE452 Team Project
 
+## Team Member Information
 
-Team member information:
+**Jordan Jamali**  
+- User ID: jkjamali  
+- Student Number: 20898450  
+- GitHub: [JJamali](https://github.com/JJamali)
 
-Jordan Jamali
-jkjamali
-20898450
-JJamali
+**Eugene Bosca**  
+- User ID: ebosca  
+- Student Number: 20880018  
+- GitHub: [eugene-bosca](https://github.com/eugene-bosca)
 
-Eugene Bosca 
-ebosca
-20880018
-eugene-bosca
+**LuDa Yu**  
+- User ID: ldyu  
+- Student Number: 20894424  
+- GitHub: [ludayu560](https://github.com/ludayu560)
 
-LuDa Yu
-ldyu
-20894424
-ludayu560
+**Alan Chen**  
+- User ID: a334chen  
+- Student Number: 20937536  
+- GitHub: [AlanWYChen](https://github.com/AlanWYChen)
 
-Alan Chen
-a334chen
-20937536
-AlanWYChen
+**Sam Zhu**  
+- User ID: y555zhu  
+- Student Number: 20887509  
+- GitHub: [theasdfone](https://github.com/theasdfone)
 
-Sam Zhu
-y555zhu
-20887509
-theasdfone
+**Ethan Alexander Dobrowolski**  
+- User ID: edobrowo  
+- Student Number: 20889924  
+- GitHub: [edobrowo](https://github.com/edobrowo)
 
-Ethan Alexander Dobrowolski
-edobrowo
-20889924
-edobrowo
-
-Made by Jordan Jamali, Sam Zhu, Luda Yu, Eugene Bosca, [add your name here]
+---
