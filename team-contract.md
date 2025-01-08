@@ -27,3 +27,4 @@
 ## Conduct
 
 - Everyone agrees to the code of conduct outlined in the course policies.
+- Team conflicts will be resolved using the strategies outlines in [these course notes](https://pengyunie.github.io/cs446-1251/docs/project/p1/).
