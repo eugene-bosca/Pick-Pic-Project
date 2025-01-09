@@ -1,10 +1,10 @@
 # CS446/ECE452 Team Project
 
-Team name:
+Team name: BME 🤝 CS
 
 Project name:
 
-Team number:
+Team number: 04
 
 Project description:
 
