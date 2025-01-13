@@ -1,11 +1,11 @@
 
-# Team Contract (Team XX)
+# Team Contract (Team 04)
 
 ## Roles
 
 - Sam: Frontend/Product Design
 - LuDa: Frontend/Infrastructure
-- Alan: Full Stack (API)
+- Alan: Full Stack
 - Eugene: Backend
 - Jordan: Security/Backend
 - Ethan: Backend
