@@ -7,7 +7,7 @@
 - LuDa: Frontend/Infrastructure, Design Lead
 - Alan: Full Stack
 - Ethan: Full Stack
-- Eugene: Backend
+- Eugene: Backend, Technical Lead
 - Jordan: Security/Backend, Team Lead
 
 ## Communication and Meetings
