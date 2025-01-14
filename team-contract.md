@@ -4,11 +4,11 @@
 ## Roles
 
 - Sam: Frontend/Product Design
-- LuDa: Frontend/Infrastructure
+- LuDa: Frontend/Infrastructure, Design Lead
 - Alan: Full Stack
 - Ethan: Full Stack
 - Eugene: Backend
-- Jordan: Security/Backend
+- Jordan: Security/Backend, Team Lead
 
 ## Communication and Meetings
 
