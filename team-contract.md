@@ -6,9 +6,9 @@
 - Sam: Frontend/Product Design
 - LuDa: Frontend/Infrastructure
 - Alan: Full Stack
+- Ethan: Full Stack
 - Eugene: Backend
 - Jordan: Security/Backend
-- Ethan: Backend
 
 ## Communication and Meetings
 

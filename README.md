@@ -6,7 +6,8 @@ Project name: Best of photo albums
 
 Team number: 04
 
-Project description (Has not yet passed proposal stage. Written with the help of ChatGPT): An app concept that curates "best of" photo albums by ranking user photos through a swipe-based interface, similar to Tinder. Users can either swipe on individual photos or choose between two randomly selected images. Using an ELO-like ranking system, the app generates top photo albums (e.g., top 100 of the year, all time, or by location). It integrates with native Android photo apps for seamless album creation and storage. Additionally, the app can detect and group similar photos, allowing users to rank them, with the highest-rated becoming the representative photo for broader comparison.
+Project description (Has not yet passed proposal stage. Written with the help of ChatGPT):
+An app that lets users curate their favourite moments with photo albums. The app creates *events*, shared albums that users invite each other to. These albums integrate with the native Android photo apps for seamless album creation and storage. Users can then rank photos using a swipe-based interface, similar to Tinder. Users can either swipe on individual photos or choose between two randomly selected images. Using an ELO-like ranking system, the app generates a list of top photos, which users can selectively choose from to create an album, or download premade "best-of" albums (e.g., top 20 photos). Additionally, the app can detect and group similar photos, allowing users to rank them, with the highest-rated becoming the representative photo for broader comparison.
 
 
 ## Team Member Information
