@@ -1,4 +1,4 @@
-name: Android Build
+name: Run Build
 
 on:
   push:
@@ -15,29 +15,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up JetBrains JDK 21.0.4
-        uses: actions/setup-java@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v4
         with:
-          distribution: 'jbr' # JetBrains Runtime
-          java-version: '21.0.4'
+          distribution: 'zulu'
+          java-version: '21'
+          cache: 'gradle'
 
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.gradle/caches
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-${{ runner.os }}
+      - name: Change wrapper permissions
+        run: chmod +x ./gradlew
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v2
-        with:
-          api-level: 34
-          build-tools: 34.0.0
-          target: default
+      - name: Run gradle tests
+        run: ./gradlew test
 
-      - name: Build with Gradle
-        run: ./gradlew build --no-daemon
+      - name: Build gradle project
+        run: ./gradlew build
