@@ -1,4 +1,6 @@
-Write-Host "Precommit hook: running gradlew check"
+#!/usr/bin/env pwsh
+
+Write-Host "Pre-commit hook: running gradlew check"
 gradlew check
 
 if ($LASTEXITCODE -ne 0) {
@@ -6,7 +8,7 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-Write-Host "Precommit hook: running gradlew lint"
+Write-Host "Pre-commit hook: running gradlew lint"
 gradlew lint
 
 if ($LASTEXITCODE -ne 0) {
@@ -14,5 +16,5 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-Write-Host "Precommit hook passed, proceeding with commit."
+Write-Host "Pre-commit hook passed, proceeding with commit."
 exit 0

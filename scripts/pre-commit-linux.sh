@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Precommit hook: running ./gradlew check"
+echo "Pre-commit hook: running ./gradlew check"
 ./gradlew check
 
 if [ $? -ne 0 ]; then
@@ -8,7 +8,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "Precommit hook: running ./gradlew lint"
+echo "Pre-commit hook: running ./gradlew lint"
 ./gradlew lint
 
 if [ $? -ne 0 ]; then
@@ -16,6 +16,5 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "Precommit hook passed, proceeding with commit."
+echo "Pre-commit hook passed, proceeding with commit."
 exit 0
-
