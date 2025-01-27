@@ -1,4 +1,4 @@
-name: Run Build
+name: Check Build
 
 on:
   push:
@@ -29,6 +29,9 @@ jobs:
 
       - name: Run gradle tests
         run: ./gradlew test
+
+      - name: Run gradle lint
+        run: ./gradlew lint
 
       - name: Build gradle project
         run: ./gradlew build
