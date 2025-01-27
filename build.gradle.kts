@@ -4,3 +4,11 @@ plugins {
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
 }
+
+task("addPreCommitGitHookOnBuild") {
+    println("Running addPreCommitHookScriptOnBuild")
+    exec {
+        commandLine("cp", "./scripts/pre-commit", "./.git/hooks")
+    }
+    println("Successfully added pre-commit git hook")
+}
