@@ -43,3 +43,7 @@ An app that lets users curate their favourite moments with photo albums. The app
 - GitHub: [edobrowo](https://github.com/edobrowo)
 
 ---
+
+Please note that ChatGPT is used in files throughout this project.
+Citation: ChatGPT, response to author query. OpenAI [Online]. https://chatgpt.pro/ (accessed January-April, 2025).
+
