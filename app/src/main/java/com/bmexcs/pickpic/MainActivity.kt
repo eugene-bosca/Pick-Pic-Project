@@ -1,6 +1,5 @@
 package com.bmexcs.pickpic
 
-import com.google.firebase.FirebaseApp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
