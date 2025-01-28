@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "77669112839-p2csc2v87tee3l4kckjmg671la8p1gb2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bmexcs.pickpic",
+            "certificate_hash": "541a82c68d56d93bae231b10fafb9f3b61f4ac08"
+          }
+        },
+        {
           "client_id": "77669112839-tfujsl6456stk99brr214qqa2be00op9.apps.googleusercontent.com",
           "client_type": 3
         }
