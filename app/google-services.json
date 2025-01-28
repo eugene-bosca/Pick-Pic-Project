@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "77669112839",
+    "project_id": "pickpic-5389c",
+    "storage_bucket": "pickpic-5389c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:77669112839:android:e9cf3939ecf97a10d05ea2",
+        "android_client_info": {
+          "package_name": "com.bmexcs.pickpic"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "77669112839-tfujsl6456stk99brr214qqa2be00op9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbsydMFNeKExk4o5fWooCczE4QE4Hc_ZE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "77669112839-tfujsl6456stk99brr214qqa2be00op9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
