@@ -2,8 +2,8 @@ To run backend locally:
 create .env
 
 run dockerized backend:
-docker-compose down
-docker-compose up --build
+docker-compose down             docker compose down 
+docker-compose up --build       docker compose up --build
 
 migration:
 docker-compose exec web python manage.py makemigrations myapp
