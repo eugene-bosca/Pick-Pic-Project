@@ -44,7 +44,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # For Swagger UI
+    'drf_spectacular',
+    #'drf_spectacular_sidecar', 
+
     'rest_framework',
+
     'app',
 ]
 
@@ -147,3 +152,7 @@ GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
 )
 GS_BUCKET_NAME = "pick-pic"
 DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
