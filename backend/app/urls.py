@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from app.views import ItemViewSet, UserViewSet, authenticate
+from app.views import ItemViewSet, UserViewSet, authenticate, picture
 
 router = DefaultRouter()
 router.register(r'items', ItemViewSet)
@@ -26,6 +26,6 @@ router.register(r'users', UserViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    path('api/authenticate/', authenticate, name='authenticate'),
-
+    path('api/authenticate', authenticate, name='authenticate'),
+    path('api/picture', picture, name='picture')
 ]

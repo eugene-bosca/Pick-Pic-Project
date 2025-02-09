@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from google.oauth2 import service_account
 
 # Load environment variables from .env
 load_dotenv()
@@ -140,3 +141,9 @@ DATABASES = {
         'PORT': os.getenv('MYSQL_PORT'),
     }
 }
+
+GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+    os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+)
+GS_BUCKET_NAME = "pick-pic"
+DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
