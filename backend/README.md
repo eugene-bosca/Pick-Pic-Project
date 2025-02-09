@@ -1,3 +1,6 @@
+Create venv:
+python -m venv venv
+
 To run backend locally:
 create .env
 
