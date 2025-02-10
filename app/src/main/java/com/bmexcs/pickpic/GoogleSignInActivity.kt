@@ -16,6 +16,7 @@ import com.google.android.gms.tasks.Task
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import java.io.IOException
+import android.util.Log
 
 class GoogleSignInActivity : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -146,26 +147,25 @@ class GoogleSignInActivity : AppCompatActivity() {
     }
 
     private fun uploadPhoto(imageUri: Uri) {
+        val TAG = "GoogleSignInActivity"
+
         try {
-            // Get the content type from the URI
             val contentType = contentResolver.getType(imageUri) ?: "image/png"
 
             contentResolver.openInputStream(imageUri)?.use { inputStream ->
                 val imageBytes = inputStream.readBytes()
 
                 // Debug logging
-                println("DEBUG: Image size: ${imageBytes.size} bytes")
-                println("DEBUG: Content type from URI: $contentType")
-                println("DEBUG: First 50 bytes: ${imageBytes.take(50)}")
+                Log.d(TAG, "Image size: ${imageBytes.size} bytes")
+                Log.d(TAG, "Content type from URI: $contentType")
+                Log.d(TAG, "First 50 bytes: ${imageBytes.take(50)}")
 
-                // Create request body directly from the raw bytes without any encoding
                 val mediaType = contentType.toMediaTypeOrNull()
                 val requestBody = RequestBody.create(mediaType, imageBytes)
 
-                // Log the request details
-                println("DEBUG: Request URL: $UPLOAD_URL")
-                println("DEBUG: Request Content-Type: $contentType")
-                println("DEBUG: Request body size: ${requestBody.contentLength()}")
+                Log.d(TAG, "Request URL: $UPLOAD_URL")
+                Log.d(TAG, "Request Content-Type: $contentType")
+                Log.d(TAG, "Request body size: ${requestBody.contentLength()}")
 
                 val request = Request.Builder()
                     .url(UPLOAD_URL)
@@ -176,18 +176,18 @@ class GoogleSignInActivity : AppCompatActivity() {
                 val client = OkHttpClient.Builder()
                     .addInterceptor { chain ->
                         val original = chain.request()
-                        println("DEBUG: Sending request to: ${original.url}")
-                        println("DEBUG: Request headers: ${original.headers}")
+                        Log.d(TAG, "Sending request to: ${original.url}")
+                        Log.d(TAG, "Request headers: ${original.headers}")
                         val response = chain.proceed(original)
-                        println("DEBUG: Response code: ${response.code}")
-                        println("DEBUG: Response headers: ${response.headers}")
+                        Log.d(TAG, "Response code: ${response.code}")
+                        Log.d(TAG, "Response headers: ${response.headers}")
                         response
                     }
                     .build()
 
                 client.newCall(request).enqueue(object : Callback {
                     override fun onFailure(call: Call, e: IOException) {
-                        e.printStackTrace()
+                        Log.e(TAG, "Upload failed: ${e.message}", e)
                         runOnUiThread {
                             Toast.makeText(
                                 this@GoogleSignInActivity,
@@ -199,8 +199,8 @@ class GoogleSignInActivity : AppCompatActivity() {
 
                     override fun onResponse(call: Call, response: Response) {
                         val responseBody = response.body?.string() ?: ""
-                        println("DEBUG: Response code: ${response.code}")
-                        println("DEBUG: Response body: $responseBody")
+                        Log.d(TAG, "Response code: ${response.code}")
+                        Log.d(TAG, "Response body: $responseBody")
 
                         runOnUiThread {
                             if (response.isSuccessful) {
@@ -221,7 +221,7 @@ class GoogleSignInActivity : AppCompatActivity() {
                 })
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Error processing image: ${e.message}", e)
             Toast.makeText(
                 this,
                 "Error processing image: ${e.message}",
