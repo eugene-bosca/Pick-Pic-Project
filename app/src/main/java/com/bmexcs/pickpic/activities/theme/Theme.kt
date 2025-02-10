@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.ui.theme
+package com.bmexcs.pickpic.activities.theme
 
 import android.app.Activity
 import android.os.Build

@@ -12,11 +12,41 @@ import com.bmexcs.pickpic.activities.support.SupportScreen
 @Composable
 fun Navigation(navController: NavHostController) {
     NavHost(navController = navController, startDestination = HomePage) {
-        composable<HomePage> { HomePageScreen() }
-        composable<Profile> { ProfileScreen() }
-        composable<Support> { SupportScreen() }
-        composable<Event> { EventScreen() }
-        composable<Ranking> { RankingScreen() }
+        composable<HomePage> { HomePageScreen(
+            onClickHomePage = {navController.navigate(route = HomePage)},
+            onClickProfile = {navController.navigate(route = Profile)},
+            onClickSupport = {navController.navigate(route = Support)},
+            onClickEvent = {navController.navigate(route = Event)},
+            onClickRanking = {navController.navigate(route = Ranking)}
+        ) }
+        composable<Profile> { ProfileScreen(
+            onClickHomePage = {navController.navigate(route = HomePage)},
+            onClickProfile = {navController.navigate(route = Profile)},
+            onClickSupport = {navController.navigate(route = Support)},
+            onClickEvent = {navController.navigate(route = Event)},
+            onClickRanking = {navController.navigate(route = Ranking)}
+        ) }
+        composable<Support> { SupportScreen(
+            onClickHomePage = {navController.navigate(route = HomePage)},
+            onClickProfile = {navController.navigate(route = Profile)},
+            onClickSupport = {navController.navigate(route = Support)},
+            onClickEvent = {navController.navigate(route = Event)},
+            onClickRanking = {navController.navigate(route = Ranking)}
+        ) }
+        composable<Event> { EventScreen(
+            onClickHomePage = {navController.navigate(route = HomePage)},
+            onClickProfile = {navController.navigate(route = Profile)},
+            onClickSupport = {navController.navigate(route = Support)},
+            onClickEvent = {navController.navigate(route = Event)},
+            onClickRanking = {navController.navigate(route = Ranking)}
+        ) }
+        composable<Ranking> { RankingScreen(
+            onClickHomePage = {navController.navigate(route = HomePage)},
+            onClickProfile = {navController.navigate(route = Profile)},
+            onClickSupport = {navController.navigate(route = Support)},
+            onClickEvent = {navController.navigate(route = Event)},
+            onClickRanking = {navController.navigate(route = Ranking)}
+        ) }
         // Add more destinations similarly.
     }
 }

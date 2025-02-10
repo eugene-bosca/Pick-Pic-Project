@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.ui.theme
+package com.bmexcs.pickpic.activities.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
