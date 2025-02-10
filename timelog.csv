@@ -18,3 +18,5 @@ date,Jordan,Sam,Eugene,Ethan,LuDa,Alan,task
 2/5/2025,0.75,0.75,0.75,0.75,0.75,0.75, team meeting: development + code review
 2/9/2025,0,0,0,0,0,0,3, set up backend for GCS buckets (file storage) and added swagger UI
 2/9/2025,1,0,0,0,0,0,1, debug docker issue
+2/9/2025,2,0,0,0,0,0,0, add ability to upload images into app
+
