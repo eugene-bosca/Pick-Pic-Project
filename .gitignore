@@ -7,7 +7,7 @@
 .externalNativeBuild
 .cxx
 local.properties
-#.apk
+.apk
 output.json
 
 # Local configuration
@@ -26,6 +26,9 @@ render.experimental.xml
 # Google Services (e.g. APIs or Firebase)
 google-services.json
 
+# Google Cloud Services
+concrete-spider-449820-p0-b07324f24234.json
 
 # Kotlin
 .kotlin
+

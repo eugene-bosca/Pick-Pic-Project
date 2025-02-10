@@ -7,7 +7,7 @@ class ItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
-    class User:
+    class Meta:
         model = User
         fields = '__all__'
         filter_backends = [filters.SearchFilter]
