@@ -15,7 +15,6 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import java.io.File
 import java.io.IOException
 
 class GoogleSignInActivity : AppCompatActivity() {
@@ -29,7 +28,7 @@ class GoogleSignInActivity : AppCompatActivity() {
 
     companion object {
         private const val RC_SIGN_IN = 9001
-        private const val UPLOAD_URL = "YOUR_BACKEND_URL" // Replace with actual backend URL
+        private const val UPLOAD_URL = "http://10.0.2.2:8000/api/picture"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -148,31 +147,47 @@ class GoogleSignInActivity : AppCompatActivity() {
 
     private fun uploadPhoto(imageUri: Uri) {
         try {
+            // Get the content type from the URI
+            val contentType = contentResolver.getType(imageUri) ?: "image/png"
+
             contentResolver.openInputStream(imageUri)?.use { inputStream ->
-                val fileName = "temp_${System.currentTimeMillis()}.jpg"
-                val tempFile = File(cacheDir, fileName)
+                val imageBytes = inputStream.readBytes()
 
-                tempFile.outputStream().use { outputStream ->
-                    inputStream.copyTo(outputStream)
-                }
+                // Debug logging
+                println("DEBUG: Image size: ${imageBytes.size} bytes")
+                println("DEBUG: Content type from URI: $contentType")
+                println("DEBUG: First 50 bytes: ${imageBytes.take(50)}")
 
-                val requestBody = MultipartBody.Builder()
-                    .setType(MultipartBody.FORM)
-                    .addFormDataPart(
-                        "file",
-                        tempFile.name,
-                        RequestBody.create("image/*".toMediaTypeOrNull(), tempFile)
-                    )
-                    .build()
+                // Create request body directly from the raw bytes without any encoding
+                val mediaType = contentType.toMediaTypeOrNull()
+                val requestBody = RequestBody.create(mediaType, imageBytes)
+
+                // Log the request details
+                println("DEBUG: Request URL: $UPLOAD_URL")
+                println("DEBUG: Request Content-Type: $contentType")
+                println("DEBUG: Request body size: ${requestBody.contentLength()}")
 
                 val request = Request.Builder()
                     .url(UPLOAD_URL)
                     .post(requestBody)
+                    .header("Content-Type", contentType)
                     .build()
 
-                val client = OkHttpClient()
+                val client = OkHttpClient.Builder()
+                    .addInterceptor { chain ->
+                        val original = chain.request()
+                        println("DEBUG: Sending request to: ${original.url}")
+                        println("DEBUG: Request headers: ${original.headers}")
+                        val response = chain.proceed(original)
+                        println("DEBUG: Response code: ${response.code}")
+                        println("DEBUG: Response headers: ${response.headers}")
+                        response
+                    }
+                    .build()
+
                 client.newCall(request).enqueue(object : Callback {
                     override fun onFailure(call: Call, e: IOException) {
+                        e.printStackTrace()
                         runOnUiThread {
                             Toast.makeText(
                                 this@GoogleSignInActivity,
@@ -180,11 +195,13 @@ class GoogleSignInActivity : AppCompatActivity() {
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
-                        tempFile.delete()
                     }
 
                     override fun onResponse(call: Call, response: Response) {
-                        tempFile.delete()
+                        val responseBody = response.body?.string() ?: ""
+                        println("DEBUG: Response code: ${response.code}")
+                        println("DEBUG: Response body: $responseBody")
+
                         runOnUiThread {
                             if (response.isSuccessful) {
                                 Toast.makeText(
@@ -195,8 +212,8 @@ class GoogleSignInActivity : AppCompatActivity() {
                             } else {
                                 Toast.makeText(
                                     this@GoogleSignInActivity,
-                                    "Upload failed: ${response.code}",
-                                    Toast.LENGTH_SHORT
+                                    "Upload failed (${response.code}): $responseBody",
+                                    Toast.LENGTH_LONG
                                 ).show()
                             }
                         }
@@ -204,6 +221,7 @@ class GoogleSignInActivity : AppCompatActivity() {
                 })
             }
         } catch (e: Exception) {
+            e.printStackTrace()
             Toast.makeText(
                 this,
                 "Error processing image: ${e.message}",
