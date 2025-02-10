@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.activities.events
+package com.bmexcs.pickpic.presentation.main
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,10 +7,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.bmexcs.pickpic.activities.NavigationDrawer
+import com.bmexcs.pickpic.presentation.NavigationDrawer
 
 @Composable
-fun EventScreen(
+fun HomePageScreen(
     onClickHomePage: () -> Unit,
     onClickProfile: () -> Unit,
     onClickSupport: () -> Unit,
@@ -21,7 +21,7 @@ fun EventScreen(
         Column (
             modifier = Modifier.padding(innerPadding)
         ){
-            Text("EVENT!")
+            Text("HOME!")
             NavigationDrawer(
                 onClickHomePage,
                 onClickProfile,

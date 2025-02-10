@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.activities
+package com.bmexcs.pickpic.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

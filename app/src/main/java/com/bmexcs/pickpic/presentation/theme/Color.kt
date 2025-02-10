@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.activities.theme
+package com.bmexcs.pickpic.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 

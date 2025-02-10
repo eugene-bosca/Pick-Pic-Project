@@ -3,11 +3,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.bmexcs.pickpic.activities.events.EventScreen
-import com.bmexcs.pickpic.activities.main.HomePageScreen
-import com.bmexcs.pickpic.activities.profile.ProfileScreen
-import com.bmexcs.pickpic.activities.ranking.RankingScreen
-import com.bmexcs.pickpic.activities.support.SupportScreen
+import com.bmexcs.pickpic.presentation.events.EventScreen
+import com.bmexcs.pickpic.presentation.main.HomePageScreen
+import com.bmexcs.pickpic.presentation.profile.ProfileScreen
+import com.bmexcs.pickpic.presentation.ranking.RankingScreen
+import com.bmexcs.pickpic.presentation.support.SupportScreen
 
 @Composable
 fun Navigation(navController: NavHostController) {
