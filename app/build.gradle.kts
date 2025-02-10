@@ -56,7 +56,6 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation(libs.firebase.common.ktx)
-    implementation("androidx.navigation:navigation-compose:2.8.6")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -72,6 +71,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.android.gms:play-services-auth:21.3.0")
 
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
     // Add dependencies responsible for navigation
     val nav_version = "2.8.6"
 

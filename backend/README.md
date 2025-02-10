@@ -54,7 +54,8 @@ Both the database and the Django REST Service are containerized through Docker c
 
 ### Start dockerized backend
 1) `docker-compose down` or `docker compose down` 
-2) `docker-compose up` or `docker compose up`
+2) `docker-compose up --build` or `docker compose up --build`
+
 
 ### Manual migration
 * Create migration: `docker-compose exec web python manage.py makemigrations myapp`
