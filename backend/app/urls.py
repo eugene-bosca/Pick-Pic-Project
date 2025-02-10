@@ -26,10 +26,17 @@ router.register(r'items', ItemViewSet)
 router.register(r'users', UserViewSet)
 
 urlpatterns = [
+    # swagger
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+
+    # admin
     path('admin/', admin.site.urls),
+
+    # custom CRUD endpoints
     path('api/', include(router.urls)),
+
+    # custom endpoints
     path('api/authenticate', authenticate, name='authenticate'),
-    path('api/picture', picture, name='picture')
+    path('api/picture', picture, name='picture'),
 ]
