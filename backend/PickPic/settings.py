@@ -46,7 +46,7 @@ INSTALLED_APPS = [
 
     # For Swagger UI
     'drf_spectacular',
-    #'drf_spectacular_sidecar', 
+    #'drf_spectacular.swagger', 
 
     'rest_framework',
 
