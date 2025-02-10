@@ -1,14 +1,61 @@
-Create venv:
-python -m venv venv
+# Pick-Pic
 
-To run backend locally:
-create .env (environment variables)
-create concrete-spider-449820-p0-b07324f24234.json  (for GCS)
+- [Pick-Pic](#pick-pic)
+    - [Overview](#overview)
+- [Architecture](#architecture)
+- [Usage](#usage)
 
-run dockerized backend:
-docker-compose down             docker compose down 
-docker-compose up --build       docker compose up --build
+# Overview
 
-migration:
-docker-compose exec web python manage.py makemigrations myapp
-docker-compose exec web python manage.py migrate
+This is source code for the backend server of Project Pick-Pic.
+
+## Technology used
+
+* Docker Container
+* Django
+* Django Rest Framework
+* Google Cloud Platform (Google Cloud Storage)
+* MySQL
+
+# Architecture
+
+### Database
+The database used is MySQL, containerized with Docker. The database is managed (including migrations) with Django framework.
+
+### RESTful Web service
+The backend is built using Django Rest Framework, with Swagger UI at `/api/docs`.
+
+### File System/Storage
+The backend uses Google Cloud Storage as the file storage system.
+
+### Containerization
+Both the database and the Django REST Service are containerized through Docker containers.
+
+## Source Code Navigation (Django)
+
+`./app/views.py` is where you define the functions for custom endpoints
+
+`./app/urls.py` is where you define the endpoints
+
+`./app/models.py` is where you define the database models
+
+`./app/serializers.py` is where you define the model serialization
+
+`./app/tests.py` is where you define the unit tests
+
+`./app/migrations` is the folder that contains all migration .py files **(DO NOT MODIFY OR DELETE)**
+
+`./app/google_cloud_storage` contains functions that access google_cloud_storage
+
+# Usage
+### To run backend locally
+* Create .env (environment variables)
+* Create concrete-spider-449820-p0-b07324f24234.json  (for GCS)
+
+### Start dockerized backend
+1) `docker-compose down` or `docker compose down` 
+2) `docker-compose up --build` or `docker compose up --build`
+
+### Manual migration
+* Create migration: `docker-compose exec web python manage.py makemigrations myapp`
+* Apply migration: `docker-compose exec web python manage.py migrate`
