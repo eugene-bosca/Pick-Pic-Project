@@ -75,13 +75,16 @@ def picture(request):
     elif request.method == 'POST':
         
         file_bytes = request.body
-        content_type = request.headers.get('content_type') 
+        content_type = request.headers.get('Content-Type') 
         unique_name = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
         if content_type == 'image/jpeg':
             unique_name += '.jpeg'
         elif content_type == 'image/png':
             unique_name += '.png'
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={ "error": "no header - Content-Type" })
+
         upload_to_gcs('pick-pic', file_bytes, unique_name, content_type)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
