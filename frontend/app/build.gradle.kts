@@ -90,4 +90,7 @@ dependencies {
 
     // JSON serialization library, works with the Kotlin serialization plugin
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.2.2")
 }
