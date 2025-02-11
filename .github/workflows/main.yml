@@ -24,20 +24,18 @@ jobs:
           java-version: '21'
           cache: 'gradle'
 
-      - name: Move to frontend
-        run: cd frontend
-
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
+        working-directory: ./frontend
 
       - name: Run gradle tests
         run: ./gradlew test
+        working-directory: ./frontend
 
       - name: Run gradle lint
         run: ./gradlew lint
+        working-directory: ./frontend
 
       - name: Build gradle project
         run: ./gradlew build
-
-      - name: Move to root
-        run: cd ..
+        working-directory: ./frontend
