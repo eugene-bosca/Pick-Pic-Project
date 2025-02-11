@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
 import com.bmexcs.pickpic.R
 import coil.compose.AsyncImage
-import com.bmexcs.pickpic.presentation.main.DogViewModel
+import com.bmexcs.pickpic.navigation.HomePage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +32,7 @@ fun HomePageScreen(
     onClickSupport: () -> Unit,
     onClickRanking: () -> Unit,
     onClickEvent: () -> Unit,
-    viewModel: DogViewModel = DogViewModel()
+    viewModel: HomePageMockViewModel = HomePageMockViewModel()
 ) {
     val dogImages by viewModel.dogImages.collectAsState()
 
