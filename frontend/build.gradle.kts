@@ -14,11 +14,11 @@ tasks.register("addPreCommitGitHookOnBuild") {
 
         if (osName.contains("win")) {
             exec {
-                commandLine("cmd", "/c", "copy", ".\\scripts\\pre-commit-win-wrapper.ps1", ".\\.git\\hooks\\pre-commit")
+                commandLine("cmd", "/c", "copy", ".\\scripts\\pre-commit-win-wrapper.ps1", "..\\.git\\hooks\\pre-commit")
             }
         } else {
             exec {
-                commandLine("cp", "./scripts/pre-commit-linux.sh", "./.git/hooks/pre-commit")
+                commandLine("cp", "./scripts/pre-commit-linux.sh", "../.git/hooks/pre-commit")
             }
         }
         println("Successfully added pre-commit git hook")
