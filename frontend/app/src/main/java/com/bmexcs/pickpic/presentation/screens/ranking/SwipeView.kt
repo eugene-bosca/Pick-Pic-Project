@@ -39,9 +39,7 @@ fun SwipeView(
                 detectTransformGestures { _, pan, _, _ ->
                     currentOffsetX += pan.x
                     totalOffsetX += pan.x
-
-//                    Log.d("SwipeView", "Pan: $pan, currentOffsetX: $currentOffsetX, totalOffsetX: $totalOffsetX")
-
+                    
                     if (pan != Offset.Zero) {
                         swipeStartedKey++
                     }
