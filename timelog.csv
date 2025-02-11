@@ -22,4 +22,4 @@ date,Jordan,Sam,Eugene,Ethan,LuDa,Alan,task
 2/9/2025,2,0,0,0,0,0, add ability to upload images into app
 2/10/2025,3,0,0,0,0,0, connect frontend to backend - uploaded photos go to google cloud bucket
 2/10/2025,0,0,0,0,4,0, work on image display in app merging PRs
-2/10/2025,0,0,0,5,0,0, MVVM architecture research, boilerplate, and repo cleanup
+2/10/2025,0,0,0,5,0,0, MVVM architecture research + boilerplate + repo cleanup
