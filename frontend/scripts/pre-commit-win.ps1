@@ -1,5 +1,3 @@
-#!/usr/bin/env pwsh
-
 $prev = Get-Location
 $gitRoot = git rev-parse --show-toplevel
 $frontend = Join-Path $gitRoot 'frontend'
@@ -8,7 +6,7 @@ Write-Host "Running frontend checks."
 Set-Location $frontend
 
 Write-Host "Pre-commit hook: running gradlew check"
-frontend\gradlew check
+gradlew check
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Checks failed, commit aborted."
@@ -16,7 +14,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Pre-commit hook: running gradlew lint"
-frontend\gradlew lint
+gradlew lint
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Linting failed, commit aborted."
