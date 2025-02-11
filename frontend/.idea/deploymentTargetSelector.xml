@@ -4,6 +4,12 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
+        <SelectionState runConfigName="GoogleSignInActivity">
+          <option name="selectionMode" value="DROPDOWN" />
+        </SelectionState>
+        <SelectionState runConfigName="MainActivity">
+          <option name="selectionMode" value="DROPDOWN" />
+        </SelectionState>
       </SelectionState>
     </selectionStates>
   </component>
