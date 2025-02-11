@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.presentation
+package com.bmexcs.pickpic.presentation.shared
 
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text

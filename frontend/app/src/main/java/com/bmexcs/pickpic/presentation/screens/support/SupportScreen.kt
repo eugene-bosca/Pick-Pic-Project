@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.presentation.ranking
+package com.bmexcs.pickpic.presentation.screens.support
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,10 +7,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.bmexcs.pickpic.presentation.NavigationDrawer
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.bmexcs.pickpic.presentation.shared.NavigationDrawer
 
 @Composable
-fun RankingScreen(
+fun SupportScreen(
     onClickHomePage: () -> Unit,
     onClickProfile: () -> Unit,
     onClickSupport: () -> Unit,
@@ -21,7 +22,10 @@ fun RankingScreen(
         Column (
             modifier = Modifier.padding(innerPadding)
         ){
-            Text("RANKING!")
+            // TODO: if we ever do actually include contact info, it
+            //  should probably be located in a constant object somewhere
+            //  in the utils package.
+            Text("Support info goes here")
             NavigationDrawer(
                 onClickHomePage,
                 onClickProfile,
