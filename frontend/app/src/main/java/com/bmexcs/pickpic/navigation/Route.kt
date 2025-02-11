@@ -16,3 +16,6 @@ object Event
 
 @Serializable
 object Ranking
+
+@Serializable
+object AuthPage
