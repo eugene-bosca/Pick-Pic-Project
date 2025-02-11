@@ -1,13 +1,16 @@
 package com.bmexcs.pickpic.presentation.screens.ranking
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
-import com.bmexcs.pickpic.presentation.shared.NavigationDrawer // Import NavigationDrawer
+import androidx.compose.ui.graphics.Color
+import com.bmexcs.pickpic.presentation.ranking.SwipeView
 
 @Composable
 fun RankingScreen(
