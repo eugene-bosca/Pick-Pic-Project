@@ -6,7 +6,7 @@ import androidx.navigation.compose.composable
 import com.bmexcs.pickpic.presentation.events.EventScreen
 import com.bmexcs.pickpic.presentation.main.HomePageScreen
 import com.bmexcs.pickpic.presentation.profile.ProfileScreen
-import com.bmexcs.pickpic.presentation.ranking.RankingScreen
+import RankingScreen
 import com.bmexcs.pickpic.presentation.support.SupportScreen
 
 @Composable
