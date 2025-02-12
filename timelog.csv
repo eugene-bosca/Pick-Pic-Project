@@ -27,3 +27,4 @@ date,Jordan,Sam,Eugene,Ethan,LuDa,Alan,task
 2/11/2025,0,0,3,0,0,0, Setup mock data with dogs and merge conflicts 
 2/11/2025,0,0,0,0,3,0, Implemented photo swiping
 2/11/2025,3,0,0,0,0,0, team meeting + code review + gitignore fix + firebase auth research
+2/11/2025,0,0,0,3,0,0, team meeting + firebase auth research + fix precommit hooks
