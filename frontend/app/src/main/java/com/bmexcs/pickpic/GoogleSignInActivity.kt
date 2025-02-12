@@ -15,8 +15,12 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import java.io.IOException
 import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import java.io.IOException
+
 
 class GoogleSignInActivity : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -31,9 +35,12 @@ class GoogleSignInActivity : AppCompatActivity() {
         private const val RC_SIGN_IN = 9001
         private const val UPLOAD_URL = "http://10.0.2.2:8000/api/picture"
     }
+    private lateinit var auth: FirebaseAuth // Add Firebase Auth
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        auth = Firebase.auth // Initialize Firebase Auth
 
         mainLayout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -149,84 +156,106 @@ class GoogleSignInActivity : AppCompatActivity() {
     private fun uploadPhoto(imageUri: Uri) {
         val TAG = "GoogleSignInActivity"
 
-        try {
-            val contentType = contentResolver.getType(imageUri) ?: "image/png"
+        auth.currentUser?.getIdToken(true)?.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val idToken = task.result?.token
 
-            contentResolver.openInputStream(imageUri)?.use { inputStream ->
-                val imageBytes = inputStream.readBytes()
+                try {
+                    val contentType = contentResolver.getType(imageUri) ?: "image/png"
 
-                // Debug logging
-                Log.d(TAG, "Image size: ${imageBytes.size} bytes")
-                Log.d(TAG, "Content type from URI: $contentType")
-                Log.d(TAG, "First 50 bytes: ${imageBytes.take(50)}")
+                    contentResolver.openInputStream(imageUri)?.use { inputStream ->  // Use inputStream.use{}
+                        val imageBytes = inputStream.readBytes()
 
-                val mediaType = contentType.toMediaTypeOrNull()
-                val requestBody = RequestBody.create(mediaType, imageBytes)
+                        // Debug logging (keep this for troubleshooting)
+                        Log.d(TAG, "Image size: ${imageBytes.size} bytes")
+                        Log.d(TAG, "Content type from URI: $contentType")
+                        Log.d(TAG, "First 50 bytes: ${imageBytes.take(50)}") // Log a sample
 
-                Log.d(TAG, "Request URL: $UPLOAD_URL")
-                Log.d(TAG, "Request Content-Type: $contentType")
-                Log.d(TAG, "Request body size: ${requestBody.contentLength()}")
+                        val mediaType = contentType.toMediaTypeOrNull()
+                        val requestBody = RequestBody.create(mediaType, imageBytes)
 
-                val request = Request.Builder()
-                    .url(UPLOAD_URL)
-                    .post(requestBody)
-                    .header("Content-Type", contentType)
-                    .build()
+                        Log.d(TAG, "Request URL: $UPLOAD_URL")
+                        Log.d(TAG, "Request Content-Type: $contentType")
+                        Log.d(TAG, "Request body size: ${requestBody.contentLength()}")
 
-                val client = OkHttpClient.Builder()
-                    .addInterceptor { chain ->
-                        val original = chain.request()
-                        Log.d(TAG, "Sending request to: ${original.url}")
-                        Log.d(TAG, "Request headers: ${original.headers}")
-                        val response = chain.proceed(original)
-                        Log.d(TAG, "Response code: ${response.code}")
-                        Log.d(TAG, "Response headers: ${response.headers}")
-                        response
-                    }
-                    .build()
 
-                client.newCall(request).enqueue(object : Callback {
-                    override fun onFailure(call: Call, e: IOException) {
-                        Log.e(TAG, "Upload failed: ${e.message}", e)
-                        runOnUiThread {
-                            Toast.makeText(
-                                this@GoogleSignInActivity,
-                                "Upload failed: ${e.message}",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
+                        val request = Request.Builder()
+                            .url(UPLOAD_URL)
+                            .post(requestBody)
+                            .header("Content-Type", contentType)
+                            .header("Authorization", "Bearer $idToken") // Add Bearer token
+                            .build()
 
-                    override fun onResponse(call: Call, response: Response) {
-                        val responseBody = response.body?.string() ?: ""
-                        Log.d(TAG, "Response code: ${response.code}")
-                        Log.d(TAG, "Response body: $responseBody")
-
-                        runOnUiThread {
-                            if (response.isSuccessful) {
-                                Toast.makeText(
-                                    this@GoogleSignInActivity,
-                                    "Upload successful",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else {
-                                Toast.makeText(
-                                    this@GoogleSignInActivity,
-                                    "Upload failed (${response.code}): $responseBody",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                        val client = OkHttpClient.Builder()
+                            .addInterceptor { chain -> // Logging interceptor
+                                val original = chain.request()
+                                Log.d(TAG, "Sending request to: ${original.url}")
+                                Log.d(TAG, "Request headers: ${original.headers}")
+                                val response = chain.proceed(original)
+                                Log.d(TAG, "Response code: ${response.code}")
+                                Log.d(TAG, "Response headers: ${response.headers}")
+                                response
                             }
-                        }
+                            .build()
+
+                        client.newCall(request).enqueue(object : Callback {
+                            override fun onFailure(call: Call, e: IOException) {
+                                Log.e(TAG, "Upload failed: ${e.message}", e)
+                                runOnUiThread {
+                                    Toast.makeText(
+                                        this@GoogleSignInActivity,
+                                        "Upload failed: ${e.message}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+
+                            override fun onResponse(call: Call, response: Response) {
+                                val responseBody = response.body?.string() ?: ""
+                                Log.d(TAG, "Response code: ${response.code}")
+                                Log.d(TAG, "Response body: $responseBody")
+
+                                runOnUiThread {
+                                    if (response.isSuccessful) {
+                                        Toast.makeText(
+                                            this@GoogleSignInActivity,
+                                            "Upload successful",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        Toast.makeText(
+                                            this@GoogleSignInActivity,
+                                            "Upload failed (${response.code}): $responseBody",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+                            }
+                        }) // End of enqueue
+                    } // End of inputStream.use
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error processing image: ${e.message}", e)
+                    runOnUiThread { // Make sure Toast is on the UI thread
+                        Toast.makeText(
+                            this@GoogleSignInActivity,
+                            "Error processing image: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-                })
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error processing image: ${e.message}", e)
-            Toast.makeText(
-                this,
-                "Error processing image: ${e.message}",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+                }
+            } else {
+                // Handle error getting ID token
+                val exception = task.exception
+                Log.e(TAG, "Error getting ID token: ${exception?.message}", exception)
+                runOnUiThread {
+                    Toast.makeText(
+                        this@GoogleSignInActivity,
+                        "Authentication error. Please sign in again.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    signOut() // Or take other appropriate action
+                }
+            } // End of getIdToken onCompleteListener
+        } // End of uploadPhoto
     }
 }
