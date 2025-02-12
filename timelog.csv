@@ -28,3 +28,5 @@ date,Jordan,Sam,Eugene,Ethan,LuDa,Alan,task
 2/11/2025,0,0,0,0,3,0, Implemented photo swiping
 2/11/2025,3,0,0,0,0,0, team meeting + code review + gitignore fix + firebase auth research
 2/11/2025,0,0,0,3,0,0, team meeting + firebase auth research + fix precommit hooks
+2/12/2025,0,0,1,0,0,0, fix homepage data not loading bug and add loading icon
+
