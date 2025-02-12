@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.presentation.main
+package com.bmexcs.pickpic.presentation.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,7 +10,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 
-class DogViewModel : ViewModel() {
+class HomePageMockViewModel : ViewModel() {
 
     // Backing property for the dog images list
     private val _dogImages = MutableStateFlow<List<String>>(emptyList())
