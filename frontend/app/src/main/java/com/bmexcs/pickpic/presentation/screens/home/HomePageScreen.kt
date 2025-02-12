@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
 import com.bmexcs.pickpic.R
 import coil.compose.AsyncImage
-import com.bmexcs.pickpic.navigation.HomePage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -89,38 +88,54 @@ fun HomePageScreen(
                 }
             }
             Spacer(modifier = Modifier.height(33.dp))
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentPadding = PaddingValues(horizontal = 16.dp)
-            ) {
-                items(dogImages) { dogUrl ->
-                    ListItem(
-                        headlineContent = {
-                            Text("Fido and Princess' Wedding")
-                        },
-                        supportingContent = {
-                            Text("75 photos uploaded")
-                        },
-                        trailingContent = {
-                            IconButton(onClick = { /* doSomething() */ }) {
-                                Icon(Icons.Filled.MoreVert, contentDescription = null)
 
+            if (dogImages.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    items(dogImages) { dogUrl ->
+                        ListItem(
+                            headlineContent = {
+                                Text("Fido and Princess' Wedding")
+                            },
+                            supportingContent = {
+                                Text("75 photos uploaded")
+                            },
+                            trailingContent = {
+                                IconButton(onClick = { /* doSomething() */ }) {
+                                    Icon(Icons.Filled.MoreVert, contentDescription = null)
+
+                                }
+                            },
+                            leadingContent = {
+                                AsyncImage(
+                                    model = dogUrl,
+                                    contentDescription = "Dog image",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.size(48.dp)
+                                        .clip(CircleShape)
+                                        .border(
+                                            2.dp,
+                                            MaterialTheme.colorScheme.primary,
+                                            CircleShape
+                                        )
+                                )
                             }
-                        },
-                        leadingContent = {
-                            AsyncImage(
-                                model = dogUrl,
-                                contentDescription = "Dog image",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.size(48.dp)
-                                    .clip(CircleShape)
-                                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
-                            )
-                        }
-                    )
-                    Divider()
+                        )
+                        Divider()
+                    }
                 }
             }
         }
