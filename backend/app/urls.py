@@ -37,6 +37,6 @@ urlpatterns = [
     path('api/', include(router.urls)),
 
     # custom endpoints
-    path('api/authenticate', authenticate, name='authenticate'),
+    path('authenticate', authenticate, name='authenticate'),
     path('api/picture', picture, name='picture'),
 ]

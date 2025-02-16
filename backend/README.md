@@ -50,7 +50,7 @@ Both the database and the Django REST Service are containerized through Docker c
 # Usage
 ### To run backend locally
 * Create .env (environment variables)
-* Create concrete-spider-449820-p0-b07324f24234.json  (for GCS)
+* Create concrete-spider-449820-p0-b07324f24234.json (for GCS)
 
 ### Start dockerized backend
 1) `docker-compose down` or `docker compose down` 
@@ -60,3 +60,7 @@ Both the database and the Django REST Service are containerized through Docker c
 ### Manual migration
 * Create migration: `docker-compose exec web python manage.py makemigrations myapp`
 * Apply migration: `docker-compose exec web python manage.py migrate`
+
+### Package management
+* python pip is used to manage all packages used, all packages that are required are detailed in requirements.txt
+* to install all packages through pip, run `pip install -r requirements`
