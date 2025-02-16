@@ -32,4 +32,4 @@ date,Jordan,Sam,Eugene,Ethan,LuDa,Alan,task
 2/12/2025,1,0,0,0,0,1, firebase auth token 
 2/15/2025,0,3,0,0,0,0, creating the events page according to the figma
 2/15/2025,0,0,0,0,0,1, set up backend bearer auth for custom users and firebase (google SSO)
-
+2/16/2025,0,0,0,0,0,3, integrated bearer auth with firebase authentication
