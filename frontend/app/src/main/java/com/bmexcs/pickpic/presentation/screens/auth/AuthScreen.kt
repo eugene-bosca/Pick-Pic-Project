@@ -31,7 +31,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import com.google.firebase.Firebase
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.auth
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.security.MessageDigest
 import java.util.UUID
 
@@ -133,7 +137,11 @@ fun GoogleSignInButton() {
                 val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
                 val googleIdToken = googleIdTokenCredential.idToken
 
+                val authCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
+                Firebase.auth.signInWithCredential(authCredential).await()
+
                 Log.i("TOKEN", googleIdToken)
+                Log.i("TOKEN", "$authCredential")
 
                 Toast.makeText(context, "Sign-in successful!", Toast.LENGTH_SHORT).show()
             }
