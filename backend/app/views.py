@@ -5,8 +5,12 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view, OpenApiTypes, OpenApiResponse
-from django.http import FileResponse
 
+from django.http import FileResponse
+from django.contrib.auth.hashers import check_password
+from django.conf import settings
+
+import jwt
 from .google_cloud_storage.bucket import *
 from datetime import datetime
 import io
@@ -20,7 +24,10 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-@api_view(['GET'])
+# Secret key for JWT
+SECRET_KEY = settings.SECRET_KEY  # Use Django's secret key
+
+@api_view(['POST'])
 def authenticate(request):
     username = request.data.get('username')
     password = request.data.get('password')
@@ -30,14 +37,30 @@ def authenticate(request):
 
     try:
         user = User.objects.get(username=username)
-        if user.password == password:
-            return Response({"exists": True, "comment": "N/A"})
+        
+        # Validate password securely
+        if check_password(password, user.password):
+            # Generate JWT token
+            payload = {
+                "id": user.id,
+                "username": user.username,
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),  # Token expires in 1 hour
+                "iat": datetime.datetime.utcnow(),
+            }
+            token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+
+            return Response({
+                "exists": True,
+                "token": token,
+                "comment": "Authentication successful"
+            })
         else:
-            return Response({"exists": False, "comment": "incorrect password"})
+            return Response({"exists": False, "comment": "Incorrect password"}, status=401)
+
     except User.DoesNotExist:
-        return Response({"exists": False, "comment": "user does not exist"})
+        return Response({"exists": False, "comment": "User does not exist"}, status=404)
     except User.MultipleObjectsReturned:
-        return Response({"exists": False, "comment": "multiple users with the same username exists???"})
+        return Response({"exists": False, "comment": "Multiple users with the same username exist???"}, status=500)
 
 @extend_schema_view(
     get=extend_schema(
