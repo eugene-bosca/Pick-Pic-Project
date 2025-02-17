@@ -95,4 +95,9 @@ dependencies {
     implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
     // Coil for image loading
     implementation("io.coil-kt:coil-compose:2.2.2")
+
+    // Credential manager
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 }

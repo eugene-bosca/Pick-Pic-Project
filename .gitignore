@@ -1,6 +1,7 @@
 # Gradle
 .gradle/
 frontend/app/build
+frontend/build
 
 # Android Studio generated files
 /captures
