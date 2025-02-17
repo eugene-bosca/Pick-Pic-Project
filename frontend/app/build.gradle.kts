@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +7,12 @@ plugins {
     id("com.google.gms.google-services")
     kotlin("plugin.serialization") version "2.0.21"
 }
+
+val envPropertiesFile = rootProject.file("env.properties")
+val envProperties = Properties().apply {
+    load(envPropertiesFile.inputStream())
+}
+
 android {
     namespace = "com.bmexcs.pickpic"
     compileSdk = 35
@@ -17,6 +25,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "WEB_CLIENT_ID", "${envProperties["WEB_CLIENT_ID"]}")
     }
 
     buildTypes {
@@ -37,6 +47,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     tasks.register<Wrapper>("wrapper") {
         gradleVersion = "5.6.4"

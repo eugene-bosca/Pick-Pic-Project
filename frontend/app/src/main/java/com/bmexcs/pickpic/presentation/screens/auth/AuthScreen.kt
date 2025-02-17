@@ -1,6 +1,7 @@
 package com.bmexcs.pickpic.presentation.screens.auth
 
 import android.credentials.GetCredentialException
+import androidx.credentials.GetCredentialResponse
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -24,10 +25,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.Credential
 import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetPasswordOption
+import androidx.credentials.PasswordCredential
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.bmexcs.pickpic.BuildConfig
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
@@ -38,6 +44,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.security.MessageDigest
 import java.util.UUID
+
+private const val TAG = "AuthScreen"
 
 @Composable
 fun AuthScreen(
@@ -54,9 +62,88 @@ fun AuthScreen(
                 text = "Welcome! Please sign in."
             )
             Spacer(modifier = Modifier.height(16.dp))
-            GoogleSignInButton()
-            AuthButton(text = "Sign Out", onClick = { onClickHomePage() })
+            GoogleSignInButton(onSignIn = { onClickHomePage() })
         }
+    }
+}
+
+@Composable
+fun nativeSignInButton(onSignIn: () -> Unit) {
+//    val buildRequest: () -> GetCredentialRequest = {
+//        val getPasswordOption: GetPasswordOption = GetPasswordOption()
+//    }
+//
+//    AuthButton("Sign in with E-mail", onSignIn, buildRequest)
+}
+
+@Composable
+fun GoogleSignInButton(onSignIn: () -> Unit) {
+    val buildRequest: () -> GetCredentialRequest = {
+        // Create the nonce.
+        val rawNonce = UUID.randomUUID().toString()
+        val md = MessageDigest.getInstance("SHA-256")
+        val digest = md.digest(rawNonce.toByteArray())
+        val hashedNonce = digest.fold(""){str, it -> str + "%02x".format(it)}
+
+        // Build the options to make a credential request for the user's Google ID token.
+        val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
+            .setFilterByAuthorizedAccounts(false)
+            .setServerClientId(BuildConfig.WEB_CLIENT_ID)
+            .setNonce(hashedNonce)
+            .build()
+
+        // Encapsulates a credential request which will be passed to getCredential.
+        GetCredentialRequest.Builder()
+            .addCredentialOption(googleIdOption)
+            .build()
+    }
+
+    AuthButton("Sign in with Google", onSignIn, buildRequest)
+}
+
+@Composable
+fun AuthButton(text: String, onSignIn: () -> Unit, buildRequest: () -> GetCredentialRequest) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    val onClick: () -> Unit = {
+        val credentialManager = CredentialManager.create(context)
+        val request = buildRequest()
+
+        coroutineScope.launch {
+            val response: GetCredentialResponse? = try {
+                credentialManager.getCredential(
+                    request = request,
+                    context = context,
+                )
+            } catch (e: GetCredentialException) {
+                Log.e(TAG, "GetCredentialException: ${e.message}")
+                null
+            } catch (e: GoogleIdTokenParsingException) {
+                Log.e(TAG, "GoogleIdTokenParsingException: ${e.message}")
+                null
+            }  catch (e: NoCredentialException) {
+                // TODO: prompt user to add account
+                Log.e(TAG, "NoCredentialException: ${e.message}")
+                null
+            }
+
+            response?.let {
+                handleSignIn(it)
+                Toast.makeText(context, "Sign-in successful!", Toast.LENGTH_SHORT).show()
+                onSignIn()
+            } ?: Toast.makeText(context, "Sign-in failed", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    Button(
+        onClick = onClick,
+        modifier = Modifier.width(250.dp)
+    ) {
+        Text(
+            fontSize = 18.sp,
+            text = text
+        )
     }
 }
 
@@ -76,92 +163,36 @@ fun AuthBox(content: @Composable() (() -> Unit)) {
     }
 }
 
-@Composable
-fun AuthButton(text: String, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier.width(250.dp)
-    ) {
-        Text(
-            fontSize = 18.sp,
-            text = text
-        )
-    }
-}
+suspend fun handleSignIn(result: GetCredentialResponse) {
+    when (val credential: Credential = result.credential) {
+        is PasswordCredential -> {
+            val username = credential.id
+            val password = credential.password
 
-@Composable
-fun GoogleSignInButton() {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
+            Log.i(TAG, "PasswordCredential: username = $username, password = $password")
 
-    val onClick: () -> Unit = {
-
-        // CredentialManager manages user authentication flows.
-        // In particular, we use it to launch framework UI flows for registering/using credentials.
-        val credentialManager = CredentialManager.create(context)
-
-        // Create a SHA-256 nonce for
-        val rawNonce = UUID.randomUUID().toString()
-        val bytes = rawNonce.toByteArray()
-        val md = MessageDigest.getInstance("SHA-256")
-        val digest = md.digest(bytes)
-        val hashedNonce = digest.fold(""){str, it -> str + "%02x".format(it)}
-
-        Log.i("TOKEN", "GoogleSignInButton: hashedNonce = $hashedNonce")
-
-        // Build the options to make a credential request for the user's Google ID token.
-        val webClientId = "627889116714-bbpkrid0d5lnvjsghdjvl9eoan3ud7fr.apps.googleusercontent.com"
-        val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
-            .setFilterByAuthorizedAccounts(false)
-            .setServerClientId(webClientId)
-            .setNonce(hashedNonce)
-            .build()
-
-        // Encapsulates a request to get a user credential.
-        // We pass it the GetGoogleIdOption to get the Google ID token.
-        val request: GetCredentialRequest = GetCredentialRequest.Builder()
-            .addCredentialOption(googleIdOption)
-            .build()
-
-        coroutineScope.launch {
-            try {
-                val result = credentialManager.getCredential(
-                    request = request,
-                    context = context,
-                )
-
-                // TODO: switch over all supported credential types.
-                val credential = result.credential
-
-                // Extract the Google ID token.
+            firebaseAuthWithPassword(username, password)
+        }
+        is CustomCredential -> {
+            if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                 val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
                 val googleIdToken = googleIdTokenCredential.idToken
 
-                val authCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
-                Firebase.auth.signInWithCredential(authCredential).await()
+                Log.i(TAG, "GoogleIdTokenCredential: googleIdToken=$googleIdToken")
 
-                Log.i("TOKEN", googleIdToken)
-                Log.i("TOKEN", "$authCredential")
-
-                Toast.makeText(context, "Sign-in successful!", Toast.LENGTH_SHORT).show()
-            }
-            catch (e: GetCredentialException) {
-                Toast.makeText(context, "Sign-in failed", Toast.LENGTH_SHORT).show()
-                Log.e("TOKEN", "GetCredentialException: ${e.message}")
-            }
-            catch (e: GoogleIdTokenParsingException) {
-                Toast.makeText(context, "Sign-in failed", Toast.LENGTH_SHORT).show()
-                Log.e("TOKEN", "GoogleIdTokenParsingException: ${e.message}")
-            }
-            catch (e: NoCredentialException) {
-                // TODO: prompt user to add account
-                Toast.makeText(context, "Sign-in failed", Toast.LENGTH_SHORT).show()
-                Log.e("TOKEN", "NoCredentialException: ${e.message}")
+                firebaseAuthWithGoogle(googleIdToken)
             }
         }
     }
+}
 
-    AuthButton("Sign in with Google", onClick)
+suspend fun firebaseAuthWithPassword(username: String, password: String) {
+    //
+}
+
+suspend fun firebaseAuthWithGoogle(googleIdToken: String) {
+    val authCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
+    Firebase.auth.signInWithCredential(authCredential).await()
 }
 
 @Preview(showBackground = true)
