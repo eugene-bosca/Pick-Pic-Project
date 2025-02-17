@@ -14,7 +14,7 @@ output.json
 local.properties
 
 # IntelliJ
-/.idea
+/frontend/.idea
 *.iml
 misc.xml
 deploymentTargetDropDown.xml
