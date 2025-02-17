@@ -10,8 +10,13 @@ plugins {
 
 val envPropertiesFile = rootProject.file("env.properties")
 val envProperties = Properties().apply {
-    load(envPropertiesFile.inputStream())
+    if (envPropertiesFile.exists()) {
+        envPropertiesFile.inputStream().use { load(it) }
+    }
 }
+
+fun getEnvProperty(key: String, defaultValue: String): String =
+    envProperties.getProperty(key, defaultValue)
 
 android {
     namespace = "com.bmexcs.pickpic"
@@ -26,7 +31,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "WEB_CLIENT_ID", "${envProperties["WEB_CLIENT_ID"]}")
+        buildConfigField("String", "WEB_CLIENT_ID", getEnvProperty("WEB_CLIENT_ID", ""))
     }
 
     buildTypes {
