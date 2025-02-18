@@ -31,7 +31,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "WEB_CLIENT_ID", getEnvProperty("WEB_CLIENT_ID", ""))
+        buildConfigField("String", "WEB_CLIENT_ID", getEnvProperty("WEB_CLIENT_ID", "\"\""))
     }
 
     buildTypes {
