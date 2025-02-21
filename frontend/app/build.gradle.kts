@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +7,17 @@ plugins {
     id("com.google.gms.google-services")
     kotlin("plugin.serialization") version "2.0.21"
 }
+
+val envPropertiesFile = rootProject.file("env.properties")
+val envProperties = Properties().apply {
+    if (envPropertiesFile.exists()) {
+        envPropertiesFile.inputStream().use { load(it) }
+    }
+}
+
+fun getEnvProperty(key: String, defaultValue: String): String =
+    envProperties.getProperty(key, defaultValue)
+
 android {
     namespace = "com.bmexcs.pickpic"
     compileSdk = 35
@@ -17,6 +30,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "WEB_CLIENT_ID", getEnvProperty("WEB_CLIENT_ID", "\"\""))
     }
 
     buildTypes {
@@ -37,6 +52,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     tasks.register<Wrapper>("wrapper") {
         gradleVersion = "5.6.4"
@@ -95,4 +111,9 @@ dependencies {
     implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
     // Coil for image loading
     implementation("io.coil-kt:coil-compose:2.2.2")
+
+    // Credential manager
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 }

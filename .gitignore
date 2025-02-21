@@ -1,6 +1,8 @@
 # Gradle
 .gradle/
 frontend/app/build
+frontend/build
+env.properties
 
 # Android Studio generated files
 /captures
