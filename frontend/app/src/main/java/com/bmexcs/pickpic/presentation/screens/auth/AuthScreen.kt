@@ -69,10 +69,10 @@ fun AuthScreen(
 
 @Composable
 fun nativeSignInButton(onSignIn: () -> Unit) {
+// TODO
 //    val buildRequest: () -> GetCredentialRequest = {
 //        val getPasswordOption: GetPasswordOption = GetPasswordOption()
 //    }
-//
 //    AuthButton("Sign in with E-mail", onSignIn, buildRequest)
 }
 
@@ -187,7 +187,7 @@ suspend fun handleSignIn(result: GetCredentialResponse) {
 }
 
 suspend fun firebaseAuthWithPassword(username: String, password: String) {
-    //
+    // TODO
 }
 
 suspend fun firebaseAuthWithGoogle(googleIdToken: String) {
