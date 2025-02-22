@@ -1,13 +1,5 @@
 import java.util.Properties
 
-plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
-    id("com.google.gms.google-services")
-    kotlin("plugin.serialization") version "2.0.21"
-}
-
 val envPropertiesFile = rootProject.file("env.properties")
 val envProperties = Properties().apply {
     if (envPropertiesFile.exists()) {
@@ -17,6 +9,14 @@ val envProperties = Properties().apply {
 
 fun getEnvProperty(key: String, defaultValue: String): String =
     envProperties.getProperty(key, defaultValue)
+
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
+    kotlin("plugin.serialization") version "2.0.21"
+}
 
 android {
     namespace = "com.bmexcs.pickpic"
@@ -43,77 +43,85 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
+
     buildFeatures {
         compose = true
         buildConfig = true
     }
+
     tasks.register<Wrapper>("wrapper") {
         gradleVersion = "5.6.4"
     }
+
     tasks.register("prepareKotlinBuildScriptModel"){}
 }
 
 dependencies {
+    // Core AndroidX libraries
+    implementation(libs.androidx.core.ktx) // Kotlin extensions for Android core components
+    implementation(libs.androidx.appcompat) // Support for older Android versions
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation(libs.firebase.common.ktx)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+    // Lifecycle and Activity
+    implementation(libs.androidx.lifecycle.runtime.ktx) // Lifecycle-aware components
+    implementation(libs.androidx.activity.compose) // Jetpack Compose support for activities
 
-    // Import the BoM for the Firebase platform
-    implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
+    // Jetpack Compose
+    implementation(platform(libs.androidx.compose.bom)) // Compose BOM (Bill of Materials) for version management
+    implementation(libs.androidx.ui) // Core UI components
+    implementation(libs.androidx.ui.graphics) // Graphics utilities
+    implementation(libs.androidx.ui.tooling.preview) // Preview support
+    implementation(libs.androidx.material3) // Material 3 UI components
+    implementation(libs.androidx.runtime.livedata.v154) // LiveData integration for Compose
 
-    // Add the dependency for the Firebase Authentication library
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.android.gms:play-services-auth:21.3.0")
+    // Firebase
+    implementation(platform(libs.firebase.bom)) // Firebase BOM for version management
+    implementation(libs.firebase.common.ktx) // Firebase common library for Kotlin
+    implementation(libs.firebase.auth.ktx) // Firebase Authentication
+    implementation(libs.play.services.auth) // Google Sign-In with Play Services
 
-    implementation("com.squareup.okhttp3:okhttp:4.9.3")
-    // Add dependencies responsible for navigation
-    val nav_version = "2.8.6"
+    // Credential Manager
+    implementation(libs.androidx.credentials) // Credential Manager API
+    implementation(libs.androidx.credentials.play.services.auth) // Play Services integration for credentials
+    implementation(libs.googleid) // Google Sign-In integration with AuthorizationClient API
 
-    // Jetpack Compose integration
-    implementation("androidx.navigation:navigation-compose:$nav_version")
+    // Testing dependencies
+    testImplementation(libs.junit) // Unit testing framework
 
-    // Views/Fragments integration
-    implementation("androidx.navigation:navigation-fragment:$nav_version")
-    implementation("androidx.navigation:navigation-ui:$nav_version")
+    // Networking
+    implementation(libs.okhttp) // OkHttp for HTTP requests
 
-    // Feature module support for Fragments
-    implementation("androidx.navigation:navigation-dynamic-features-fragment:$nav_version")
+    // Image Loading
+    implementation(libs.coil.compose) // Coil image loading for Jetpack Compose
 
-    // Testing Navigation
-    androidTestImplementation("androidx.navigation:navigation-testing:$nav_version")
+    // JSON Serialization
+    implementation(libs.kotlinx.serialization.json) // Kotlinx serialization for JSON
 
-    // JSON serialization library, works with the Kotlin serialization plugin
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    // Navigation
+    implementation(libs.androidx.navigation.compose) // Jetpack Compose navigation
+    implementation(libs.androidx.navigation.fragment) // Navigation for Fragments
+    implementation(libs.androidx.navigation.ui) // Navigation UI helpers
+    implementation(libs.androidx.navigation.dynamic.features.fragment) // Feature module support
 
-    //
-    implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
-    // Coil for image loading
-    implementation("io.coil-kt:coil-compose:2.2.2")
+    // Testing dependencies
+    testImplementation(libs.junit) // Unit testing framework
 
-    // Credential manager
-    implementation(libs.androidx.credentials)
-    implementation(libs.androidx.credentials.play.services.auth)
-    implementation(libs.googleid)
+    // Android instrumentation tests
+    androidTestImplementation(libs.androidx.junit) // JUnit support for Android tests
+    androidTestImplementation(libs.androidx.espresso.core) // UI testing with Espresso
+    androidTestImplementation(platform(libs.androidx.compose.bom)) // Compose BOM for test dependencies
+    androidTestImplementation(libs.androidx.ui.test.junit4) // JUnit4 support for Compose tests
+    androidTestImplementation(libs.androidx.navigation.testing) // Navigation testing
+
+    // Debug-only dependencies
+    debugImplementation(libs.androidx.ui.tooling) // Compose UI tooling for debugging
+    debugImplementation(libs.androidx.ui.test.manifest) // Manifest file support for UI tests
 }
