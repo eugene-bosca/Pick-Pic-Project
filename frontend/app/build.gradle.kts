@@ -14,8 +14,15 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+
     id("com.google.gms.google-services")
     kotlin("plugin.serialization") version "2.0.21"
+
+    // Kotlin annotation processor compiler plugin (i.e., the @Something metadata tags)
+    id("kotlin-kapt")
+
+    // Hilt plugin for Dagger
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -111,6 +118,11 @@ dependencies {
     implementation(libs.androidx.navigation.ui) // Navigation UI helpers
     implementation(libs.androidx.navigation.dynamic.features.fragment) // Feature module support
 
+    // DI management
+    implementation(libs.hilt.android) // Hilt library for reducing DI boilerplate
+    kapt(libs.hilt.android.compiler) // Hilt compiler
+    implementation(libs.androidx.hilt.navigation.compose) // Hilt compose navigation
+
     // Testing dependencies
     testImplementation(libs.junit) // Unit testing framework
 
@@ -124,4 +136,8 @@ dependencies {
     // Debug-only dependencies
     debugImplementation(libs.androidx.ui.tooling) // Compose UI tooling for debugging
     debugImplementation(libs.androidx.ui.test.manifest) // Manifest file support for UI tests
+}
+
+kapt {
+    correctErrorTypes = true
 }

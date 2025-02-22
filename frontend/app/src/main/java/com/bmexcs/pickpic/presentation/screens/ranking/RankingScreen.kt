@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.bmexcs.pickpic.presentation.ranking.SwipeView
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun RankingScreen(
@@ -19,6 +19,7 @@ fun RankingScreen(
     onClickSupport: () -> Unit,
     onClickEvent: () -> Unit,
     onClickRanking: () -> Unit,
+    viewModel: RankingViewModel = hiltViewModel()
 ) {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(

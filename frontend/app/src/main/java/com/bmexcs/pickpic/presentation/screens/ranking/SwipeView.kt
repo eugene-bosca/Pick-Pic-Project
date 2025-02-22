@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.presentation.ranking
+package com.bmexcs.pickpic.presentation.screens.ranking
 
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,14 +11,14 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.geometry.Offset
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
 
 @Composable
 fun SwipeView(
-    viewModel: SwipeViewModel = viewModel() // Get the ViewModel instance
+    viewModel: SwipeViewModel = hiltViewModel() // Get the ViewModel instance
 ) {
     val dir = LocalContext.current
 

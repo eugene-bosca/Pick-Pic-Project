@@ -1,10 +1,11 @@
 package com.bmexcs.pickpic.presentation.screens.ranking
 
 import androidx.lifecycle.ViewModel
-import com.bmexcs.pickpic.data.events.EventRepository
+import com.bmexcs.pickpic.data.events.EventsRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class RankingViewModel(
-    private val eventRepository: EventRepository,
-) : ViewModel() {
+@HiltViewModel
+class RankingViewModel @Inject constructor() : ViewModel() {
     // Ranking ViewModel.
 }

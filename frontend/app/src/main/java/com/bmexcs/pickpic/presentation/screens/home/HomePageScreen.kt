@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.R
 import coil.compose.AsyncImage
 
@@ -31,7 +32,7 @@ fun HomePageScreen(
     onClickSupport: () -> Unit,
     onClickRanking: () -> Unit,
     onClickEvent: () -> Unit,
-    viewModel: HomePageMockViewModel = HomePageMockViewModel()
+    viewModel: HomePageMockViewModel = hiltViewModel()
 ) {
     val dogImages by viewModel.dogImages.collectAsState()
 
@@ -134,7 +135,7 @@ fun HomePageScreen(
                                 )
                             }
                         )
-                        Divider()
+                        HorizontalDivider()
                     }
                 }
             }

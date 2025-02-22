@@ -13,6 +13,7 @@
         android:maxSdkVersion="32" />
 
     <application
+        android:name=".PickPicApplication"
         android:allowBackup="true"
         android:usesCleartextTraffic="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -21,8 +22,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.PickPic"
-        tools:targetApi="31">
+        android:theme="@style/Theme.PickPic">
 
         <!-- GoogleSignInActivity (exported, but not a launcher activity) -->
         <activity android:name=".GoogleSignInActivity"
@@ -34,7 +34,6 @@
         <activity
             android:name=".presentation.MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.PickPic">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -1,18 +1,20 @@
-package com.bmexcs.pickpic.presentation.ranking
+package com.bmexcs.pickpic.presentation.screens.ranking
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class SwipeViewModel : ViewModel() {
+@HiltViewModel
+class SwipeViewModel @Inject constructor(): ViewModel() {
 
     private val _currentBitmap = MutableLiveData<Bitmap?>()
     val currentBitmap: LiveData<Bitmap?> = _currentBitmap

@@ -2,6 +2,7 @@ package com.bmexcs.pickpic.presentation.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -9,8 +10,10 @@ import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
+import javax.inject.Inject
 
-class HomePageMockViewModel : ViewModel() {
+@HiltViewModel
+class HomePageMockViewModel @Inject constructor() : ViewModel() {
 
     // Backing property for the dog images list
     private val _dogImages = MutableStateFlow<List<String>>(emptyList())

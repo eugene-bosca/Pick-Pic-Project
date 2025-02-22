@@ -2,7 +2,8 @@ package com.bmexcs.pickpic.presentation.screens.events
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.events.EventRepository
+import com.bmexcs.pickpic.data.events.EventsRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,13 +11,16 @@ import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
+import javax.inject.Inject
 
-class EventViewModel(
-    private val eventRepository: EventRepository
+@HiltViewModel
+class EventsViewModel @Inject constructor(
+    private val eventRepository: EventsRepository
 ) : ViewModel() {
 
     // Backing property for the dog images list
     private val _dogImages = MutableStateFlow<List<String>>(emptyList())
+    val dogImages: StateFlow<List<String>> = _dogImages
 
     init {
         if (_dogImages.value.isEmpty()){
@@ -24,7 +28,7 @@ class EventViewModel(
         }
     }
 
-    fun fetchDogImages() {
+    private fun fetchDogImages() {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
             val client = OkHttpClient()
