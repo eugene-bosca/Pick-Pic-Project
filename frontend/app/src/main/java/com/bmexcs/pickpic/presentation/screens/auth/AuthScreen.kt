@@ -127,6 +127,7 @@ fun AuthButton(text: String, onSignIn: () -> Unit, buildRequest: () -> GetCreden
                 Log.e(TAG, "NoCredentialException: ${e.message}")
                 null
             }
+            // TODO: handle connection issues
 
             response?.let {
                 handleSignIn(it)
