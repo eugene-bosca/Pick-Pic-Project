@@ -11,19 +11,14 @@ import androidx.credentials.PasswordCredential
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import com.bmexcs.pickpic.BuildConfig
+import com.bmexcs.pickpic.data.sources.AuthDataSource
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.google.firebase.auth.GoogleAuthProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.tasks.await
 import java.security.MessageDigest
 import java.util.UUID
 import javax.inject.Inject
@@ -34,12 +29,14 @@ private const val TAG = "AUTH_REPO"
 @Singleton
 class AuthRepository @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val firebaseAuth: FirebaseAuth,
+    private val authDataSource: AuthDataSource
 ) {
 
     // TODO: probably remove; just an example of flows
-    private val _authState = MutableStateFlow(firebaseAuth.currentUser != null)
+    private val _authState = MutableStateFlow(authDataSource.getCurrentUser() != null)
     val authState: StateFlow<Boolean> = _authState.asStateFlow()
+
+    fun getCurrentUser() = authDataSource.getCurrentUser()
 
     suspend fun signInWithGoogle(): Boolean {
         val credentialManager = CredentialManager.create(context)
@@ -71,6 +68,10 @@ class AuthRepository @Inject constructor(
         return response != null
     }
 
+    fun signOut() {
+        authDataSource.signOut()
+    }
+
     private fun buildGoogleSignInRequest(): GetCredentialRequest {
         // Create the nonce.
         val rawNonce = UUID.randomUUID().toString()
@@ -100,7 +101,7 @@ class AuthRepository @Inject constructor(
 
                 Log.i(TAG, "PasswordCredential: username = $username, password = $password")
 
-                firebaseAuthWithPassword(username, password)
+                authDataSource.firebaseAuthWithPassword(username, password)
             }
             // Custom credential sign-in.
             is CustomCredential -> {
@@ -112,47 +113,9 @@ class AuthRepository @Inject constructor(
 
                     Log.i(TAG, "GoogleIdTokenCredential: googleIdToken=$googleIdToken")
 
-                    firebaseAuthWithGoogle(googleIdToken)
+                    authDataSource.firebaseAuthWithGoogle(googleIdToken)
                 }
             }
         }
-    }
-
-    private suspend fun firebaseAuthWithPassword(username: String, password: String) {
-        // TODO: use credential manager
-        try {
-            firebaseAuth.signInWithEmailAndPassword(username, password).await()
-            _authState.value = firebaseAuth.currentUser != null
-        } catch (e: Exception) {
-            Log.e(TAG, "Password sign-in failed", e)
-        }
-    }
-
-    private suspend fun firebaseAuthWithGoogle(googleIdToken: String) {
-        // TODO: return auth state based on error.
-        try {
-            val authCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
-            firebaseAuth.signInWithCredential(authCredential).await()
-            _authState.value = firebaseAuth.currentUser != null
-        } catch (e: GetCredentialException) {
-            // Could not retrieve from credential manager.
-            Log.e(TAG, "Google sign-in failed, could not retrieve credential", e)
-        } catch (e: FirebaseAuthInvalidUserException) {
-            // User account has been disabled, or email corresponds to a user that DNE.
-            Log.e(TAG, "Google sign-in failed, account is disabled or user DNE", e)
-        } catch (e: FirebaseAuthInvalidCredentialsException) {
-            // Credential is malformed or has expired.
-            // I.e., password is incorrect (if it's an email credential).
-            Log.e(TAG, "Google sign-in failed, credential malformed or expired", e)
-        } catch (e: FirebaseAuthUserCollisionException) {
-            // Email already exists.
-            Log.e(TAG, "Google sign-in failed, email already exists", e)
-        }
-    }
-
-    fun signOut() {
-        // TODO: use credential manager (?)
-        firebaseAuth.signOut()
-        _authState.value = false
     }
 }
