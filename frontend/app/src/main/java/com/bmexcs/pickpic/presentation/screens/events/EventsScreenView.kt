@@ -41,7 +41,7 @@ import com.bmexcs.pickpic.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EventScreen(
+fun EventScreenView(
     onClickHomePage: () -> Unit,
     onClickProfile: () -> Unit,
     onClickSupport: () -> Unit,

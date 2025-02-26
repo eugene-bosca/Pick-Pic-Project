@@ -26,7 +26,7 @@ import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomePageScreen(
+fun HomePageScreenView(
     onClickHomePage: () -> Unit,
     onClickProfile: () -> Unit,
     onClickSupport: () -> Unit,

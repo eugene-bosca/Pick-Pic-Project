@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun RankingScreen(
+fun RankingScreenView(
     onClickHomePage: () -> Unit,
     onClickProfile: () -> Unit,
     onClickSupport: () -> Unit,

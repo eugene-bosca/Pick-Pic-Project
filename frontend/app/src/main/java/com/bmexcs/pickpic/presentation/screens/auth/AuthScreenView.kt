@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun AuthScreen(
+fun AuthScreenView(
     authViewModel: AuthViewModel = hiltViewModel(),
     onClickHomePage: () -> Unit,
 ) {
@@ -86,5 +86,5 @@ fun AuthBox(content: @Composable() (() -> Unit)) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewCenteredColumnWithBox() {
-    AuthScreen { }
+    AuthScreenView { }
 }
