@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.presentation.screens.profile
+package com.bmexcs.pickpic.presentation.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.bmexcs.pickpic.presentation.viewmodels.ProfileViewModel
 import com.bmexcs.pickpic.presentation.shared.NavigationDrawer
 
 @Composable

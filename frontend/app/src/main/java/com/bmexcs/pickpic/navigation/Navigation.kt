@@ -3,12 +3,12 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.bmexcs.pickpic.presentation.screens.events.EventScreenView
-import com.bmexcs.pickpic.presentation.screens.home.HomePageScreenView
-import com.bmexcs.pickpic.presentation.screens.profile.ProfileScreenView
-import com.bmexcs.pickpic.presentation.screens.ranking.RankingScreenView
-import com.bmexcs.pickpic.presentation.screens.support.SupportScreenView
-import com.bmexcs.pickpic.presentation.screens.auth.AuthScreenView
+import com.bmexcs.pickpic.presentation.screens.EventScreenView
+import com.bmexcs.pickpic.presentation.screens.HomePageScreenView
+import com.bmexcs.pickpic.presentation.screens.ProfileScreenView
+import com.bmexcs.pickpic.presentation.screens.RankingScreenView
+import com.bmexcs.pickpic.presentation.screens.SupportScreenView
+import com.bmexcs.pickpic.presentation.screens.AuthScreenView
 
 @Composable
 fun Navigation(navController: NavHostController) {

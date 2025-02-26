@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.presentation.screens.events
+package com.bmexcs.pickpic.presentation.screens
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.bmexcs.pickpic.R
+import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.data.auth
+package com.bmexcs.pickpic.data.repositories
 
 import android.content.Context
 import android.util.Log
@@ -106,7 +106,8 @@ class AuthRepository @Inject constructor(
             is CustomCredential -> {
                 // Google OAuth2.0 sign-in.
                 if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                    val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                    val googleIdTokenCredential =
+                        GoogleIdTokenCredential.createFrom(credential.data)
                     val googleIdToken = googleIdTokenCredential.idToken
 
                     Log.i(TAG, "GoogleIdTokenCredential: googleIdToken=$googleIdToken")

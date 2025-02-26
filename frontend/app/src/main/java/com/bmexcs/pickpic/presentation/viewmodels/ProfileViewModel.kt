@@ -1,7 +1,7 @@
-package com.bmexcs.pickpic.presentation.screens.profile
+package com.bmexcs.pickpic.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
-import com.bmexcs.pickpic.data.profile.ProfileRepository
+import com.bmexcs.pickpic.data.repositories.ProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

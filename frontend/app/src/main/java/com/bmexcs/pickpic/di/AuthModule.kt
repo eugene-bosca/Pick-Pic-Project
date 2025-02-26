@@ -1,7 +1,7 @@
 package com.bmexcs.pickpic.di
 
 import android.content.Context
-import com.bmexcs.pickpic.data.auth.AuthRepository
+import com.bmexcs.pickpic.data.repositories.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides

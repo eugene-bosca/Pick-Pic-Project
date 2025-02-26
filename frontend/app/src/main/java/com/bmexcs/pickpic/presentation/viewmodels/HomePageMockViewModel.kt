@@ -1,8 +1,7 @@
-package com.bmexcs.pickpic.presentation.screens.events
+package com.bmexcs.pickpic.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.events.EventsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,9 +13,7 @@ import org.json.JSONObject
 import javax.inject.Inject
 
 @HiltViewModel
-class EventsViewModel @Inject constructor(
-    private val eventRepository: EventsRepository
-) : ViewModel() {
+class HomePageMockViewModel @Inject constructor() : ViewModel() {
 
     // Backing property for the dog images list
     private val _dogImages = MutableStateFlow<List<String>>(emptyList())
@@ -28,7 +25,7 @@ class EventsViewModel @Inject constructor(
         }
     }
 
-    private fun fetchDogImages() {
+    fun fetchDogImages() {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
             val client = OkHttpClient()

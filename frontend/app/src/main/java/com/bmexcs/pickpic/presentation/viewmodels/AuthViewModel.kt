@@ -1,8 +1,8 @@
-package com.bmexcs.pickpic.presentation.screens.auth
+package com.bmexcs.pickpic.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.auth.AuthRepository
+import com.bmexcs.pickpic.data.repositories.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

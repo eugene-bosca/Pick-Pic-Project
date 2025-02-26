@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.presentation.screens.home
+package com.bmexcs.pickpic.presentation.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -23,6 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.R
 import coil.compose.AsyncImage
+import com.bmexcs.pickpic.presentation.viewmodels.HomePageMockViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

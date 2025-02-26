@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.presentation.screens.ranking
+package com.bmexcs.pickpic.presentation.viewmodels
 
 import android.content.Context
 import android.graphics.Bitmap

@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.presentation.screens.auth
+package com.bmexcs.pickpic.presentation.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -22,6 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.bmexcs.pickpic.presentation.viewmodels.AuthViewModel
 
 @Composable
 fun AuthScreenView(

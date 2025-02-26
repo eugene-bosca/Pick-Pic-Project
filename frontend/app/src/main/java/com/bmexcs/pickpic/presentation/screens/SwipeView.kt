@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.presentation.screens.ranking
+package com.bmexcs.pickpic.presentation.screens
 
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +14,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.bmexcs.pickpic.presentation.viewmodels.SwipeViewModel
 import kotlinx.coroutines.delay
 
 @Composable

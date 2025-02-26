@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.presentation.screens.ranking
+package com.bmexcs.pickpic.presentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +11,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.bmexcs.pickpic.presentation.viewmodels.RankingViewModel
 
 @Composable
 fun RankingScreenView(
