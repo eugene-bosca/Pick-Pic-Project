@@ -56,9 +56,14 @@ Both the database and the Django REST Service are containerized through Docker c
 1) `docker-compose down` or `docker compose down` 
 2) `docker-compose up --build` or `docker compose up --build`
 
+### (Local only) run Cloud SQL proxy
+1) `chmod +x cloud-sql-proxy`
+2) `./cloud-sql-proxy --credentials-file=GOOGLE_APPLICATION_CREDENTIALS CLOUDSQL_CONNECTION_NAME`
+    - note: see .env for CLOUDSQL_CONNECTION_NAME
+
 
 ### Manual migration
-* Create migration: `docker-compose exec web python manage.py makemigrations myapp`
+* Create migration: `docker-compose exec web python manage.py makemigrations app`
 * Apply migration: `docker-compose exec web python manage.py migrate`
 
 ### Package management

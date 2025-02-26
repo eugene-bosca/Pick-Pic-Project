@@ -1,10 +1,5 @@
 from rest_framework import serializers, filters
-from .models import Item, User
-
-class ItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Item
-        fields = '__all__'
+from .models import User
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
