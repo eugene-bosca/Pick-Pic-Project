@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.presentation.screens.profile
+package com.bmexcs.pickpic.presentation.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import com.bmexcs.pickpic.presentation.shared.NavigationDrawer
 
 @Composable
-fun ProfileScreen(
+fun SupportScreenView(
     onClickHomePage: () -> Unit,
     onClickProfile: () -> Unit,
     onClickSupport: () -> Unit,
@@ -21,7 +21,10 @@ fun ProfileScreen(
         Column (
             modifier = Modifier.padding(innerPadding)
         ){
-            Text("Profile!")
+            // TODO: if we ever do actually include contact info, it
+            //  should probably be located in a constant object somewhere
+            //  in the utils package.
+            Text("Support info goes here")
             NavigationDrawer(
                 onClickHomePage,
                 onClickProfile,

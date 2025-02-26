@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.presentation.screens.support
+package com.bmexcs.pickpic.presentation.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,25 +7,24 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.bmexcs.pickpic.presentation.viewmodels.ProfileViewModel
 import com.bmexcs.pickpic.presentation.shared.NavigationDrawer
 
 @Composable
-fun SupportScreen(
+fun ProfileScreenView(
     onClickHomePage: () -> Unit,
     onClickProfile: () -> Unit,
     onClickSupport: () -> Unit,
     onClickEvent: () -> Unit,
-    onClickRanking: () -> Unit
+    onClickRanking: () -> Unit,
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column (
             modifier = Modifier.padding(innerPadding)
         ){
-            // TODO: if we ever do actually include contact info, it
-            //  should probably be located in a constant object somewhere
-            //  in the utils package.
-            Text("Support info goes here")
+            Text("Profile!")
             NavigationDrawer(
                 onClickHomePage,
                 onClickProfile,

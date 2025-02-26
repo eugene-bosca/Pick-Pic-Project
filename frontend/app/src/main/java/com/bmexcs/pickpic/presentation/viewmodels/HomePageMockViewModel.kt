@@ -1,8 +1,8 @@
-package com.bmexcs.pickpic.presentation.screens.events
+package com.bmexcs.pickpic.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.events.EventRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,13 +10,14 @@ import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
+import javax.inject.Inject
 
-class EventViewModel(
-    private val eventRepository: EventRepository
-) : ViewModel() {
+@HiltViewModel
+class HomePageMockViewModel @Inject constructor() : ViewModel() {
 
     // Backing property for the dog images list
     private val _dogImages = MutableStateFlow<List<String>>(emptyList())
+    val dogImages: StateFlow<List<String>> = _dogImages
 
     init {
         if (_dogImages.value.isEmpty()){

@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.presentation.screens.ranking
+package com.bmexcs.pickpic.presentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -10,15 +10,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.bmexcs.pickpic.presentation.ranking.SwipeView
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.bmexcs.pickpic.presentation.viewmodels.RankingViewModel
 
 @Composable
-fun RankingScreen(
+fun RankingScreenView(
     onClickHomePage: () -> Unit,
     onClickProfile: () -> Unit,
     onClickSupport: () -> Unit,
     onClickEvent: () -> Unit,
     onClickRanking: () -> Unit,
+    viewModel: RankingViewModel = hiltViewModel()
 ) {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
