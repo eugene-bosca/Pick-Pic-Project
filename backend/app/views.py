@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import Item, User
-from .serializers import ItemSerializer, UserSerializer
+from .models import User
+from .serializers import UserSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,10 +15,6 @@ from .google_cloud_storage.bucket import *
 from datetime import datetime
 import io
 import mimetypes
-
-class ItemViewSet(viewsets.ModelViewSet):
-    queryset = Item.objects.all()
-    serializer_class = ItemSerializer
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()

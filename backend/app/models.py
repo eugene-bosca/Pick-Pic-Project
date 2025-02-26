@@ -1,15 +1,11 @@
 from django.db import models
-
-class Item(models.Model):
-    name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.name
+import uuid
     
 class User(models.Model):
-    username = models.CharField(max_length=255)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    display_name = models.CharField(max_length=255)
     email = models.CharField(max_length=255)
-    password = models.CharField(max_length=255)
+    phone = models.CharField(max_length=30)
 
     def __str__(self):
-        return self.username
+        return self.display_name
