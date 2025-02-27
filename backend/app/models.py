@@ -6,8 +6,7 @@ class User(models.Model):
     display_name = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, unique=True)
     phone = models.CharField(max_length=30, blank=True, null=True) # Allow null/blank
-    profile_picture = models.ImageField(upload_to='profile_pics') 
-    # TODO: put link/endpoint filter string here instead of 'profile_pics'
+    profile_picture = models.URLField(max_length=500, blank=True, null=True)  # Stores a link/endpoint
 
     def __str__(self):
         return self.display_name
@@ -22,8 +21,7 @@ class EventOwner(models.Model):
 
 class Image(models.Model):
     image_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    url = models.ImageField(upload_to='event_images')
-    # TODO: Confirm upload_to location
+    url = models.URLField(max_length=500, blank=True, null=True)  # Stores a link/endpoint
 
 class EventContent(models.Model):
     event = models.ForeignKey(EventOwner, on_delete=models.CASCADE, primary_key=True)
