@@ -4,13 +4,12 @@ from .models import User, UserSettings, EventOwner, EventUser, Image, EventConte
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['user_id', 'display_name', 'email', 'phone', 'profile_picture']
-
+        fields = "__all__"
 
 class UserSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSettings
-        fields = ['user', 'dark_mode']
+        fields = "__all__"
 
 
 class EventOwnerSerializer(serializers.ModelSerializer):
@@ -18,7 +17,7 @@ class EventOwnerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EventOwner
-        fields = ['event', 'owner_id']
+        fields = "__all__"
 
 
 class EventUserSerializer(serializers.ModelSerializer):
@@ -27,13 +26,13 @@ class EventUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EventUser
-        fields = ['event', 'user']
+        fields = "__all__"
 
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
-        fields = ['image_id', 'url', 'score']
+        fields = "__all__"
 
 
 class EventContentSerializer(serializers.ModelSerializer):
@@ -42,7 +41,7 @@ class EventContentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EventContent
-        fields = ['event', 'event_name', 'image_id']
+        fields = "__all__"
 
 
 class ScoredBySerializer(serializers.ModelSerializer):
@@ -51,4 +50,4 @@ class ScoredBySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ScoredBy
-        fields = ['image_id', 'user']
+        fields = "__all__"
