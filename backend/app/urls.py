@@ -18,13 +18,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from app.views import ItemViewSet, UserViewSet, authenticate, picture
+from app.views import authenticate, picture
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from . import views
 
 router = DefaultRouter()
-router.register(r'items', ItemViewSet)
-router.register(r'users', UserViewSet)
-
+router.register(r'users', views.UserViewSet)
+router.register(r'user-settings', views.UserSettingsViewSet)
+router.register(r'event-owners', views.EventOwnerViewSet)
+router.register(r'event-users', views.EventUserViewSet)
+router.register(r'images', views.ImageViewSet)
+router.register(r'event-contents', views.EventContentViewSet)
+router.register(r'scored-by', views.ScoredByViewSet)
 urlpatterns = [
     # swagger
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

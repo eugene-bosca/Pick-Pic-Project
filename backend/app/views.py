@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import Item, User
-from .serializers import ItemSerializer, UserSerializer
+from .models import User, UserSettings, EventOwner, EventUser, Image, EventContent, ScoredBy
+from .serializers import UserSerializer, UserSettingsSerializer, EventOwnerSerializer, EventUserSerializer, ImageSerializer, EventContentSerializer, ScoredBySerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -16,13 +16,40 @@ from datetime import datetime
 import io
 import mimetypes
 
-class ItemViewSet(viewsets.ModelViewSet):
-    queryset = Item.objects.all()
-    serializer_class = ItemSerializer
-
+# User ViewSet
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+# UserSettings ViewSet
+class UserSettingsViewSet(viewsets.ModelViewSet):
+    queryset = UserSettings.objects.all()
+    serializer_class = UserSettingsSerializer
+
+# EventOwner ViewSet
+class EventOwnerViewSet(viewsets.ModelViewSet):
+    queryset = EventOwner.objects.all()
+    serializer_class = EventOwnerSerializer
+
+# EventUser ViewSet
+class EventUserViewSet(viewsets.ModelViewSet):
+    queryset = EventUser.objects.all()
+    serializer_class = EventUserSerializer
+
+# Image ViewSet
+class ImageViewSet(viewsets.ModelViewSet):
+    queryset = Image.objects.all()
+    serializer_class = ImageSerializer
+
+# EventContent ViewSet
+class EventContentViewSet(viewsets.ModelViewSet):
+    queryset = EventContent.objects.all()
+    serializer_class = EventContentSerializer
+
+# ScoredBy ViewSet
+class ScoredByViewSet(viewsets.ModelViewSet):
+    queryset = ScoredBy.objects.all()
+    serializer_class = ScoredBySerializer
 
 # Secret key for JWT
 SECRET_KEY = settings.SECRET_KEY  # Use Django's secret key

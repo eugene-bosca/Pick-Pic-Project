@@ -1,23 +1,21 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  db:
-    image: mysql:8
-    container_name: mysql_container
-    restart: always
-    env_file:
-      - .env
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
+  #db:
+  #  image: mysql:8
+  #  container_name: mysql_container
+  #  restart: always
+  #  env_file:
+  #    - .env
+  #  ports:
+  #    - "3306:3306"
+  #  volumes:
+  #    - mysql_data:/var/lib/mysql
 
   web:
     build: .
     container_name: django_container
     restart: always
-    depends_on:
-      - db
     env_file:
       - .env
     ports:
@@ -25,5 +23,5 @@ services:
     volumes:
       - .:/app
 
-volumes:
-  mysql_data:
+#volumes:
+#  mysql_data:
