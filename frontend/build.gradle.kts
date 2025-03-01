@@ -8,7 +8,7 @@ plugins {
     id("com.google.gms.google-services") version "4.4.2" apply false
 
     // Add the dependency for Dagger Hilt plugin
-    id("com.google.dagger.hilt.android") version "2.53.1" apply false
+    id("com.google.dagger.hilt.android") version "2.52" apply false
 }
 
 tasks.register("addPreCommitGitHookOnBuild") {
