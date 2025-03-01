@@ -1,0 +1,18 @@
+# Use a minimal base image
+FROM alpine:latest
+
+WORKDIR /app
+
+RUN apk add --no-cache curl
+
+RUN curl -Lo /app/cloud_sql_proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.2/cloud-sql-proxy.linux.amd64
+
+COPY concrete-spider-449820-p0-b07324f24234.json /app/
+COPY .env /app/
+
+RUN chmod +x /app/cloud_sql_proxy
+
+# Expose port
+EXPOSE 3306
+
+CMD ["sh", "-c", "/app/cloud_sql_proxy", "--address=0.0.0.0", "--credentials-file=/app/$GOOGLE_APPLICATION_CREDENTIALS", "$DB_CONNECTION_NAME"]
