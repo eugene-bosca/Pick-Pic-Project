@@ -33,7 +33,7 @@ router.register(r'scored-by', views.ScoredByViewSet)
 urlpatterns = [
     # swagger
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 
     # admin
     path('admin/', admin.site.urls),
@@ -43,5 +43,5 @@ urlpatterns = [
 
     # custom endpoints
     path('authenticate', authenticate, name='authenticate'),
-    path('api/picture', picture, name='picture'),
+    path('api/picture/', picture, name='picture'),
 ]
