@@ -18,9 +18,6 @@ fun SupportScreenView(
         Column (
             modifier = Modifier.padding(innerPadding)
         ){
-            // TODO: if we ever do actually include contact info, it
-            //  should probably be located in a constant object somewhere
-            //  in the utils package.
             Text("**Need Help? We're Here for You!**  \n" +
                     "\n" +
                     "Welcome to the Pick-Pic Support Page! Whether you're creating events, sharing photos, or ranking your favorite moments, we're here to help.  \n" +
