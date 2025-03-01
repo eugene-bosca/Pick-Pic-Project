@@ -49,7 +49,9 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: 'actions/checkout@v4' # actions/checkout@v4
-
+      - name: Run script inside ./backend
+        run: |
+          cd backend
       # Configure Workload Identity Federation and generate an access token.
       #
       # See https://github.com/google-github-actions/auth for more options,
@@ -66,7 +68,7 @@ jobs:
           service: '${{ env.SERVICE }}'
           region: '${{ env.REGION }}'
           # NOTE: If using a different source folder, update the image name below:
-          source: './backend'
+          source: '.'
           dockerfile: 'Dockerfile.web'
 
       # If required, use the Cloud Run URL output in later steps
