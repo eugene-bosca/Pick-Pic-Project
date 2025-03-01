@@ -6,6 +6,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -15,11 +17,11 @@ import com.bmexcs.pickpic.presentation.viewmodels.EventInvitationViewModel
 
 @Composable
 fun EventInvitationScreenView(
-    eventName: String,
-    eventID: String,
     onNavigateAway: () -> Unit,
     viewModel: EventInvitationViewModel = hiltViewModel()
 ) {
+    val eventName by viewModel.eventName.collectAsState()
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -32,7 +34,7 @@ fun EventInvitationScreenView(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "You've been invited to $eventName's event!",
+                text = "You've been invited to ${eventName ?: "Event"}'s event!",
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
@@ -43,12 +45,12 @@ fun EventInvitationScreenView(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Button(onClick = {
-                    viewModel.acceptEvent(eventID)
+                    viewModel.acceptEvent()
                     onNavigateAway()
                 }) {
                     Text("Accept")
                 }
-                Button(onClick = onNavigateAway) { // Simplified onDecline
+                Button(onClick = onNavigateAway) {
                     Text("Decline")
                 }
             }
