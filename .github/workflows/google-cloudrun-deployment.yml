@@ -49,9 +49,14 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: 'actions/checkout@v4' # actions/checkout@v4
+
+      - name: LS
+        run: |
+          ls
+          
       - name: Run script inside ./backend
         run: |
-          cd backend
+          cd ./backend
 
       - name: LS
         run: |
