@@ -14,4 +14,8 @@ class ProfileDataSource @Inject constructor(
         // TODO make request
         return Profile()
     }
+
+    suspend fun saveProfile(userId: String, profile: Profile) {
+        // TODO make request
+    }
 }

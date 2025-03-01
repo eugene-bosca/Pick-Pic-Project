@@ -1,7 +1,10 @@
 package com.bmexcs.pickpic.data.repositories
 
 import com.bmexcs.pickpic.data.models.Profile
+import com.bmexcs.pickpic.data.serializable.SerializableUUID
 import com.bmexcs.pickpic.data.sources.ProfileDataSource
+import kotlinx.serialization.Serializable
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,5 +16,9 @@ class ProfileRepository @Inject constructor(
     suspend fun getProfile(): Profile? {
         val user = authRepository.getCurrentUser() ?: return null
         return profileDataSource.getProfile(user.uid)
+    }
+    suspend fun saveProfile(profile: Profile) {
+        val user = authRepository.getCurrentUser() ?: return
+        profileDataSource.saveProfile(user.uid, profile)
     }
 }
