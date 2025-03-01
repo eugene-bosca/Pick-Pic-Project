@@ -24,7 +24,7 @@ class EventsDataSource @Inject constructor(
 
         // Get List of Image Objects
         val request = Request.Builder()
-            .url("https://localhost:8080/images/get")
+            .url("http://localhost:8000/api/images/get")
             .build()
 
         try {
@@ -39,7 +39,7 @@ class EventsDataSource @Inject constructor(
 
                     if (jsonObject.getString("status") == "success") {
                         val images = mutableListOf<String>()
-                        val jsonArray = jsonObject.getJSONArray("message")
+                        val jsonArray = jsonObject.getJSONArray("url")
 
                         for (i in 0 until jsonArray.length()) {
                             images.add(jsonArray.getString(i))
