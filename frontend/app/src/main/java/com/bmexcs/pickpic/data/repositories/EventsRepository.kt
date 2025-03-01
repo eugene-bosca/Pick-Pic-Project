@@ -13,4 +13,7 @@ class EventsRepository @Inject constructor(
         // TODO: access the user id, etc.
         return listOf()
     }
+    fun addUserToEvent(eventId: String) {
+        // TODO: add user to event
+    }
 }
