@@ -12,7 +12,7 @@ class AuthMiddleware:
 
     def __call__(self, request):
         
-        if request.path == "/authenticate":
+        if request.path == "/authenticate" or request.path == "/swagger":
             return self.get_response(request)
 
         auth_header = request.headers.get("Authorization")

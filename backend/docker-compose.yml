@@ -1,19 +1,21 @@
 version: "3.8"
 
 services:
-  #db:
-  #  image: mysql:8
-  #  container_name: mysql_container
-  #  restart: always
-  #  env_file:
-  #    - .env
-  #  ports:
-  #    - "3306:3306"
-  #  volumes:
-  #    - mysql_data:/var/lib/mysql
+  cloud-sql-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.proxy
+    container_name: cloud-sql-proxy
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "3306:3306"
 
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.web
     container_name: django_container
     restart: always
     env_file:
@@ -22,6 +24,3 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
-
-#volumes:
-#  mysql_data:
