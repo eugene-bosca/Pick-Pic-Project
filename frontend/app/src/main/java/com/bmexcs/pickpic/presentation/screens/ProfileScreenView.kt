@@ -1,37 +1,17 @@
 package com.bmexcs.pickpic.presentation.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.presentation.viewmodels.ProfileViewModel
-import com.bmexcs.pickpic.presentation.shared.NavigationDrawer
+import androidx.navigation.NavHostController
 
 @Composable
 fun ProfileScreenView(
-    onClickHomePage: () -> Unit,
-    onClickProfile: () -> Unit,
-    onClickSupport: () -> Unit,
-    onClickEvent: () -> Unit,
-    onClickRanking: () -> Unit,
+    navController: NavHostController,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Column (
-            modifier = Modifier.padding(innerPadding)
-        ){
-            Text("Profile!")
-            NavigationDrawer(
-                onClickHomePage,
-                onClickProfile,
-                onClickSupport,
-                onClickEvent,
-                onClickRanking,
-            )
-        }
-    }
+    Text(
+        text = "Welcome to the Profile Screen!",
+    )
 }

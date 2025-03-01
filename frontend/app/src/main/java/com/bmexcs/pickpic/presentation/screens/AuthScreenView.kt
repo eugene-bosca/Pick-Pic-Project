@@ -32,12 +32,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.bmexcs.pickpic.navigation.HomePage
 import com.bmexcs.pickpic.presentation.viewmodels.AuthViewModel
 
 @Composable
 fun AuthScreenView(
+    navController: NavHostController,
     authViewModel: AuthViewModel = hiltViewModel(),
-    onClickHomePage: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -57,7 +59,7 @@ fun AuthScreenView(
             GoogleSignInButton(onSignIn = {
                 // TODO: improved success and failure handling
                 authViewModel.signInWithGoogle(
-                    onSuccess = { onClickHomePage() },
+                    onSuccess = { navController.navigate(HomePage) },
                     onFailure = { Toast.makeText(context, "Sign-in failed", Toast.LENGTH_SHORT).show() }
                 )
             })
@@ -140,10 +142,4 @@ fun AuthBox(content: @Composable() (() -> Unit)) {
             content()
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewCenteredColumnWithBox() {
-    AuthScreenView { }
 }

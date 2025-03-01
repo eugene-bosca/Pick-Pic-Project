@@ -1,4 +1,6 @@
 package com.bmexcs.pickpic.navigation
+import AppHeader
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -12,45 +14,36 @@ import com.bmexcs.pickpic.presentation.screens.AuthScreenView
 
 @Composable
 fun Navigation(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = AuthPage) {
-        composable<HomePage> { HomePageScreenView(
-            onClickHomePage = {navController.navigate(route = HomePage)},
-            onClickProfile = {navController.navigate(route = Profile)},
-            onClickSupport = {navController.navigate(route = Support)},
-            onClickEvent = {navController.navigate(route = Event)},
-            onClickRanking = {navController.navigate(route = Ranking)}
-        ) }
-        composable<Profile> { ProfileScreenView(
-            onClickHomePage = {navController.navigate(route = HomePage)},
-            onClickProfile = {navController.navigate(route = Profile)},
-            onClickSupport = {navController.navigate(route = Support)},
-            onClickEvent = {navController.navigate(route = Event)},
-            onClickRanking = {navController.navigate(route = Ranking)}
-        ) }
-        composable<Support> { SupportScreenView(
-            onClickHomePage = {navController.navigate(route = HomePage)},
-            onClickProfile = {navController.navigate(route = Profile)},
-            onClickSupport = {navController.navigate(route = Support)},
-            onClickEvent = {navController.navigate(route = Event)},
-            onClickRanking = {navController.navigate(route = Ranking)}
-        ) }
-        composable<Event> { EventScreenView(
-            onClickHomePage = {navController.navigate(route = HomePage)},
-            onClickProfile = {navController.navigate(route = Profile)},
-            onClickSupport = {navController.navigate(route = Support)},
-            onClickEvent = {navController.navigate(route = Event)},
-            onClickRanking = {navController.navigate(route = Ranking)}
-        ) }
-        composable<Ranking> { RankingScreenView(
-            onClickHomePage = {navController.navigate(route = HomePage)},
-            onClickProfile = {navController.navigate(route = Profile)},
-            onClickSupport = {navController.navigate(route = Support)},
-            onClickEvent = {navController.navigate(route = Event)},
-            onClickRanking = {navController.navigate(route = Ranking)}
-        ) }
-        composable<AuthPage> { AuthScreenView(
-            onClickHomePage = {navController.navigate(route = HomePage)}
-        ) }
-        // Add more destinations similarly.
+    Column {
+        NavHost(navController = navController, startDestination = AuthPage) {
+            composable<HomePage> {
+                // Apply AppHeader to pages which need it.
+                AppHeader("Home Page", navController) {
+                    HomePageScreenView(navController)
+                }
+            }
+            composable<Profile> {
+                AppHeader("Profile", navController) {
+                    ProfileScreenView(navController)
+                }
+            }
+            composable<Support> {
+                AppHeader("Support", navController) {
+                    SupportScreenView(navController)
+                }
+            }
+            composable<Event> {
+                AppHeader("Events", navController) {
+                    EventScreenView(navController)
+                }
+            }
+            composable<Ranking> {
+                AppHeader("Ranking", navController) {
+                    RankingScreenView(navController)
+                }
+            }
+            composable<AuthPage> { AuthScreenView(navController) }
+            // Add more destinations similarly.
+        }
     }
 }
