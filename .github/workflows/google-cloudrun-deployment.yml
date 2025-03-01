@@ -49,18 +49,7 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: 'actions/checkout@v4' # actions/checkout@v4
-
-      - name: LS
-        run: |
-          ls
-          
-      - name: Run script inside ./backend
-        run: |
-          cd ./backend
-
-      - name: LS
-        run: |
-          ls
+      
       # Configure Workload Identity Federation and generate an access token.
       #
       # See https://github.com/google-github-actions/auth for more options,
@@ -74,8 +63,9 @@ jobs:
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
-          service: vars.SERVICE
-          region: vars.REGION
+          service: '${{ vars.SERVICE }}'
+          region: '${{ vars.REGION }}'
+          source: ./backend
           dockerfile: Dockerfile.web 
           
       # If required, use the Cloud Run URL output in later steps
