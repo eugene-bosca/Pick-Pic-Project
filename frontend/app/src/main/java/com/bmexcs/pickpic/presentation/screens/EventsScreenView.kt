@@ -51,7 +51,7 @@ fun EventScreenView(
     viewModel: EventsViewModel = hiltViewModel()
 ) {
 
-    val dogImages by viewModel.dogImages.collectAsState()
+    val dogImages by viewModel.images.collectAsState()
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column (
@@ -120,7 +120,6 @@ fun EventScreenView(
                     }
                 }
             }
-
         }
     }
 }

@@ -10,9 +10,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.json.JSONObject
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,15 +18,14 @@ class EventsViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-
     // Backing property for the dog images list
-    private val _Images = MutableStateFlow<List<String>>(emptyList())
-    val Images: StateFlow<List<String>> = _Images
+    private val _images = MutableStateFlow<List<String>>(emptyList())
+    val images: StateFlow<List<String>> = _images
 
-    val currEventId = 0;
+    private val currEventId = 0;
 
     init {
-        if (_Images.value.isEmpty()){
+        if (_images.value.isEmpty()){
             // Get Auth user so I can pass the event to the image
             getImageByEventId(currEventId)
         }
@@ -38,7 +34,7 @@ class EventsViewModel @Inject constructor(
     private fun getImageByEventId(eventId: Int) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            _Images.value = eventRepository.getImageByEventId(eventId)
+            _images.value = eventRepository.getImageByEventId(eventId)
         }
     }
 

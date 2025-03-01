@@ -8,5 +8,5 @@ data class Image(
     val id: SerializableUUID,
     val url: String,
     val eventId: SerializableUUID,
-    val Score: Int
+    val score: Int
 )
