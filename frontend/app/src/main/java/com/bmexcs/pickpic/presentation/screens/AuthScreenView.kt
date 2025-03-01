@@ -1,5 +1,6 @@
 package com.bmexcs.pickpic.presentation.screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,14 +34,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.bmexcs.pickpic.data.models.SignInResult
 import com.bmexcs.pickpic.presentation.viewmodels.AuthViewModel
+import kotlin.math.sign
+
+private const val TAG = "AUTH_SCREEN_VIEW"
 
 @Composable
 fun AuthScreenView(
     authViewModel: AuthViewModel = hiltViewModel(),
     onClickHomePage: () -> Unit,
 ) {
-    val context = LocalContext.current
+    val signInResult by authViewModel.signInResult.collectAsState()
+
+    if (signInResult is SignInResult.Success) {
+        onClickHomePage()
+    }
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -54,14 +64,27 @@ fun AuthScreenView(
 
             Spacer(Modifier.height(20.dp))
 
-            GoogleSignInButton(onSignIn = {
-                // TODO: improved success and failure handling
-                authViewModel.signInWithGoogle(
-                    onSuccess = { onClickHomePage() },
-                    onFailure = { Toast.makeText(context, "Sign-in failed", Toast.LENGTH_SHORT).show() }
-                )
-            })
+            SignInStatusMessage(signInResult)
+
+            Spacer(Modifier.height(20.dp))
+
+            AuthButton(
+                "Sign in with Google",
+                onClick = { authViewModel.signInWithGoogle() }
+            )
         }
+    }
+}
+
+@Composable
+fun SignInStatusMessage(signInResult: SignInResult?) {
+    when (signInResult) {
+        is SignInResult.Success -> Text("Sign-in successful!", color = Color.Green)
+        SignInResult.NoCredentials -> Text("No Google account found.", color = Color.Red)
+        SignInResult.ConnectionError -> Text("Network error.", color = Color.Red)
+        SignInResult.TokenParseError -> Text("Error processing sign-in.", color = Color.Red)
+        SignInResult.UnknownError -> Text("An unknown error occurred.", color = Color.Red)
+        null -> Text("")
     }
 }
 
@@ -106,11 +129,6 @@ fun AuthPasswordField() {
         modifier = Modifier.width(250.dp),
         singleLine = true
     )
-}
-
-@Composable
-fun GoogleSignInButton(onSignIn: () -> Unit) {
-    AuthButton("Sign in with Google", onSignIn)
 }
 
 @Composable

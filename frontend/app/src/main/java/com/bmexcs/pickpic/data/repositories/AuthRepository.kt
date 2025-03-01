@@ -11,14 +11,12 @@ import androidx.credentials.PasswordCredential
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import com.bmexcs.pickpic.BuildConfig
+import com.bmexcs.pickpic.data.models.SignInResult
 import com.bmexcs.pickpic.data.sources.AuthDataSource
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import java.security.MessageDigest
 import java.util.UUID
 import javax.inject.Inject
@@ -31,41 +29,32 @@ class AuthRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val authDataSource: AuthDataSource
 ) {
-
-    // TODO: probably remove; just an example of flows
-    private val _authState = MutableStateFlow(authDataSource.getCurrentUser() != null)
-    val authState: StateFlow<Boolean> = _authState.asStateFlow()
-
     fun getCurrentUser() = authDataSource.getCurrentUser()
 
-    suspend fun signInWithGoogle(): Boolean {
+    suspend fun signInWithGoogle(): SignInResult {
         val credentialManager = CredentialManager.create(context)
         val request = buildGoogleSignInRequest()
 
-        val response: GetCredentialResponse? = try {
-            credentialManager.getCredential(
+        return try {
+            val response = credentialManager.getCredential(
                 request = request,
                 context = context,
             )
-        } catch (e: GetCredentialException) {
-            Log.e(TAG, "Google sign-in failed, could not retrieve credential", e)
-            null
+            handleSignIn(response)
+            SignInResult.Success
         } catch (e: GoogleIdTokenParsingException) {
             Log.e(TAG, "Google sign-in failed, could not parse Google ID token", e)
-            null
-        }  catch (e: NoCredentialException) {
-            // TODO: prompt user to add account
-            // TODO: handle connection issues
+            SignInResult.TokenParseError
+        } catch (e: NoCredentialException) {
             Log.e(TAG, "Google sign-in failed, user has no credentials", e)
-            null
+            SignInResult.NoCredentials
+        } catch (e: GetCredentialException) {
+            Log.e(TAG, "Google sign-in failed, could not retrieve credential", e)
+            SignInResult.ConnectionError
+        } catch (e: Exception) {
+            Log.e(TAG, "Google sign-in failed, unknown issue", e)
+            SignInResult.UnknownError
         }
-
-        response?.let {
-            handleSignIn(it)
-        }
-        // TODO: extremely scuffed. We should return an object from a sealed interface
-        //  (i.e., an enum) to encapsulate the error type.
-        return response != null
     }
 
     fun signOut() {
