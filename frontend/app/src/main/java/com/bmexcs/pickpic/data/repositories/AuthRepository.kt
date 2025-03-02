@@ -2,12 +2,14 @@ package com.bmexcs.pickpic.data.repositories
 
 import android.content.Context
 import android.util.Log
+import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.Credential
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
 import androidx.credentials.PasswordCredential
+import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import com.bmexcs.pickpic.BuildConfig
@@ -57,8 +59,18 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    fun signOut() {
+    suspend fun signOut() {
         authDataSource.signOut()
+
+        val credentialManager = CredentialManager.create(context)
+        val request = ClearCredentialStateRequest()
+
+        // TODO: tell the UI layer this problem occurred?
+        try {
+            credentialManager.clearCredentialState(request)
+        } catch (e: ClearCredentialException) {
+            Log.e(TAG, "Google sign-out failed, could not clear credentials", e)
+        }
     }
 
     private fun buildGoogleSignInRequest(): GetCredentialRequest {
