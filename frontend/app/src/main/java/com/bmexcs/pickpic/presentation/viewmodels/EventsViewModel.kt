@@ -3,6 +3,7 @@ package com.bmexcs.pickpic.presentation.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.repositories.EventsRepository
+import com.bmexcs.pickpic.data.repositories.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,52 +16,48 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EventsViewModel @Inject constructor(
-    private val eventRepository: EventsRepository
+    private val authRepository: AuthRepository,
+    private val eventsRepository: EventsRepository,
+    private val imageRepository: ImageRepository
 ) : ViewModel() {
 
     // Backing property for the dog images list
     private val _dogImages = MutableStateFlow<List<String>>(emptyList())
     val dogImages: StateFlow<List<String>> = _dogImages
 
+    private val _user = MutableStateFlow<String?>("")
+    private val user = _user
+
     init {
         if (_dogImages.value.isEmpty()){
             fetchDogImages()
         }
+
+        _user.value = authRepository.getCurrentUser()?.uid
     }
 
     private fun fetchDogImages() {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            val client = OkHttpClient()
-            // Dog CEO API endpoint to fetch 10 random images.
-            val request = Request.Builder()
-                .url("https://dog.ceo/api/breeds/image/random/10")
-                .build()
+            var images = eventsRepository.getImageByEventId(eventId)
 
-            try {
-                client.newCall(request).execute().use { response ->
-                    if (!response.isSuccessful) {
-                        return@launch
-                    }
-                    val responseBody = response.body?.string()
-
-                    if (responseBody != null) {
-                        val jsonObject = JSONObject(responseBody)
-
-                        if (jsonObject.getString("status") == "success") {
-                            val images = mutableListOf<String>()
-                            val jsonArray = jsonObject.getJSONArray("message")
-
-                            for (i in 0 until jsonArray.length()) {
-                                images.add(jsonArray.getString(i))
-                            }
-                            _dogImages.value = images
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            for(image in images) {
+                _images.value = imageRepository.getImageByImageId(image.id)
             }
+        }
+    }
+
+    private fun addImageByEventId(image: Image) {
+        // Launch a coroutine on the IO dispatcher since this is a network request.
+        viewModelScope.launch(Dispatchers.IO) {
+            eventsRepository.addImageByEventId(image)
+        }
+    }
+
+    private fun deleteImageByEventId(image: Image) {
+        // Launch a coroutine on the IO dispatcher since this is a network request.
+        viewModelScope.launch(Dispatchers.IO) {
+            eventsRepository.deleteImageByEventId(image)
         }
     }
 }

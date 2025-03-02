@@ -35,16 +35,17 @@ import coil.compose.AsyncImage
 import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 import androidx.navigation.NavHostController
+import com.bmexcs.pickpic.data.repositories.ImageRepository
 import com.bmexcs.pickpic.navigation.Ranking
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventScreenView(
     navController: NavHostController,
-    viewModel: EventsViewModel = hiltViewModel()
+    viewModel: EventsViewModel = hiltViewModel(),
 ) {
 
-    val dogImages by viewModel.dogImages.collectAsState()
+    val images by viewModel.images.collectAsState()
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column (
@@ -63,7 +64,7 @@ fun EventScreenView(
             }
             Spacer(modifier = Modifier.height(33.dp))
 
-            if (dogImages.isEmpty()) {
+            if (images.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -80,14 +81,14 @@ fun EventScreenView(
                     horizontalArrangement = Arrangement.spacedBy(16.dp), // Space between images
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(dogImages) { dogUrl ->
+                    items(images) { bitmap ->
                         ElevatedCard (
                             modifier = Modifier
                                 .size(width = 150.dp, height = 225.dp)
                                 .border(width = 1.dp, color = Color.Black)
                         ) {
                             AsyncImage(
-                                model = dogUrl,
+                                model = bitmap,
                                 contentDescription = "Dog image",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier

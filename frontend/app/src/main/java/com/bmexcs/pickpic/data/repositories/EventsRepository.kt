@@ -7,6 +7,8 @@ import javax.inject.Singleton
 @Singleton
 class EventsRepository @Inject constructor(
     private val authRepository: AuthRepository
+    private val imageRepository: ImageRepository,
+    private val eventsDataSource: EventsDataSource
 ) {
 
     fun getEvents(): List<Event> {
@@ -15,5 +17,20 @@ class EventsRepository @Inject constructor(
     }
     fun addUserToEvent(eventId: String) {
         // TODO: add user to event
+
+    suspend fun getImageByEventId(eventId: Int): List<Image> {
+        return eventsDataSource.getImageByEventId(eventId)
+    }
+
+    suspend fun addImageByEventId(image: Image) {
+        eventsDataSource.addImageByEventId(image)
+    }
+
+    suspend fun deleteImageByEventId(image: Image) {
+        eventsDataSource.deleteImageByEventId(image)
+    }
+
+    suspend fun addUserToEvent(): Int {
+        return 1;
     }
 }
