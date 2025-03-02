@@ -11,18 +11,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.presentation.viewmodels.ProfileViewModel
-import com.bmexcs.pickpic.presentation.shared.NavigationDrawer
+import androidx.navigation.NavHostController
 
 @Composable
 fun ProfileScreenView(
-    onClickHomePage: () -> Unit,
-    onClickProfile: () -> Unit,
-    onClickSupport: () -> Unit,
-    onClickEvent: () -> Unit,
-    onClickRanking: () -> Unit,
+    navController: NavHostController,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val profile by viewModel.profile.collectAsState(initial = null)
@@ -100,14 +98,6 @@ fun ProfileScreenView(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            NavigationDrawer(
-                onClickHomePage,
-                onClickProfile,
-                onClickSupport,
-                onClickEvent,
-                onClickRanking,
-            )
         }
     }
 }

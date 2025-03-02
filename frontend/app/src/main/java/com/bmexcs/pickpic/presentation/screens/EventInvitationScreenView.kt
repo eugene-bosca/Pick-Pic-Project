@@ -13,11 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.bmexcs.pickpic.navigation.Event
 import com.bmexcs.pickpic.presentation.viewmodels.EventInvitationViewModel
 
 @Composable
 fun EventInvitationScreenView(
-    onNavigateAway: () -> Unit,
+    navController: NavHostController,
     viewModel: EventInvitationViewModel = hiltViewModel()
 ) {
     val eventName by viewModel.eventName.collectAsState()
@@ -46,11 +48,11 @@ fun EventInvitationScreenView(
             ) {
                 Button(onClick = {
                     viewModel.acceptEvent()
-                    onNavigateAway()
+                    navController.navigate(Event)
                 }) {
                     Text("Accept")
                 }
-                Button(onClick = onNavigateAway) {
+                Button(onClick = {navController.navigate(Event)}) {
                     Text("Decline")
                 }
             }
