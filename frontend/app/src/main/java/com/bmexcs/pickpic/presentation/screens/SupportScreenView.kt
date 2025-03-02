@@ -8,14 +8,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.bmexcs.pickpic.presentation.shared.NavigationDrawer
+import androidx.navigation.NavHostController
 
 @Composable
 fun SupportScreenView(
-    onClickHomePage: () -> Unit,
-    onClickProfile: () -> Unit,
-    onClickSupport: () -> Unit,
-    onClickEvent: () -> Unit,
-    onClickRanking: () -> Unit
+    navController: NavHostController,
 ) {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column (

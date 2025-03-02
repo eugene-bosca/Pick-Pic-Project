@@ -12,14 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.presentation.viewmodels.RankingViewModel
+import androidx.navigation.NavHostController
 
 @Composable
 fun RankingScreenView(
-    onClickHomePage: () -> Unit,
-    onClickProfile: () -> Unit,
-    onClickSupport: () -> Unit,
-    onClickEvent: () -> Unit,
-    onClickRanking: () -> Unit,
+    navController: NavHostController,
     viewModel: RankingViewModel = hiltViewModel()
 ) {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
