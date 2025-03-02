@@ -1,5 +1,8 @@
+package com.bmexcs.pickpic.presentation.shared
+
 import android.util.Log
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -27,11 +30,11 @@ fun AppHeader(
         drawerContent = {
             ModalDrawerSheet {
                 // Navigation options in the side panel
-                NavDrawerEntry("Home", navController, HomePage)
-                NavDrawerEntry("Profile", navController, Profile)
-                NavDrawerEntry("Support", navController, Support)
-                NavDrawerEntry("Events", navController, Event)
-                NavDrawerEntry("Ranking", navController, Ranking)
+                NavDrawerEntry("Home", navController, Route.Home.route)
+                NavDrawerEntry("Profile", navController, Route.Profile.route)
+                NavDrawerEntry("Support", navController, Route.Support.route)
+                NavDrawerEntry("Events", navController, Route.Event.route)
+                NavDrawerEntry("Ranking", navController, Route.Event.route)
             }
         }
     ) {
@@ -59,16 +62,24 @@ fun AppHeader(
 }
 
 @Composable
-fun NavDrawerEntry (
+fun NavDrawerEntry(
     text: String,
     navController: NavHostController,
-    route: Any // Route to navigate to. Defined as distinct objects in Route.kt
+    route: String // Route to navigate to. Defined as distinct objects in Route.kt
 ) {
     val padding = 16.dp
-    Text(text, modifier = Modifier
-        .padding(padding)
-        .clickable {
-            navController.navigate(route)
-        }
-    )
+    Box(modifier = Modifier.clickable {
+        navController.navigate(route)
+    }) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleSmall, // Use a larger text style
+            modifier = Modifier.padding(padding)
+        )
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = padding),
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+        )
+    }
 }
