@@ -3,7 +3,9 @@ package com.bmexcs.pickpic.presentation.shared
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
@@ -28,7 +30,11 @@ fun PickPicScaffold(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet {
+            ModalDrawerSheet(
+                modifier = Modifier
+                    .width(300.dp)
+                    .fillMaxHeight()
+            ) {
                 // Navigation options in the side panel
                 NavDrawerEntry("Home", navController, Route.Home.route)
                 NavDrawerEntry("Profile", navController, Route.Profile.route)
@@ -70,12 +76,14 @@ fun NavDrawerEntry(
     route: String // Route to navigate to. Defined as distinct objects in Route.kt
 ) {
     val padding = 16.dp
-    Box(modifier = Modifier.clickable {
-        navController.navigate(route)
-    }) {
+    Box(
+        modifier = Modifier.clickable {
+            navController.navigate(route)
+        }
+    ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.titleSmall, // Use a larger text style
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(padding)
         )
         HorizontalDivider(
