@@ -10,6 +10,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.random.Random
@@ -23,7 +24,7 @@ class ProfileViewModel @Inject constructor(
     private val _profile = MutableStateFlow<Profile?>(null)
     val profile: StateFlow<Profile?> = _profile
 
-    // Function to load the current profile
+    // Loads the current profile.
     fun loadProfile() {
         viewModelScope.launch {
             val result = profileRepository.getProfile()
@@ -31,34 +32,28 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    // Function to save the profile
-    fun saveProfile(displayName: String, email: String, phone: String) {
-        val currentProfile = _profile.value
-
-        val profileToSave = if (currentProfile != null) {
-            // Update existing profile
-            currentProfile.copy(
-                displayName = displayName,
-                email = email,
-                phone = phone
-            )
-        } else {
-            // Create new profile
-            Profile(
-                displayName = displayName,
-                email = email,
-                phone = phone
-            )
-        }
-
-        viewModelScope.launch {
-            Log.d("ProfileViewModel", "Saving profile to repository: $profileToSave")
-            profileRepository.saveProfile(profileToSave)
-            _profile.value = profileToSave
+    // Updates the display name field.
+    fun updateDisplayName(displayName: String) {
+        _profile.update { currentProfile ->
+            currentProfile?.copy(displayName = displayName)
         }
     }
 
-    // Optionally, log out function if you need
+    // Updates the email field.
+    fun updateEmail(email: String) {
+        _profile.update { currentProfile ->
+            currentProfile?.copy(email = email)
+        }
+    }
+
+    // Updates the phone number field.
+    fun updatePhoneNumber(phoneNumber: String) {
+        _profile.update { currentProfile ->
+            currentProfile?.copy(phone = phoneNumber)
+        }
+    }
+
+    // Logs the user out.
     fun logout() {
         // Handle the logout logic (e.g., clearing session, token, etc.)
     }

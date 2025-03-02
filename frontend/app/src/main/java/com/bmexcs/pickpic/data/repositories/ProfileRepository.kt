@@ -18,6 +18,7 @@ class ProfileRepository @Inject constructor(
         val user = authRepository.getCurrentUser() ?: return null
         return profileDataSource.getProfile(user.uid)
     }
+
     suspend fun saveProfile(profile: Profile) {
         Log.d("ProfileRepository", "Saving profile to repository: $profile")
         val user = authRepository.getCurrentUser() ?: return

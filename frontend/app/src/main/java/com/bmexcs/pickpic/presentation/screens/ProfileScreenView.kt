@@ -1,9 +1,11 @@
 package com.bmexcs.pickpic.presentation.screens
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,6 +15,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.presentation.viewmodels.ProfileViewModel
@@ -23,10 +27,9 @@ fun ProfileScreenView(
     navController: NavHostController,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val profile by viewModel.profile.collectAsState(initial = null)
-    var displayName by remember { mutableStateOf(profile?.displayName ?: "") }
-    var email by remember { mutableStateOf(profile?.email ?: "") }
-    var phone by remember { mutableStateOf(profile?.phone ?: "") }
+    LaunchedEffect(Unit) {
+        viewModel.loadProfile()
+    }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
@@ -49,55 +52,104 @@ fun ProfileScreenView(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Display Name
-            OutlinedTextField(
-                value = displayName,
-                onValueChange = { displayName = it },
-                label = { Text("Display Name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Email
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Phone
-            OutlinedTextField(
-                value = phone,
-                onValueChange = { phone = it },
-                label = { Text("Phone") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            EditableDisplayNameField(viewModel)
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Save Button
-            Button(
-                onClick = {
-                    viewModel.saveProfile(displayName, email, phone)
-                    Log.d("ProfileScreen", "Saving profile: Name=$displayName, Email=$email, Phone=$phone")
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("Save")
-            }
+            // Email
+            EditableEmailField(viewModel)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Phone Number
+            EditablePhoneNumberField(viewModel)
             Spacer(modifier = Modifier.height(16.dp))
 
             // Log Out Button
-            Button(
-                onClick = {
-                    viewModel.logout()
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("Log Out")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
+            LogOutButton(viewModel, navController)
         }
+    }
+}
+
+@Composable
+fun EditableDisplayNameField(viewModel: ProfileViewModel) {
+    val profileState by viewModel.profile.collectAsState()
+
+    Text(
+        text = "Display Name",
+        fontSize = 18.sp,
+        modifier = Modifier.padding(start = 8.dp)
+    )
+
+    Spacer(modifier = Modifier.height(4.dp))
+
+    OutlinedTextField(
+        value = profileState?.displayName ?: "",
+        onValueChange = { viewModel.updateDisplayName(it) },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Email
+        ),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true
+    )
+}
+
+@Composable
+fun EditableEmailField(viewModel: ProfileViewModel) {
+    val profileState by viewModel.profile.collectAsState()
+
+    Text(
+        text = "Email",
+        fontSize = 18.sp,
+        modifier = Modifier.padding(start = 8.dp)
+    )
+
+    Spacer(modifier = Modifier.height(4.dp))
+
+    OutlinedTextField(
+        value = profileState?.email ?: "",
+        onValueChange = { viewModel.updateEmail(it) },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Email
+        ),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true
+    )
+}
+
+@Composable
+fun EditablePhoneNumberField(viewModel: ProfileViewModel) {
+    val profileState by viewModel.profile.collectAsState()
+
+    Text(
+        text = "Phone Number",
+        fontSize = 18.sp,
+        modifier = Modifier.padding(start = 8.dp)
+    )
+
+    Spacer(modifier = Modifier.height(4.dp))
+
+    OutlinedTextField(
+        value = profileState?.phone ?: "",
+        onValueChange = { viewModel.updatePhoneNumber(it) },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Email
+        ),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true
+    )
+}
+
+@Composable
+fun LogOutButton(viewModel: ProfileViewModel, navController: NavHostController) {
+    Button(
+        onClick = {
+            viewModel.logout()
+//            navController.navigate()
+        },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text("Log Out", fontSize = 16.sp)
     }
 }
