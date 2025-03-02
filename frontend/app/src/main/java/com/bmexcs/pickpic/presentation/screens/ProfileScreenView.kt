@@ -20,6 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.presentation.viewmodels.ProfileViewModel
 import androidx.navigation.NavHostController
+import com.bmexcs.pickpic.navigation.Route
 
 @Composable
 fun ProfileScreenView(
@@ -144,8 +145,9 @@ fun EditablePhoneNumberField(viewModel: ProfileViewModel) {
 fun LogOutButton(viewModel: ProfileViewModel, navController: NavHostController) {
     Button(
         onClick = {
-            viewModel.logout()
-//            navController.navigate()
+            viewModel.logOut()
+            // TODO: check that logout was successful
+            navController.navigate(Route.Auth.route)
         },
         modifier = Modifier.fillMaxWidth()
     ) {

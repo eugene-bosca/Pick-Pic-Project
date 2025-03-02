@@ -11,6 +11,7 @@ class ProfileRepository @Inject constructor(
     private val authRepository: AuthRepository,
     private val profileDataSource: ProfileDataSource
 ) {
+    // TODO: remove
     private var dummyProfile = Profile(
         displayName = "Jordan",
         email = "jordan@jordan.jordan",
@@ -21,6 +22,7 @@ class ProfileRepository @Inject constructor(
         Log.d("ProfileRepository", "Returning dummy profile: $dummyProfile")
         return dummyProfile
 
+        // TODO: use this
 //        val user = authRepository.getCurrentUser() ?: return null
 //        return profileDataSource.getProfile(user.uid)
     }
@@ -29,10 +31,15 @@ class ProfileRepository @Inject constructor(
         Log.d("ProfileRepository", "Saving dummy profile: $profile")
         dummyProfile = profile
 
+        // TODO: use this
 //        Log.d("ProfileRepository", "Saving profile to repository: $profile")
 //        val user = authRepository.getCurrentUser() ?: return
 //
 //        Log.d("ProfileRepository", "Current profile found: ${user.uid}")
 //        profileDataSource.saveProfile(user.uid, profile)
+    }
+
+    suspend fun signOut() {
+        authRepository.signOut()
     }
 }

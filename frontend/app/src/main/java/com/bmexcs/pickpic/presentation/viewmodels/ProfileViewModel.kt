@@ -64,7 +64,9 @@ class ProfileViewModel @Inject constructor(
     }
 
     // Logs the user out.
-    fun logout() {
-        // Handle the logout logic (e.g., clearing session, token, etc.)
+    fun logOut() {
+        viewModelScope.launch {
+            profileRepository.signOut()
+        }
     }
 }

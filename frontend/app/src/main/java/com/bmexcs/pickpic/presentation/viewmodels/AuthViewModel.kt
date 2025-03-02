@@ -38,7 +38,7 @@ class AuthViewModel @Inject constructor(
         _signInResult.value = if (authRepository.getCurrentUser() != null) {
             SignInResult.Success
         } else {
-            SignInResult.NoCredentials
+            null
         }
     }
 }
