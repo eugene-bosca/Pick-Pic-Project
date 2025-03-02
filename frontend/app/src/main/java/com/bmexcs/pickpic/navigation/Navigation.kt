@@ -11,6 +11,7 @@ import com.bmexcs.pickpic.presentation.screens.ProfileScreenView
 import com.bmexcs.pickpic.presentation.screens.RankingScreenView
 import com.bmexcs.pickpic.presentation.screens.SupportScreenView
 import com.bmexcs.pickpic.presentation.screens.AuthScreenView
+import com.bmexcs.pickpic.presentation.screens.EventInvitationScreenView
 
 @Composable
 fun Navigation(navController: NavHostController) {
@@ -44,6 +45,7 @@ fun Navigation(navController: NavHostController) {
             }
             composable<AuthPage> { AuthScreenView(navController) }
             // Add more destinations similarly.
+            composable<EventInvitation> { EventInvitationScreenView(navController) }
         }
     }
 }
