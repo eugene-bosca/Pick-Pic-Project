@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-from google.oauth2 import service_account
+# from google.oauth2 import service_account
 import pymysql
 
 from google.auth import default
@@ -154,6 +154,10 @@ DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        #'rest_framework.authentication.SessionAuthentication',
+    ),
 }
 
 from .firebase_config import *
