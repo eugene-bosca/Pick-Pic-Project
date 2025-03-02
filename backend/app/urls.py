@@ -46,4 +46,6 @@ urlpatterns = [
 
     path('picture/', views.picture, name='picture'),
     path('event/image-count/', views.event_image_count, name='event_image_count'),
+
+    path('list-users-events/', views.list_users_events, name='list_users_events'),
 ]
