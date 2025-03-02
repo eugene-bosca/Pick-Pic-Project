@@ -180,3 +180,38 @@ def event_image_count(request):
     count = EventContent.objects.filter(event_id=event_id).count()
 
     return Response(data={ "image_count": count },status=status.HTTP_200_OK)
+    
+@api_view(['GET'])
+def list_users_events(request, user_id):
+    user = User.objects.get(user_id=user_id)
+
+    owned_events = Event.objects.filter(owner_id=user)
+    invited_events = EventUser.objects.filter(user_id=user)
+
+    owned_event_contents = EventContent.objects.filter(event__in=owned_events)
+
+    invited_events = EventUser.objects.filter(user=user)
+    invited_event_contents = EventContent.objects.filter(event__in=[ie.event for ie in invited_events])
+
+    owned_events_data = [
+        {
+            "event_owner_display_name": event.event.owner.display_name,
+            "event_owner_profile_picture": event.event.owner.profile_picture, 
+            "event_name": event.event.event_name,
+        }
+        for event in owned_event_contents
+    ]
+
+    invited_events_data = [
+        {
+            "event_owner_display_name": event.event.owner.display_name,
+            "event_owner_profile_picture": event.event.owner.profile_picture, 
+            "event_name": event.event.event_name,
+        }
+        for event in invited_event_contents
+    ]
+
+    return Response({
+        "owned_events": owned_events_data,
+        "invited_events": invited_events_data
+    })
