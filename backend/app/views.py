@@ -7,9 +7,6 @@ from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view, OpenApiTypes, OpenApiResponse
 
 from django.http import FileResponse
-from django.shortcuts import render
-from django.db.models import Count
-from .models import Event
 from django.contrib.auth.hashers import check_password
 from django.conf import settings
 
@@ -23,6 +20,7 @@ import mimetypes
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    lookup_field = "firebase_id"  # Set firebase_id as the lookup field
 
 # UserSettings ViewSet
 class UserSettingsViewSet(viewsets.ModelViewSet):
@@ -38,6 +36,7 @@ class EventOwnerViewSet(viewsets.ModelViewSet):
 class EventUserViewSet(viewsets.ModelViewSet):
     queryset = EventUser.objects.all()
     serializer_class = EventUserSerializer
+    lookup_field = "event"
 
 # Image ViewSet
 class ImageViewSet(viewsets.ModelViewSet):
@@ -109,11 +108,11 @@ def authenticate(request):
         responses={204: None}
     )
 )    
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'PUT'])
 def picture(request):
     if request.method == 'GET':
         
-        picture_name = request.GET.get("picture_name")  
+        picture_name = request.GET.get("picture_name")
 
         file_bytes = download_from_gcs('pick-pic', picture_name)
 
@@ -125,7 +124,7 @@ def picture(request):
 
         return FileResponse(file_stream, content_type=content_type)
 
-    elif request.method == 'POST':
+    elif request.method == 'PUT':
         
         file_bytes = request.body
         content_type = request.headers.get('Content-Type') 
@@ -142,29 +141,25 @@ def picture(request):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-@api_view(['GET'])
-def event_content(request):
+@api_view(['GET', 'PUT'])
+def user_pfp(request):
+
+    user_id = request.GET.get("user_id")
+
     if request.method == 'GET':
+        return Response()
+    elif request.method == 'PUT':
+        file_bytes = request.body
+        content_type = request.headers.get('Content-Type') 
+        unique_name = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
-        event_name = request.GET.get("event_name")
-        images = Event.objects.filter(event_name=event_name)
-        serializer = ImageSerializer(images, many=True)
+        if content_type == 'image/jpeg':
+            unique_name += '.jpeg'
+        elif content_type == 'image/png':
+            unique_name += '.png'
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={ "error": "no header - Content-Type" })
 
-        return Response(status=status.HTTP_200_OK, data=serializer.data)
+        upload_to_gcs('pick-pic', file_bytes, unique_name, content_type)
 
-@api_view(['GET'])
-def event_image_count(request, event_id):
-    # Get the event object
-    event = Event.objects.get(event_id=event_id)
-    
-    # Count how many images are related to the event
-    image_count = event.eventcontent_set.annotate(image_count=Count('image_id')).values('image_count').first()
-
-    # If no images, default to 0
-    if image_count:
-        count = image_count['image_count']
-    else:
-        count = 0
-    
-    # Render the result in a template (or return as JSON)
-    return render(request, 'event_image_count.html', {'event': event, 'image_count': count})
+        return Response(status=status.HTTP_204_NO_CONTENT)

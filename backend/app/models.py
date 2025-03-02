@@ -3,6 +3,7 @@ import uuid
     
 class User(models.Model):
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    firebase_id = models.CharField(max_length=255, unique=True)
     display_name = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, unique=True)
     phone = models.CharField(max_length=30, blank=True, null=True) 
@@ -17,7 +18,8 @@ class UserSettings(models.Model):
 
 class Event(models.Model):
     event_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    owner_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    event_name = models.CharField(max_length=255)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
 class Image(models.Model):
     image_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -25,7 +27,6 @@ class Image(models.Model):
 
 class EventContent(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, primary_key=True)
-    event_name = models.CharField(max_length=255)
     image_id = models.ForeignKey(Image, on_delete=models.CASCADE)
 
 class EventUser(models.Model):

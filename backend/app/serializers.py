@@ -13,11 +13,26 @@ class UserSettingsSerializer(serializers.ModelSerializer):
 
 
 class EventSerializer(serializers.ModelSerializer):
-    owner_id = UserSerializer()
+    owner = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)  # Use ID for POST
 
     class Meta:
         model = Event
-        fields = "__all__"
+        fields = ['event_id', 'event_name', 'owner']
+
+    def to_representation(self, instance):
+        # Customize GET response to use UserSerializer instead of just the user ID."""
+        data = super().to_representation(instance)
+        data['owner'] = UserSerializer(instance.owner).data  # Serialize owner details for GET
+        return data
+
+    def create(self, validated_data):
+        owner_uuid = validated_data.pop('owner')
+        event_name = validated_data.pop('event_name')
+
+        if Event.objects.filter(owner=owner_uuid, event_name=event_name).exists():
+            raise serializers.ValidationError({"Validation Error": "An event with this name already exists for the owner."})
+
+        return Event.objects.create(owner=owner_uuid, event_name=event_name, **validated_data)
 
 
 class EventUserSerializer(serializers.ModelSerializer):
@@ -27,6 +42,8 @@ class EventUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventUser
         fields = "__all__"
+
+
 
 
 class ImageSerializer(serializers.ModelSerializer):
