@@ -27,13 +27,6 @@ fun SupportScreenView(
                     "If you any questions or feedback, feel free to reach out to **jkjamali@uwaterloo.ca**. We’re here to ensure you have the best experience possible!  \n" +
                     "\n" +
                     "Happy photo-sharing! \uD83D\uDCF8✨")
-            NavigationDrawer(
-                onClickHomePage,
-                onClickProfile,
-                onClickSupport,
-                onClickEvent,
-                onClickRanking,
-            )
         }
     }
 }
