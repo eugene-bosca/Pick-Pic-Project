@@ -17,10 +17,10 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppHeader(
+fun PickPicScaffold(
     title: String, // Title for the TopAppBar
     navController: NavHostController,
-    content: @Composable (Modifier) -> Unit // Content of the screen with padding
+    content: @Composable () -> Unit // Content of the screen with padding
 ) {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -53,10 +53,12 @@ fun AppHeader(
                         }
                     },
                 )
-            }
+            },
         ) {
             innerPadding ->
-            content(Modifier.padding(innerPadding))
+            Box(Modifier.padding(innerPadding)) {
+                content()
+            }
         }
     }
 }

@@ -37,94 +37,90 @@ fun HomePageScreenView(
         viewModel.fetchDogImages()
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
+    Column(
+        modifier = Modifier
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(R.drawable.pickpick_logo),
+            contentDescription = "PickPic Logo",
+            modifier = Modifier.size(1000.dp, 187.5.dp)
+        )
+        Spacer(modifier = Modifier.height(33.dp))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(R.drawable.pickpick_logo),
-                contentDescription = "PickPic Logo",
-                modifier = Modifier.size(1000.dp, 187.5.dp)
-            )
-            Spacer(modifier = Modifier.height(33.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                ElevatedButton(onClick = { navController.navigate(Route.Event.route) }) {
-                    Icon(
-                        painter = painterResource(R.drawable.group_add_24px),
-                        contentDescription = "Join Events Icon",
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Text("Join Event")
-                }
-                ElevatedButton(onClick = { navController.navigate(Route.Event.route) }) {
-                    Icon(
-                        painter = painterResource(R.drawable.add_circle_24px),
-                        contentDescription = "Create Event Icon",
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Text("Create Event")
-                }
+            ElevatedButton(onClick = { navController.navigate(Route.Event.route) }) {
+                Icon(
+                    painter = painterResource(R.drawable.group_add_24px),
+                    contentDescription = "Join Events Icon",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("Join Event")
             }
-            Spacer(modifier = Modifier.height(33.dp))
+            ElevatedButton(onClick = { navController.navigate(Route.Event.route) }) {
+                Icon(
+                    painter = painterResource(R.drawable.add_circle_24px),
+                    contentDescription = "Create Event Icon",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("Create Event")
+            }
+        }
+        Spacer(modifier = Modifier.height(33.dp))
 
-            if (dogImages.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentPadding = PaddingValues(horizontal = 16.dp)
-                ) {
-                    items(dogImages) { dogUrl ->
-                        ListItem(
-                            headlineContent = {
-                                Text("Fido and Princess' Wedding")
-                            },
-                            supportingContent = {
-                                Text("75 photos uploaded")
-                            },
-                            trailingContent = {
-                                IconButton(onClick = { /* doSomething() */ }) {
-                                    Icon(Icons.Filled.MoreVert, contentDescription = null)
+        if (dogImages.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentPadding = PaddingValues(horizontal = 16.dp)
+            ) {
+                items(dogImages) { dogUrl ->
+                    ListItem(
+                        headlineContent = {
+                            Text("Fido and Princess' Wedding")
+                        },
+                        supportingContent = {
+                            Text("75 photos uploaded")
+                        },
+                        trailingContent = {
+                            IconButton(onClick = { /* doSomething() */ }) {
+                                Icon(Icons.Filled.MoreVert, contentDescription = null)
 
-                                }
-                            },
-                            leadingContent = {
-                                AsyncImage(
-                                    model = dogUrl,
-                                    contentDescription = "Dog image",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(CircleShape)
-                                        .border(
-                                            2.dp,
-                                            MaterialTheme.colorScheme.primary,
-                                            CircleShape
-                                        )
-                                )
                             }
-                        )
-                        HorizontalDivider()
-                    }
+                        },
+                        leadingContent = {
+                            AsyncImage(
+                                model = dogUrl,
+                                contentDescription = "Dog image",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape)
+                                    .border(
+                                        2.dp,
+                                        MaterialTheme.colorScheme.primary,
+                                        CircleShape
+                                    )
+                            )
+                        }
+                    )
+                    HorizontalDivider()
                 }
             }
         }
     }
-
 }
