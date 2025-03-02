@@ -7,6 +7,9 @@ from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view, OpenApiTypes, OpenApiResponse
 
 from django.http import FileResponse
+from django.shortcuts import render
+from django.db.models import Count
+from .models import Event
 from django.contrib.auth.hashers import check_password
 from django.conf import settings
 
@@ -148,3 +151,20 @@ def event_content(request):
         serializer = ImageSerializer(images, many=True)
 
         return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+@api_view(['GET'])
+def event_image_count(request, event_id):
+    # Get the event object
+    event = Event.objects.get(event_id=event_id)
+    
+    # Count how many images are related to the event
+    image_count = event.eventcontent_set.annotate(image_count=Count('image_id')).values('image_count').first()
+
+    # If no images, default to 0
+    if image_count:
+        count = image_count['image_count']
+    else:
+        count = 0
+    
+    # Render the result in a template (or return as JSON)
+    return render(request, 'event_image_count.html', {'event': event, 'image_count': count})

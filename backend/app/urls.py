@@ -44,4 +44,5 @@ urlpatterns = [
     # custom endpoints
     path('authenticate', authenticate, name='authenticate'),
     path('api/picture/', picture, name='picture'),
+    path('event/<uuid:event_id>/image-count/', views.event_image_count, name='event_image_count'),
 ]
