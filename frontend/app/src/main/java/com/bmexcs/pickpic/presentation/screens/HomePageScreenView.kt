@@ -24,6 +24,7 @@ import com.bmexcs.pickpic.R
 import coil.compose.AsyncImage
 import com.bmexcs.pickpic.presentation.viewmodels.HomePageMockViewModel
 import androidx.navigation.NavHostController
+import com.bmexcs.pickpic.navigation.Route
 
 @Composable
 fun HomePageScreenView(

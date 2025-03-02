@@ -41,5 +41,4 @@ class AuthViewModel @Inject constructor(
             SignInResult.NoCredentials
         }
     }
-
 }

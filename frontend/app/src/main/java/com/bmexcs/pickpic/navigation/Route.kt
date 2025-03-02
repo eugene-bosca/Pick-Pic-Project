@@ -1,9 +1,11 @@
+package com.bmexcs.pickpic.navigation
+
 sealed class Route(val route: String) {
-    object Home : Route("home")
-    object Profile : Route("profile")
-    object Support : Route("support")
-    object Event : Route("event")
-    object Ranking : Route("ranking")
-    object AuthPage : Route("auth")
-    object EventInvitation : Route("event_invitation")
+    data object Home : Route("home")
+    data object Profile : Route("profile")
+    data object Support : Route("support")
+    data object Event : Route("event")
+    data object Ranking : Route("ranking")
+    data object AuthPage : Route("auth")
+    data object EventInvitation : Route("event_invitation")
 }
