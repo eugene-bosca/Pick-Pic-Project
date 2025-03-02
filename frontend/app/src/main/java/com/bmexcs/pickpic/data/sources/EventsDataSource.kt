@@ -19,12 +19,12 @@ class EventsDataSource @Inject constructor(
         return listOf()
     }
 
-    suspend fun getImageByEventId(eventId: Int): List<String> {
+    suspend fun getImageByEventId(eventId: Int): List<Image> {
         val client = OkHttpClient()
 
         // Get List of Image Objects
         val request = Request.Builder()
-            .url("http://localhost:8000/api/images/get")
+            .url("https://pick-pic-service-627889116714.northamerica-northeast2.run.app/api/images/$eventId")
             .build()
 
         try {
@@ -38,14 +38,9 @@ class EventsDataSource @Inject constructor(
                     val jsonObject = JSONObject(responseBody)
 
                     if (jsonObject.getString("status") == "success") {
-                        val images = mutableListOf<String>()
-                        val jsonArray = jsonObject.getJSONArray("url")
+                        val jsonArray = jsonObject.getJSONArray("image")
 
-                        for (i in 0 until jsonArray.length()) {
-                            images.add(jsonArray.getString(i))
-                        }
-
-                        return images
+                        return jsonArray
                     }
                 }
             }

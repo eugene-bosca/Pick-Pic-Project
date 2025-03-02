@@ -10,7 +10,8 @@ import javax.inject.Singleton
 
 @Singleton
 class EventsRepository @Inject constructor(
-    private val authRepository: AuthRepository,
+    private val authRepository: AuthRepository
+    private val imageRepository: ImageRepository,
     private val eventsDataSource: EventsDataSource
 ) {
 
@@ -18,8 +19,12 @@ class EventsRepository @Inject constructor(
         // TODO: access the user id, etc.
         return listOf()
     }
-
-    suspend fun getImageByEventId(eventId: Int): List<String> {
+    
+    fun addUserToEvent(eventId: String) {
+        // TODO: add user to event
+    }
+    
+    suspend fun getImageByEventId(eventId: Int): List<Image> {
         return eventsDataSource.getImageByEventId(eventId)
     }
 
@@ -29,5 +34,9 @@ class EventsRepository @Inject constructor(
 
     suspend fun deleteImageByEventId(image: Image) {
         eventsDataSource.deleteImageByEventId(image)
+    }
+
+    suspend fun addUserToEvent(): Int {
+        return 1;
     }
 }

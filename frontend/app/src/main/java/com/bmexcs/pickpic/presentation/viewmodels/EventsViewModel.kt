@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.Image
 import com.bmexcs.pickpic.data.repositories.AuthRepository
 import com.bmexcs.pickpic.data.repositories.EventsRepository
+import com.bmexcs.pickpic.data.repositories.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,8 +15,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EventsViewModel @Inject constructor(
-    private val eventRepository: EventsRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val eventsRepository: EventsRepository,
+    private val imageRepository: ImageRepository
 ) : ViewModel() {
 
     // Backing property for the dog images list
@@ -24,31 +26,40 @@ class EventsViewModel @Inject constructor(
 
     private val currEventId = 0;
 
+    private val _user = MutableStateFlow<String?>("")
+    private val user = _user
+
     init {
         if (_images.value.isEmpty()){
             // Get Auth user so I can pass the event to the image
             getImageByEventId(currEventId)
         }
+
+        _user.value = authRepository.getCurrentUser()?.uid
     }
 
     private fun getImageByEventId(eventId: Int) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            _images.value = eventRepository.getImageByEventId(eventId)
+            var images = eventsRepository.getImageByEventId(eventId)
+
+            for(image in images) {
+                _images.value = imageRepository.getImageByImageId(image.id)
+            }
         }
     }
 
     private fun addImageByEventId(image: Image) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            eventRepository.addImageByEventId(image)
+            eventsRepository.addImageByEventId(image)
         }
     }
 
     private fun deleteImageByEventId(image: Image) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            eventRepository.deleteImageByEventId(image)
+            eventsRepository.deleteImageByEventId(image)
         }
     }
 }
