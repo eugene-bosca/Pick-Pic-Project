@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -37,7 +36,6 @@ import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.navigation.Ranking
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventScreenView(
     navController: NavHostController,

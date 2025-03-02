@@ -1,3 +1,5 @@
+package com.bmexcs.pickpic.presentation.shared
+
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
