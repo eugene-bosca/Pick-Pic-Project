@@ -16,6 +16,9 @@ from dotenv import load_dotenv
 from google.oauth2 import service_account
 import pymysql
 
+from google.auth import default
+# from google.cloud import storage
+
 # Load environment variables from .env
 load_dotenv()
 
@@ -33,13 +36,7 @@ SECRET_KEY = 'django-insecure-rhpqcpy6zqp=4kef9&9dhkzpg%*@^o=%a&p*4v$6%!yt269z1$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '10.0.2.2',
-]
-
-
+ALLOWED_HOSTS = ["*"]  
 
 # Application definition
 
@@ -145,9 +142,13 @@ DATABASES = {
 }
 
 
-GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
-    os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-)
+# GS_CREDENTIALS = service_account.Credentials.from_service_account_file(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+
+GS_CREDENTIALS, _ = default()
+
+# GS_CLIENT = storage.Client(credentials=GS_CREDENTIALS)
+
+
 GS_BUCKET_NAME = "pick-pic"
 DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
 

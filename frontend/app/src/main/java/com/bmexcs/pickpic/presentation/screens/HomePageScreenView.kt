@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -24,15 +23,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.R
 import coil.compose.AsyncImage
 import com.bmexcs.pickpic.presentation.viewmodels.HomePageMockViewModel
+import androidx.navigation.NavHostController
+import com.bmexcs.pickpic.navigation.Event
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePageScreenView(
-    onClickHomePage: () -> Unit,
-    onClickProfile: () -> Unit,
-    onClickSupport: () -> Unit,
-    onClickRanking: () -> Unit,
-    onClickEvent: () -> Unit,
+    navController: NavHostController,
     viewModel: HomePageMockViewModel = hiltViewModel()
 ) {
     val dogImages by viewModel.dogImages.collectAsState()
@@ -49,19 +45,6 @@ fun HomePageScreenView(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TopAppBar(
-                title = { },
-                navigationIcon = {
-                    IconButton(onClick = { /* doSomething() */ }) {
-                        Icon(Icons.Filled.Menu, contentDescription = null)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* doSomething() */ }) {
-                        Icon(Icons.Filled.MoreVert, contentDescription = null)
-                    }
-                }
-            )
             Image(
                 painter = painterResource(R.drawable.pickpick_logo),
                 contentDescription = "PickPic Logo",
@@ -72,7 +55,7 @@ fun HomePageScreenView(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ElevatedButton(onClick = onClickEvent) {
+                ElevatedButton(onClick = { navController.navigate(Event) }) {
                     Icon(
                         painter = painterResource(R.drawable.group_add_24px),
                         contentDescription = "Join Events Icon",
@@ -80,7 +63,7 @@ fun HomePageScreenView(
                     )
                     Text("Join Event")
                 }
-                ElevatedButton(onClick = onClickEvent) {
+                ElevatedButton(onClick = { navController.navigate(Event) }) {
                     Icon(
                         painter = painterResource(R.drawable.add_circle_24px),
                         contentDescription = "Create Event Icon",
@@ -126,7 +109,8 @@ fun HomePageScreenView(
                                     model = dogUrl,
                                     contentDescription = "Dog image",
                                     contentScale = ContentScale.Crop,
-                                    modifier = Modifier.size(48.dp)
+                                    modifier = Modifier
+                                        .size(48.dp)
                                         .clip(CircleShape)
                                         .border(
                                             2.dp,
@@ -142,4 +126,5 @@ fun HomePageScreenView(
             }
         }
     }
+
 }

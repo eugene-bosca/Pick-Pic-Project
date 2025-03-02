@@ -14,18 +14,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,15 +34,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
+import androidx.navigation.NavHostController
+import com.bmexcs.pickpic.navigation.Ranking
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventScreenView(
-    onClickHomePage: () -> Unit,
-    onClickProfile: () -> Unit,
-    onClickSupport: () -> Unit,
-    onClickEvent: () -> Unit,
-    onClickRanking: () -> Unit,
+    navController: NavHostController,
     viewModel: EventsViewModel = hiltViewModel()
 ) {
 
@@ -60,20 +53,7 @@ fun EventScreenView(
                 .padding(innerPadding),
             verticalArrangement = Arrangement.Top,
         ){
-            TopAppBar(
-                title = { },
-                navigationIcon = {
-                    IconButton(onClick = { /* doSomething() */ }) {
-                        Icon(Icons.Filled.Menu, contentDescription = null)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* doSomething() */ }) {
-                        Icon(Icons.Filled.MoreVert, contentDescription = null)
-                    }
-                }
-            )
-            ElevatedButton(onClick = onClickRanking) {
+            ElevatedButton(onClick = {navController.navigate(Ranking)}) {
                 Icon(
                     painter = painterResource(R.drawable.podium),
                     contentDescription = "Rank Photos Icon",

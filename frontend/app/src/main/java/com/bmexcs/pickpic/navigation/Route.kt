@@ -19,3 +19,7 @@ object Ranking
 
 @Serializable
 object AuthPage
+
+@Serializable
+object EventInvitation
+
