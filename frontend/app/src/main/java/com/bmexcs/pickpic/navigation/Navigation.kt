@@ -13,7 +13,7 @@ import com.bmexcs.pickpic.presentation.screens.EventInvitationScreenView
 
 @Composable
 fun Navigation(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = AuthPage) {
+    NavHost(navController = navController, startDestination = Profile) {
         composable<HomePage> { HomePageScreenView(
             onClickHomePage = {navController.navigate(route = HomePage)},
             onClickProfile = {navController.navigate(route = Profile)},

@@ -1,5 +1,6 @@
 package com.bmexcs.pickpic.data.repositories
 
+import android.util.Log
 import com.bmexcs.pickpic.data.models.Profile
 import com.bmexcs.pickpic.data.serializable.SerializableUUID
 import com.bmexcs.pickpic.data.sources.ProfileDataSource
@@ -18,7 +19,9 @@ class ProfileRepository @Inject constructor(
         return profileDataSource.getProfile(user.uid)
     }
     suspend fun saveProfile(profile: Profile) {
+        Log.d("ProfileRepository", "Saving profile to repository: $profile")
         val user = authRepository.getCurrentUser() ?: return
+        Log.d("ProfileRepository", "Current profile found: ${user.uid}")
         profileDataSource.saveProfile(user.uid, profile)
     }
 }
