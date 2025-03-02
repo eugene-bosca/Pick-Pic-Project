@@ -33,4 +33,3 @@ fun ImageTile(imageUrl: String, onClick: (String) -> Unit) {
         )
     }
 }
-

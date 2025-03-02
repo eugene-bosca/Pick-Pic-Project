@@ -24,7 +24,7 @@ import com.bmexcs.pickpic.R
 import coil.compose.AsyncImage
 import com.bmexcs.pickpic.presentation.viewmodels.HomePageMockViewModel
 import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.navigation.Event
+import com.bmexcs.pickpic.navigation.Route
 
 @Composable
 fun HomePageScreenView(
@@ -55,7 +55,7 @@ fun HomePageScreenView(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ElevatedButton(onClick = { navController.navigate(Event) }) {
+                ElevatedButton(onClick = { navController.navigate(Route.Event.route) }) {
                     Icon(
                         painter = painterResource(R.drawable.group_add_24px),
                         contentDescription = "Join Events Icon",
@@ -63,7 +63,7 @@ fun HomePageScreenView(
                     )
                     Text("Join Event")
                 }
-                ElevatedButton(onClick = { navController.navigate(Event) }) {
+                ElevatedButton(onClick = { navController.navigate(Route.Event.route) }) {
                     Icon(
                         painter = painterResource(R.drawable.add_circle_24px),
                         contentDescription = "Create Event Icon",
