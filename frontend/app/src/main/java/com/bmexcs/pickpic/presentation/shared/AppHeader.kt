@@ -2,6 +2,7 @@ package com.bmexcs.pickpic.presentation.shared
 
 import android.util.Log
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -67,18 +68,18 @@ fun NavDrawerEntry(
     route: String // Route to navigate to. Defined as distinct objects in Route.kt
 ) {
     val padding = 16.dp
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall, // Use a larger text style
-        modifier = Modifier
-            .padding(padding)
-            .clickable {
-                navController.navigate(route.toString())
-            }
-    )
-    HorizontalDivider(
-        modifier = Modifier.padding(horizontal = padding),
-        thickness = 1.dp,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-    )
+    Box(modifier = Modifier.clickable {
+        navController.navigate(route)
+    }) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleSmall, // Use a larger text style
+            modifier = Modifier.padding(padding)
+        )
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = padding),
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+        )
+    }
 }
