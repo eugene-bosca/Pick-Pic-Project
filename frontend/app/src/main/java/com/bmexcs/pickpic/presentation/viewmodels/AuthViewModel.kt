@@ -28,7 +28,13 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun checkSignedInUser() {
+    fun signOut() {
+        viewModelScope.launch {
+            authRepository.signOut()
+        }
+    }
+
+    private fun checkSignedInUser() {
         _signInResult.value = if (authRepository.getCurrentUser() != null) {
             SignInResult.Success
         } else {
@@ -36,7 +42,4 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun signOut() {
-        authRepository.signOut()
-    }
 }
