@@ -1,23 +1,19 @@
 package com.bmexcs.pickpic.presentation.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.Profile
 import com.bmexcs.pickpic.data.repositories.ProfileRepository
-import com.bmexcs.pickpic.data.serializable.SerializableUUID
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
-import java.util.UUID
 import javax.inject.Inject
-import kotlin.random.Random
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository,
 ) : ViewModel() {
 
     // UI state for the profile (use StateFlow to observe profile data in the UI)
@@ -28,7 +24,9 @@ class ProfileViewModel @Inject constructor(
     fun loadProfile() {
         viewModelScope.launch {
             val result = profileRepository.getProfile()
-            _profile.value = result // Update the UI state with the profile data
+            if (result != null) {
+                _profile.value = result // Cache in ViewModel
+            }
         }
     }
 
@@ -37,6 +35,10 @@ class ProfileViewModel @Inject constructor(
         _profile.update { currentProfile ->
             currentProfile?.copy(displayName = displayName)
         }
+
+        viewModelScope.launch {
+            _profile.value?.let { profileRepository.saveProfile(it) }
+        }
     }
 
     // Updates the email field.
@@ -44,12 +46,20 @@ class ProfileViewModel @Inject constructor(
         _profile.update { currentProfile ->
             currentProfile?.copy(email = email)
         }
+
+        viewModelScope.launch {
+            _profile.value?.let { profileRepository.saveProfile(it) }
+        }
     }
 
     // Updates the phone number field.
     fun updatePhoneNumber(phoneNumber: String) {
         _profile.update { currentProfile ->
             currentProfile?.copy(phone = phoneNumber)
+        }
+
+        viewModelScope.launch {
+            _profile.value?.let { profileRepository.saveProfile(it) }
         }
     }
 
