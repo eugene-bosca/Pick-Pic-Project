@@ -1,5 +1,7 @@
 package com.bmexcs.pickpic.presentation.viewmodels
 
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.Profile
@@ -19,6 +21,18 @@ class ProfileViewModel @Inject constructor(
     // UI state for the profile (use StateFlow to observe profile data in the UI)
     private val _profile = MutableStateFlow<Profile?>(null)
     val profile: StateFlow<Profile?> = _profile
+
+    // TODO: use the validators
+    // https://developer.android.com/develop/ui/compose/quick-guides/content/validate-input
+    val isEmailValid by derivedStateOf {
+        val email = _profile.value?.email.orEmpty()
+        email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+    val isPhoneValid by derivedStateOf {
+        val phone = _profile.value?.phone.orEmpty()
+        phone.isNotEmpty() && android.util.Patterns.PHONE.matcher(phone).matches()
+    }
 
     // Loads the current profile.
     fun loadProfile() {
