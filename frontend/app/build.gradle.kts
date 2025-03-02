@@ -136,6 +136,8 @@ dependencies {
     // Debug-only dependencies
     debugImplementation(libs.androidx.ui.tooling) // Compose UI tooling for debugging
     debugImplementation(libs.androidx.ui.test.manifest) // Manifest file support for UI tests
+
+    implementation("com.google.code.gson:gson:2.10.1") //parse requests
 }
 
 kapt {
