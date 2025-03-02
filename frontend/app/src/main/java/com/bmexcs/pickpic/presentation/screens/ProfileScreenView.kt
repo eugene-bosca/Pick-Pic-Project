@@ -31,41 +31,35 @@ fun ProfileScreenView(
         viewModel.loadProfile()
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Column(
+    Column(modifier = Modifier.padding(16.dp)) {
+        // Profile Picture
+        val profilePicture: Painter = painterResource(id = R.drawable.ic_launcher_foreground) //replace with actual image.
+        Image(
+            painter = profilePicture,
+            contentDescription = "Profile Picture",
             modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp)
-        ) {
-            // Profile Picture
-            val profilePicture: Painter = painterResource(id = R.drawable.ic_launcher_foreground) //replace with actual image.
-            Image(
-                painter = profilePicture,
-                contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .size(150.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .clickable {
-                        // TODO: Implement image selection logic
-                    }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+                .size(150.dp)
+                .align(Alignment.CenterHorizontally)
+                .clickable {
+                    // TODO: Implement image selection logic
+                }
+        )
+        Spacer(modifier = Modifier.height(16.dp))
 
-            // Display Name
-            EditableDisplayNameField(viewModel)
-            Spacer(modifier = Modifier.height(16.dp))
+        // Display Name
+        EditableDisplayNameField(viewModel)
+        Spacer(modifier = Modifier.height(16.dp))
 
-            // Email
-            EditableEmailField(viewModel)
-            Spacer(modifier = Modifier.height(16.dp))
+        // Email
+        EditableEmailField(viewModel)
+        Spacer(modifier = Modifier.height(16.dp))
 
-            // Phone Number
-            EditablePhoneNumberField(viewModel)
-            Spacer(modifier = Modifier.height(16.dp))
+        // Phone Number
+        EditablePhoneNumberField(viewModel)
+        Spacer(modifier = Modifier.height(16.dp))
 
-            // Log Out Button
-            LogOutButton(viewModel, navController)
-        }
+        // Log Out Button
+        LogOutButton(viewModel, navController)
     }
 }
 
