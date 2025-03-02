@@ -32,22 +32,19 @@ fun EventScreenView(
     val images by viewModel.images.collectAsState()
     var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Column (
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.Top,
-        ){
-            ElevatedButton(onClick = {navController.navigate(Route.Ranking.route)}) {
-                Icon(
-                    painter = painterResource(R.drawable.podium),
-                    contentDescription = "Rank Photos Icon",
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text("Rank Photos")
-            }
-            Spacer(modifier = Modifier.height(33.dp))
+    Column (
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Top,
+    ){
+        ElevatedButton(onClick = {navController.navigate(Route.Ranking.route)}) {
+            Icon(
+                painter = painterResource(R.drawable.podium),
+                contentDescription = "Rank Photos Icon",
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text("Rank Photos")
+        }
+        Spacer(modifier = Modifier.height(33.dp))
 
             if (images.isEmpty()) {
                 Box(
@@ -97,9 +94,9 @@ fun EventScreenView(
                 }
             }
         }
-        ImageFull(
-            imageUrl = fullScreenImageUrl,
-            onDismiss = { fullScreenImageUrl = null } // Reset the state to dismiss the dialog
-        )
     }
+    ImageFull(
+        imageUrl = fullScreenImageUrl,
+        onDismiss = { fullScreenImageUrl = null } // Reset the state to dismiss the dialog
+    )
 }

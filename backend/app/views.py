@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import User, UserSettings, EventOwner, EventUser, Image, EventContent, ScoredBy
-from .serializers import UserSerializer, UserSettingsSerializer, EventOwnerSerializer, EventUserSerializer, ImageSerializer, EventContentSerializer, ScoredBySerializer
+from .models import *
+from .serializers import UserSerializer, UserSettingsSerializer, EventSerializer, EventUserSerializer, ImageSerializer, EventContentSerializer, ScoredBySerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -20,21 +20,24 @@ import mimetypes
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    lookup_field = "firebase_id"  # Set firebase_id as the lookup field
 
 # UserSettings ViewSet
 class UserSettingsViewSet(viewsets.ModelViewSet):
     queryset = UserSettings.objects.all()
     serializer_class = UserSettingsSerializer
 
-# EventOwner ViewSet
-class EventOwnerViewSet(viewsets.ModelViewSet):
-    queryset = EventOwner.objects.all()
-    serializer_class = EventOwnerSerializer
+# Event ViewSet
+class EventViewSet(viewsets.ModelViewSet):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+
 
 # EventUser ViewSet
 class EventUserViewSet(viewsets.ModelViewSet):
     queryset = EventUser.objects.all()
     serializer_class = EventUserSerializer
+    lookup_field = "event_id"
 
 # Image ViewSet
 class ImageViewSet(viewsets.ModelViewSet):
@@ -45,6 +48,7 @@ class ImageViewSet(viewsets.ModelViewSet):
 class EventContentViewSet(viewsets.ModelViewSet):
     queryset = EventContent.objects.all()
     serializer_class = EventContentSerializer
+    lookup_field = "event_id"
 
 # ScoredBy ViewSet
 class ScoredByViewSet(viewsets.ModelViewSet):
@@ -106,12 +110,12 @@ def authenticate(request):
         responses={204: None}
     )
 )    
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'PUT'])
 def picture(request):
     if request.method == 'GET':
         
-        picture_name = request.GET.get("picture_name")  
-        print(picture_name)
+        picture_name = request.GET.get("picture_name")
+
         file_bytes = download_from_gcs('pick-pic', picture_name)
 
         file_stream = io.BytesIO(file_bytes)
@@ -120,9 +124,9 @@ def picture(request):
         if content_type is None:
             content_type = "application/octet-stream"
 
-        return FileResponse(file_stream, content_type=content_type)
+        return FileResponse(file_stream, content_type=content_type, status=status.HTTP_200_OK)
 
-    elif request.method == 'POST':
+    elif request.method == 'PUT':
         
         file_bytes = request.body
         content_type = request.headers.get('Content-Type') 
@@ -137,4 +141,83 @@ def picture(request):
 
         upload_to_gcs('pick-pic', file_bytes, unique_name, content_type)
 
+        return Response(status=status.HTTP_201_CREATED)
+    
+@api_view(['GET', 'PUT'])
+def user_pfp(request):
+
+    user_id = request.GET.get("user_id")
+
+    if request.method == 'GET':
+
+        file_name = User.objects.get(user_id=user_id).profile_picture
+
+        file_stream = io.BytesIO(file_bytes)
+
+        content_type, _ = mimetypes.guess_type(file_name)
+        if content_type is None:
+            content_type = "application/octet-stream"
+
+        return FileResponse(file_stream, content_type=content_type, status=status.HTTP_200_OK)
+
+    elif request.method == 'PUT':
+        file_bytes = request.body
+        content_type = request.headers.get('Content-Type') 
+        unique_name = datetime.now().strftime("%Y%m%d%H%M%S%f")
+
+        if content_type == 'image/jpeg':
+            unique_name += '.jpeg'
+        elif content_type == 'image/png':
+            unique_name += '.png'
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={ "error": "no header - Content-Type" })
+
+        upload_to_gcs('pick-pic', file_bytes, unique_name, content_type)
+
+        User.objects.get(user_id=user_id).profile_picture = unique_name
+
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+@api_view(['GET'])
+def event_image_count(request):
+
+    event_id = request.GET.get("event_id")
+
+    count = EventContent.objects.filter(event_id=event_id).count()
+
+    return Response(data={ "image_count": count },status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def list_users_events(request, user_id):
+    user = User.objects.get(user_id=user_id)
+
+    owned_events = Event.objects.filter(owner_id=user)
+    invited_events = EventUser.objects.filter(user_id=user)
+
+    owned_event_contents = EventContent.objects.filter(event__in=owned_events)
+
+    invited_events = EventUser.objects.filter(user=user)
+    invited_event_contents = EventContent.objects.filter(event__in=[ie.event for ie in invited_events])
+
+    owned_events_data = [
+        {
+            "event_owner_display_name": event.event.owner.display_name,
+            "event_owner_profile_picture": event.event.owner.profile_picture, 
+            "event_name": event.event.event_name,
+        }
+        for event in owned_event_contents
+    ]
+
+    invited_events_data = [
+        {
+            "event_owner_display_name": event.event.owner.display_name,
+            "event_owner_profile_picture": event.event.owner.profile_picture, 
+            "event_name": event.event.event_name,
+        }
+        for event in invited_event_contents
+    ]
+
+    return Response({
+        "owned_events": owned_events_data,
+        "invited_events": invited_events_data
+    })

@@ -25,23 +25,27 @@ from . import views
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'user-settings', views.UserSettingsViewSet)
-router.register(r'event-owners', views.EventOwnerViewSet)
+router.register(r'event', views.EventViewSet)
 router.register(r'event-users', views.EventUserViewSet)
 router.register(r'images', views.ImageViewSet)
 router.register(r'event-contents', views.EventContentViewSet)
 router.register(r'scored-by', views.ScoredByViewSet)
 urlpatterns = [
     # swagger
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 
     # admin
     path('admin/', admin.site.urls),
 
     # custom CRUD endpoints
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
 
     # custom endpoints
-    path('authenticate', authenticate, name='authenticate'),
-    path('api/picture/', picture, name='picture'),
+    path('authenticate/', views.authenticate, name='authenticate'),
+
+    path('picture/', views.picture, name='picture'),
+    path('event/image-count/', views.event_image_count, name='event_image_count'),
+
+    path('list-users-events/', views.list_users_events, name='list_users_events'),
 ]

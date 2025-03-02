@@ -74,7 +74,7 @@ fun AuthScreenView(
 @Composable
 fun SignInStatusMessage(signInResult: SignInResult?) {
     when (signInResult) {
-        is SignInResult.Success -> Text("Sign-in successful!", color = Color.Green)
+        is SignInResult.Success -> Text("Sign-in successful!")
         SignInResult.NoCredentials -> Text("No Google account found.", color = Color.Red)
         SignInResult.ConnectionError -> Text("Network error.", color = Color.Red)
         SignInResult.TokenParseError -> Text("Error processing sign-in.", color = Color.Red)
