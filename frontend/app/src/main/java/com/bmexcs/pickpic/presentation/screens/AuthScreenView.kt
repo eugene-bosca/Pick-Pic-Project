@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.data.models.SignInResult
 import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.navigation.HomePage
 import com.bmexcs.pickpic.presentation.viewmodels.AuthViewModel
 
 @Composable
@@ -46,7 +45,7 @@ fun AuthScreenView(
     val signInResult by authViewModel.signInResult.collectAsState()
 
     if (signInResult is SignInResult.Success) {
-        navController.navigate(HomePage)
+        navController.navigate(Route.Home.route)
     }
 
     Box(

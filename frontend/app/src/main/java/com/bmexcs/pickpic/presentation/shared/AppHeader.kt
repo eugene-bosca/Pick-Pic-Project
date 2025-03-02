@@ -27,11 +27,11 @@ fun AppHeader(
         drawerContent = {
             ModalDrawerSheet {
                 // Navigation options in the side panel
-                NavDrawerEntry("Home", navController, HomePage)
-                NavDrawerEntry("Profile", navController, Profile)
-                NavDrawerEntry("Support", navController, Support)
-                NavDrawerEntry("Events", navController, Event)
-                NavDrawerEntry("Ranking", navController, Ranking)
+                NavDrawerEntry("Home", navController, Route.Home.route)
+                NavDrawerEntry("Profile", navController, Route.Profile.route)
+                NavDrawerEntry("Support", navController, Route.Support.route)
+                NavDrawerEntry("Events", navController, Route.Event.route)
+                NavDrawerEntry("Ranking", navController, Route.Event.route)
             }
         }
     ) {
@@ -62,7 +62,7 @@ fun AppHeader(
 fun NavDrawerEntry (
     text: String,
     navController: NavHostController,
-    route: Any // Route to navigate to. Defined as distinct objects in Route.kt
+    route: String // Route to navigate to. Defined as distinct objects in Route.kt
 ) {
     val padding = 16.dp
     Text(text, modifier = Modifier
@@ -70,5 +70,10 @@ fun NavDrawerEntry (
         .clickable {
             navController.navigate(route)
         }
+    )
+    HorizontalDivider(
+        modifier = Modifier.padding(horizontal = padding),
+        thickness = 1.dp,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
     )
 }

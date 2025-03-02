@@ -35,7 +35,6 @@ import coil.compose.AsyncImage
 import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.navigation.Ranking
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +52,7 @@ fun EventScreenView(
                 .padding(innerPadding),
             verticalArrangement = Arrangement.Top,
         ){
-            ElevatedButton(onClick = {navController.navigate(Ranking)}) {
+            ElevatedButton(onClick = {navController.navigate(Route.Ranking.route)}) {
                 Icon(
                     painter = painterResource(R.drawable.podium),
                     contentDescription = "Rank Photos Icon",
