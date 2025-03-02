@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import User, UserSettings, EventOwner, EventUser, Image, EventContent, ScoredBy
-from .serializers import UserSerializer, UserSettingsSerializer, EventOwnerSerializer, EventUserSerializer, ImageSerializer, EventContentSerializer, ScoredBySerializer
+from .models import *
+from .serializers import UserSerializer, UserSettingsSerializer, EventSerializer, EventUserSerializer, ImageSerializer, EventContentSerializer, ScoredBySerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -28,8 +28,8 @@ class UserSettingsViewSet(viewsets.ModelViewSet):
 
 # EventOwner ViewSet
 class EventOwnerViewSet(viewsets.ModelViewSet):
-    queryset = EventOwner.objects.all()
-    serializer_class = EventOwnerSerializer
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
 
 # EventUser ViewSet
 class EventUserViewSet(viewsets.ModelViewSet):
@@ -111,7 +111,7 @@ def picture(request):
     if request.method == 'GET':
         
         picture_name = request.GET.get("picture_name")  
-        print(picture_name)
+
         file_bytes = download_from_gcs('pick-pic', picture_name)
 
         file_stream = io.BytesIO(file_bytes)
@@ -138,3 +138,13 @@ def picture(request):
         upload_to_gcs('pick-pic', file_bytes, unique_name, content_type)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+@api_view(['GET'])
+def event_content(request):
+    if request.method == 'GET':
+
+        event_name = request.GET.get("event_name")
+        images = Event.objects.filter(event_name=event_name)
+        serializer = ImageSerializer(images, many=True)
+
+        return Response(status=status.HTTP_200_OK, data=serializer.data)

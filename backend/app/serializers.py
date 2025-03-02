@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, UserSettings, EventOwner, EventUser, Image, EventContent, ScoredBy
+from .models import User, UserSettings, Event, EventUser, Image, EventContent, ScoredBy
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,16 +12,16 @@ class UserSettingsSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class EventOwnerSerializer(serializers.ModelSerializer):
+class EventSerializer(serializers.ModelSerializer):
     owner_id = UserSerializer()
 
     class Meta:
-        model = EventOwner
+        model = Event
         fields = "__all__"
 
 
 class EventUserSerializer(serializers.ModelSerializer):
-    event = EventOwnerSerializer()
+    event = EventSerializer()
     user = UserSerializer()
 
     class Meta:
@@ -36,7 +36,7 @@ class ImageSerializer(serializers.ModelSerializer):
 
 
 class EventContentSerializer(serializers.ModelSerializer):
-    event = EventOwnerSerializer()
+    event = EventSerializer()
     image_id = ImageSerializer()
 
     class Meta:
