@@ -1,42 +1,20 @@
 package com.bmexcs.pickpic.presentation.screens
 
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import ImageFull
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
-import com.bmexcs.pickpic.R
-import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 import androidx.navigation.NavHostController
+import com.bmexcs.pickpic.presentation.shared.ImageTile
+import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventScreenView(
     navController: NavHostController,
@@ -44,6 +22,7 @@ fun EventScreenView(
 ) {
 
     val dogImages by viewModel.dogImages.collectAsState()
+    var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column (
@@ -73,33 +52,21 @@ fun EventScreenView(
                 }
             } else {
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(2), // Ensure two images per row
+                    columns = GridCells.Fixed(2),
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp), // Space between images
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(dogImages) { dogUrl ->
-                        ElevatedCard (
-                            modifier = Modifier
-                                .size(width = 150.dp, height = 225.dp)
-                                .border(width = 1.dp, color = Color.Black)
-                        ) {
-                            AsyncImage(
-                                model = dogUrl,
-                                contentDescription = "Dog image",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(all = 15.dp)
-                                    .padding(bottom = 20.dp)
-                                    .border(width = 1.dp, color = Color.Black)
-                            )
-                        }
+                        ImageTile(dogUrl,onClick = { fullScreenImageUrl = dogUrl })
                     }
                 }
             }
-
         }
+        ImageFull(
+            imageUrl = fullScreenImageUrl,
+            onDismiss = { fullScreenImageUrl = null } // Reset the state to dismiss the dialog
+        )
     }
 }
