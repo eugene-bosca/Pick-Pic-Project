@@ -2,6 +2,8 @@ package com.bmexcs.pickpic.data.sources
 
 import android.util.Log
 import com.bmexcs.pickpic.data.models.Profile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import javax.inject.Inject
 import okhttp3.OkHttpClient
@@ -45,23 +47,24 @@ class ProfileDataSource @Inject constructor(
 
         val requestBody = jsonBody.toRequestBody("application/json".toMediaType())
         val request = Request.Builder()
-            .url("https://localhost:8080/users/$userId")
+            .url("https://pick-pic-service-627889116714.northamerica-northeast2.run.app/api/swagger/$userId")
             .patch(requestBody)
             .build()
 
         try {
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    Log.e("ProfileDataSource", "Profile failed to save")
-
-                    throw Exception("Failed to save profile")
-                }
-                if (response.isSuccessful) {
-                    Log.d("ProfileDataSource", "Profile saved successfully")
-                }
+            // Use withContext to switch to a background thread for the network operation
+            val response = withContext(Dispatchers.IO) {
+                client.newCall(request).execute()
             }
+
+            if (!response.isSuccessful) {
+                Log.e("ProfileDataSource", "Profile failed to save")
+                throw Exception("Failed to save profile")
+            }
+
+            Log.d("ProfileDataSource", "Profile saved successfully")
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("ProfileDataSource", "Unknown error", e)
         }
     }
 }
