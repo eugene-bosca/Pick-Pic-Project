@@ -36,7 +36,7 @@ class EventOwnerViewSet(viewsets.ModelViewSet):
 class EventUserViewSet(viewsets.ModelViewSet):
     queryset = EventUser.objects.all()
     serializer_class = EventUserSerializer
-    lookup_field = "event"
+    lookup_field = "event_id"
 
 # Image ViewSet
 class ImageViewSet(viewsets.ModelViewSet):
@@ -47,6 +47,7 @@ class ImageViewSet(viewsets.ModelViewSet):
 class EventContentViewSet(viewsets.ModelViewSet):
     queryset = EventContent.objects.all()
     serializer_class = EventContentSerializer
+    lookup_field = "event_id"
 
 # ScoredBy ViewSet
 class ScoredByViewSet(viewsets.ModelViewSet):
@@ -122,7 +123,7 @@ def picture(request):
         if content_type is None:
             content_type = "application/octet-stream"
 
-        return FileResponse(file_stream, content_type=content_type)
+        return FileResponse(file_stream, content_type=content_type, status=status.HTTP_200_OK)
 
     elif request.method == 'PUT':
         
@@ -139,7 +140,7 @@ def picture(request):
 
         upload_to_gcs('pick-pic', file_bytes, unique_name, content_type)
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_201_CREATED)
     
 @api_view(['GET', 'PUT'])
 def user_pfp(request):
@@ -147,7 +148,12 @@ def user_pfp(request):
     user_id = request.GET.get("user_id")
 
     if request.method == 'GET':
-        return Response()
+
+        file_name = User.objects.get(user_id=user_id).profile_picture
+
+        download_from_gcs('pick-pic', file_name)
+
+        return FileResponse()
     elif request.method == 'PUT':
         file_bytes = request.body
         content_type = request.headers.get('Content-Type') 
@@ -162,4 +168,15 @@ def user_pfp(request):
 
         upload_to_gcs('pick-pic', file_bytes, unique_name, content_type)
 
+        User.objects.get(user_id=user_id).profile_picture = unique_name
+
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+@api_view(['GET'])
+def event_image_count(request):
+
+    event_id = request.GET.get("event_id")
+
+    count = EventContent.objects.filter(event_id=event_id).count()
+
+    return Response(data={ "image_count": count },status=status.HTTP_200_OK)
