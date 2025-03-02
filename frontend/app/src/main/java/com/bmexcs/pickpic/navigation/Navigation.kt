@@ -15,7 +15,7 @@ import com.bmexcs.pickpic.presentation.shared.AppHeader
 
 @Composable
 fun Navigation(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Route.Home.route) {
+    NavHost(navController = navController, startDestination = Route.Auth.route) {
         // Home Screen
         composable(Route.Home.route) {
             AppHeader("Home Page", navController) {
@@ -52,7 +52,7 @@ fun Navigation(navController: NavHostController) {
         }
 
         // Auth Screen
-        composable(Route.AuthPage.route) {
+        composable(Route.Auth.route) {
             AuthScreenView(navController)
         }
 
