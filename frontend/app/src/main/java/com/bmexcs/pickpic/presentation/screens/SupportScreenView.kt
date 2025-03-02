@@ -7,7 +7,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.bmexcs.pickpic.presentation.shared.NavigationDrawer
 import androidx.navigation.NavHostController
 
 @Composable
@@ -27,13 +26,6 @@ fun SupportScreenView(
                     "If you any questions or feedback, feel free to reach out to **jkjamali@uwaterloo.ca**. We’re here to ensure you have the best experience possible!  \n" +
                     "\n" +
                     "Happy photo-sharing! \uD83D\uDCF8✨")
-            NavigationDrawer(
-                onClickHomePage,
-                onClickProfile,
-                onClickSupport,
-                onClickEvent,
-                onClickRanking,
-            )
         }
     }
 }
