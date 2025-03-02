@@ -25,7 +25,7 @@ from . import views
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'user-settings', views.UserSettingsViewSet)
-router.register(r'event', views.EventOwnerViewSet)
+router.register(r'event', views.EventViewSet)
 router.register(r'event-users', views.EventUserViewSet)
 router.register(r'images', views.ImageViewSet)
 router.register(r'event-contents', views.EventContentViewSet)
