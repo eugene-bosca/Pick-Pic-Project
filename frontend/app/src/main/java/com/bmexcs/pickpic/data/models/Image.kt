@@ -7,5 +7,4 @@ import kotlinx.serialization.Serializable
 data class Image(
     val id: SerializableUUID,
     val eventId: SerializableUUID,
-    val score: Int
 )

@@ -1,11 +1,14 @@
 package com.bmexcs.pickpic.presentation.viewmodels
 
+import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.Image
 import com.bmexcs.pickpic.data.repositories.AuthRepository
 import com.bmexcs.pickpic.data.repositories.EventsRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
+import com.bmexcs.pickpic.data.serializable.SerializableUUID
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,31 +24,30 @@ class EventsViewModel @Inject constructor(
 ) : ViewModel() {
 
     // Backing property for the dog images list
-    private val _images = MutableStateFlow<List<String>>(emptyList())
-    val images: StateFlow<List<String>> = _images
+    private val _images = MutableStateFlow<List<Bitmap?>>(emptyList())
+    val images: StateFlow<List<Bitmap?>> = _images
 
-    private val currEventId = 0;
+    private val currEventId = "41cc19ac-3ce4-4562-861d-871750cc4d6f"
 
     private val _user = MutableStateFlow<String?>("")
     private val user = _user
 
     init {
-        if (_images.value.isEmpty()){
-            // Get Auth user so I can pass the event to the image
-            getImageByEventId(currEventId)
-        }
-
+        getImageByEventId(currEventId)
         _user.value = authRepository.getCurrentUser()?.uid
     }
 
-    private fun getImageByEventId(eventId: Int) {
+    private fun getImageByEventId(eventId: String) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            var images = eventsRepository.getImageByEventId(eventId)
+            val images = eventsRepository.getImageByEventId(eventId)
+            val imageBitmapList = mutableListOf<Bitmap?>()
 
             for(image in images) {
-                _images.value = imageRepository.getImageByImageId(image.id)
+                imageBitmapList.add(imageRepository.getImageByImageId(image.id))
             }
+
+            _images.value = imageBitmapList
         }
     }
 
@@ -56,10 +58,10 @@ class EventsViewModel @Inject constructor(
         }
     }
 
-    private fun deleteImageByEventId(image: Image) {
+    private fun deleteImageByEventId(imageId: String) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            eventsRepository.deleteImageByEventId(image)
+            eventsRepository.deleteImageByEventId(imageId)
         }
     }
 }

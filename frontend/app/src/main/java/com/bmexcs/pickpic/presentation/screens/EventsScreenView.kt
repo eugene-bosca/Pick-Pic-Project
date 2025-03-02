@@ -1,5 +1,7 @@
 package com.bmexcs.pickpic.presentation.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -8,18 +10,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.shared.ImageFull
-import com.bmexcs.pickpic.presentation.shared.ImageTile
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
-import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.data.repositories.ImageRepository
-import com.bmexcs.pickpic.navigation.Ranking
 
 @Composable
 fun EventScreenView(
@@ -70,16 +72,26 @@ fun EventScreenView(
                                 .size(width = 150.dp, height = 225.dp)
                                 .border(width = 1.dp, color = Color.Black)
                         ) {
-                            AsyncImage(
-                                model = bitmap,
-                                contentDescription = "Dog image",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(all = 15.dp)
-                                    .padding(bottom = 20.dp)
-                                    .border(width = 1.dp, color = Color.Black)
-                            )
+                            if(bitmap != null) {
+                                Image(
+                                    bitmap = bitmap.asImageBitmap(),
+                                    contentDescription = "Event image",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(all = 15.dp)
+                                        .padding(bottom = 20.dp)
+                                        .border(width = 1.dp, color = Color.Black)
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(all = 15.dp)
+                                        .padding(bottom = 20.dp)
+                                        .border(width = 1.dp, color = Color.Black)
+                                )
+                            }
                         }
                     }
                 }

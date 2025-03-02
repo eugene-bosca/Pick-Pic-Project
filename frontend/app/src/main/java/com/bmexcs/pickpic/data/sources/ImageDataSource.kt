@@ -29,7 +29,7 @@ class ImageDataSource @Inject constructor() {
                     if (jsonObject.getString("status") == "success") {
                         val jsonArray = jsonObject.getJSONArray("image")
 
-                        return jsonArray
+                        return null
                     }
                 }
             }
