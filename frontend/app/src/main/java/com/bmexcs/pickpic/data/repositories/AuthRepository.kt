@@ -13,9 +13,10 @@ import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import com.bmexcs.pickpic.BuildConfig
-import com.bmexcs.pickpic.data.models.Profile
-import com.bmexcs.pickpic.data.models.SignInResult
+import com.bmexcs.pickpic.data.models.User
+import com.bmexcs.pickpic.data.utils.SignInResult
 import com.bmexcs.pickpic.data.sources.AuthDataSource
+import com.bmexcs.pickpic.data.sources.UserDataSource
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
@@ -26,12 +27,13 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val TAG = "AUTH_REPO"
+private const val TAG = "AuthRepository"
 
 @Singleton
 class AuthRepository @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val authDataSource: AuthDataSource
+    private val authDataSource: AuthDataSource,
+    private val userDataSource: UserDataSource
 ) {
     fun getCurrentUser() = authDataSource.getCurrentUser()
 
@@ -121,28 +123,23 @@ class AuthRepository @Inject constructor(
             }
         }
         coroutineScope {
-            checkProfileExists()
+            checkUserExists()
         }
     }
 
-    private suspend fun checkProfileExists() {
-        Log.i(TAG, "Checking if Profile Exists")
-        // check if profile with firebaseID exists. If not, returns null
-        val profile: Profile? = authDataSource.getUserProfile();
-
+    private suspend fun checkUserExists() {
+        // Check if user with firebaseID exists. If not, returns null.
+        Log.i(TAG, "Check if User exists")
+        val user: User? = userDataSource.getUser(authDataSource.getCurrentUser().uid);
         Log.i(TAG, "Check Completed")
-        // If null, create profile.
-        if (profile == null) {
-            val newProfile = Profile(
-                displayName = authDataSource.getCurrentUser()?.displayName ?: "",
-                email = authDataSource.getCurrentUser()?.email ?: "",
-                phone = authDataSource.getCurrentUser()?.phoneNumber ?: "",
-            )
-            val returnedProfile = authDataSource.createProfile(newProfile)
-            Log.d(TAG, "Profile created: $returnedProfile")
+
+        // If null, create user.
+        if (user == null) {
+            val newUser = userDataSource.createUser()
+            Log.d(TAG, "User created: $newUser")
         }
         else {
-            Log.d(TAG, "Profile exists: $profile")
+            Log.d(TAG, "User exists: $user")
         }
     }
 }
