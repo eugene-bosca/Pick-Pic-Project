@@ -133,6 +133,9 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4) // JUnit4 support for Compose tests
     androidTestImplementation(libs.androidx.navigation.testing) // Navigation testing
 
+    // QR code
+    implementation(libs.zxing.android.embedded)
+
     // Debug-only dependencies
     debugImplementation(libs.androidx.ui.tooling) // Compose UI tooling for debugging
     debugImplementation(libs.androidx.ui.test.manifest) // Manifest file support for UI tests
