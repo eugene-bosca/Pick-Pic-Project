@@ -8,7 +8,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema
 
 from .models import User
 
-from django.http import FileResponse, JsonResponse
+from django.http import FileResponse
 from django.contrib.auth.hashers import check_password
 from django.conf import settings
 
@@ -241,12 +241,12 @@ def get_user_id_by_firebase_id(request, firebase_id):
         firebase_id: The firebase_id to search for.
 
     Returns:
-        JsonResponse: A JSON response containing the user_id or an error message.
+        Response: A JSON response containing the user_id or an error message.
     """
     try:
         user = User.objects.get(firebase_id=firebase_id)
-        return JsonResponse({'user_id': str(user.user_id)})  # Convert UUID to string for JSON serialization
+        return Response({'user_id': str(user.user_id)}, status=status.HTTP_200_OK) # Convert UUID to string for JSON serialization
     except User.DoesNotExist:
-        return JsonResponse({'error': 'User not found'}, status=404)
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
