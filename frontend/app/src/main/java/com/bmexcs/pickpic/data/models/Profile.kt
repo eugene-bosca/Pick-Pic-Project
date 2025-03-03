@@ -6,9 +6,9 @@ import java.util.UUID
 
 @Serializable
 data class Profile(
-    val id: SerializableUUID = SerializableUUID(UUID.fromString("")),
+    val id: SerializableUUID = SerializableUUID(UUID(0, 0)),
     val displayName: String = "",
     val email: String = "", // TODO: use Email class?
-    val phone: String = "", // TODO: user Phone class?
-    val profilePictureId: SerializableUUID = SerializableUUID(UUID.fromString(""))
+    val phone: String = "", // TODO: use Phone class?
+    val profilePictureId: SerializableUUID = SerializableUUID(UUID(0, 0))
 )

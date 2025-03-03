@@ -12,7 +12,7 @@ class AuthMiddleware:
 
     def __call__(self, request):
         
-        if request.path in ["/authenticate", "/api/swagger", "/api/swagger/", "/api/schema", "/api/schema/"]:
+        if request.path in ["/authenticate", "/swagger", "/swagger/", "/schema", "/schema/"]:
             return self.get_response(request)
 
         auth_header = request.headers.get("Authorization")

@@ -27,49 +27,45 @@ fun EventScreenView(
     val dogImages by viewModel.dogImages.collectAsState()
     var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Column (
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.Top,
-        ){
-            ElevatedButton(onClick = {navController.navigate(Route.Ranking.route)}) {
-                Icon(
-                    painter = painterResource(R.drawable.podium),
-                    contentDescription = "Rank Photos Icon",
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text("Rank Photos")
-            }
-            Spacer(modifier = Modifier.height(33.dp))
+    Column (
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Top,
+    ){
+        ElevatedButton(onClick = {navController.navigate(Route.Ranking.route)}) {
+            Icon(
+                painter = painterResource(R.drawable.podium),
+                contentDescription = "Rank Photos Icon",
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text("Rank Photos")
+        }
+        Spacer(modifier = Modifier.height(33.dp))
 
-            if (dogImages.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp), // Space between images
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(dogImages) { dogUrl ->
-                        ImageTile(dogUrl,onClick = { fullScreenImageUrl = dogUrl })
-                    }
+        if (dogImages.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp), // Space between images
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(dogImages) { dogUrl ->
+                    ImageTile(dogUrl,onClick = { fullScreenImageUrl = dogUrl })
                 }
             }
         }
-        ImageFull(
-            imageUrl = fullScreenImageUrl,
-            onDismiss = { fullScreenImageUrl = null } // Reset the state to dismiss the dialog
-        )
     }
+    ImageFull(
+        imageUrl = fullScreenImageUrl,
+        onDismiss = { fullScreenImageUrl = null } // Reset the state to dismiss the dialog
+    )
 }
