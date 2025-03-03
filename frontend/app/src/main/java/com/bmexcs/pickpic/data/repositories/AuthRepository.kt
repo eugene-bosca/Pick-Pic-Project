@@ -13,12 +13,14 @@ import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import com.bmexcs.pickpic.BuildConfig
+import com.bmexcs.pickpic.data.models.Profile
 import com.bmexcs.pickpic.data.models.SignInResult
 import com.bmexcs.pickpic.data.sources.AuthDataSource
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.coroutineScope
 import java.security.MessageDigest
 import java.util.UUID
 import javax.inject.Inject
@@ -117,6 +119,30 @@ class AuthRepository @Inject constructor(
                     authDataSource.firebaseAuthWithGoogle(googleIdToken)
                 }
             }
+        }
+        coroutineScope {
+            checkProfileExists()
+        }
+    }
+
+    private suspend fun checkProfileExists() {
+        Log.i(TAG, "Checking if Profile Exists")
+        // check if profile with firebaseID exists. If not, returns null
+        val profile: Profile? = authDataSource.getUserProfile();
+
+        Log.i(TAG, "Check Completed")
+        // If null, create profile.
+        if (profile == null) {
+            val newProfile = Profile(
+                displayName = authDataSource.getCurrentUser()?.displayName ?: "",
+                email = authDataSource.getCurrentUser()?.email ?: "",
+                phone = authDataSource.getCurrentUser()?.phoneNumber ?: "",
+            )
+            val returnedProfile = authDataSource.createProfile(newProfile)
+            Log.d(TAG, "Profile created: $returnedProfile")
+        }
+        else {
+            Log.d(TAG, "Profile exists: $profile")
         }
     }
 }
