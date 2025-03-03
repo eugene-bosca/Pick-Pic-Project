@@ -17,8 +17,8 @@ class AuthDataSource @Inject constructor(
     private val firebaseAuth: FirebaseAuth
 ) {
 
-    fun getCurrentUser(): FirebaseUser? {
-        return firebaseAuth.currentUser
+    fun getCurrentUser(): FirebaseUser {
+        return firebaseAuth.currentUser ?: throw Exception("Current user is null")
     }
 
     suspend fun getIdToken(): String? {

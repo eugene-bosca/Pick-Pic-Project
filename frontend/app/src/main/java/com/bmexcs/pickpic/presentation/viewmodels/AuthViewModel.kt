@@ -28,17 +28,12 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun signOut() {
-        viewModelScope.launch {
-            authRepository.signOut()
-        }
-    }
-
     private fun checkSignedInUser() {
-        _signInResult.value = if (authRepository.getCurrentUser() != null) {
+        _signInResult.value = try {
+            authRepository.getCurrentUser()
             SignInResult.Success
-        } else {
-            null
+        } catch (e: Exception) {
+            SignInResult.UnknownError
         }
     }
 }

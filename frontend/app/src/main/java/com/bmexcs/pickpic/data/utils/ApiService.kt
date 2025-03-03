@@ -64,6 +64,7 @@ object ApiService {
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
+            .addHeader("Content-Type", "application/json")
             .post(requestBodyObj)
             .build()
 
