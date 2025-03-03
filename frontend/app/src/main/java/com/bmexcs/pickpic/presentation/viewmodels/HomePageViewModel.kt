@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.EventItem
+import com.bmexcs.pickpic.data.models.ListUserEventItem
 import com.google.gson.JsonElement
 import com.bmexcs.pickpic.data.sources.HomePageDataSource
 import com.bmexcs.pickpic.data.repositories.AuthRepository
@@ -23,8 +24,8 @@ class HomePageViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
     // Now we use JsonElement instead of Profile.
-    private val _events = MutableStateFlow<List<EventItem>>(emptyList())
-    val events: StateFlow<List<EventItem>> = _events
+    private val _events = MutableStateFlow<List<ListUserEventItem>>(emptyList())
+    val events: StateFlow<List<ListUserEventItem>> = _events
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -46,7 +47,7 @@ class HomePageViewModel @Inject constructor(
                     Log.d("HomePageViewModel", "Fetching events for user: $userId")
                     // Execute the network call on the IO dispatcher
                     val eventItems = withContext(Dispatchers.IO) {
-                        listEvents.getEvents("68e24b1a36c84de5a751ba414e77db0b")
+                        listEvents.getEvents("68e24b1a-36c8-4de5-a751-ba414e77db0b")
                     }
                     _events.value = eventItems
                     _errorMessage.value = null
