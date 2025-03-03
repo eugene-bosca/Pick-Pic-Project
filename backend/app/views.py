@@ -185,16 +185,14 @@ def user_pfp(request):
 
         User.objects.get(user_id=user_id).profile_picture = unique_name
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_201_CREATED)
     
 @api_view(['GET'])
-def event_image_count(request):
-
-    event_id = request.GET.get("event_id")
+def event_image_count(request, event_id):
 
     count = EventContent.objects.filter(event_id=event_id).count()
 
-    return Response(data={ "image_count": count },status=status.HTTP_200_OK)
+    return Response(data={ "image_count": count }, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def list_users_events(request, user_id):
@@ -226,7 +224,7 @@ def list_users_events(request, user_id):
         for event in invited_event_contents
     ]
 
-    return Response({
+    return Response(status=status.HTTP_200_OK ,data={
         "owned_events": owned_events_data,
         "invited_events": invited_events_data
     })
