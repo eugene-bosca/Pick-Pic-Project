@@ -146,7 +146,7 @@ def picture(request):
 @api_view(['GET', 'PUT'])
 def user_pfp(request):
 
-    user_id = request.GET.get("user_id")  # Gets the string from the request
+    user_id = request.GET.get("user_id")
 
     if not user_id:
         return Response({"error": "User ID is required"}, status=400)
