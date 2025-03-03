@@ -146,12 +146,18 @@ def picture(request):
 @api_view(['GET', 'PUT'])
 def user_pfp(request):
 
-    user_id = request.GET.get("user_id")
+    user_id = request.GET.get("user_id")  # Gets the string from the request
+
+    if not user_id:
+        return Response({"error": "User ID is required"}, status=400)
+    
+    user_id = uuid.UUID(user_id)
 
     if request.method == 'GET':
-
+        
         file_name = User.objects.get(user_id=user_id).profile_picture
-
+        
+        file_bytes = download_from_gcs('pick-pic', file_name)
         file_stream = io.BytesIO(file_bytes)
 
         content_type, _ = mimetypes.guess_type(file_name)
@@ -201,8 +207,8 @@ def list_users_events(request, user_id):
 
     owned_events_data = [
         {
-            "event_owner_display_name": event.event.owner.display_name,
-            "event_owner_profile_picture": event.event.owner.profile_picture, 
+            "owner_display_name": event.event.owner.display_name,
+            "owner_profile_picture": event.event.owner.profile_picture, 
             "event_name": event.event.event_name,
         }
         for event in owned_event_contents
@@ -210,8 +216,8 @@ def list_users_events(request, user_id):
 
     invited_events_data = [
         {
-            "event_owner_display_name": event.event.owner.display_name,
-            "event_owner_profile_picture": event.event.owner.profile_picture, 
+            "owner_display_name": event.event.owner.display_name,
+            "owner_profile_picture": event.event.owner.profile_picture, 
             "event_name": event.event.event_name,
         }
         for event in invited_event_contents
