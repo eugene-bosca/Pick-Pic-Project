@@ -24,7 +24,7 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val TAG = "AUTH_REPO"
+private const val TAG = "AuthRepository"
 
 @Singleton
 class AuthRepository @Inject constructor(
