@@ -10,6 +10,7 @@ import com.bmexcs.pickpic.presentation.screens.ProfileScreenView
 import com.bmexcs.pickpic.presentation.screens.RankingScreenView
 import com.bmexcs.pickpic.presentation.screens.SupportScreenView
 import com.bmexcs.pickpic.presentation.screens.AuthScreenView
+import com.bmexcs.pickpic.presentation.screens.CreateEventScreenView
 import com.bmexcs.pickpic.presentation.screens.EventInvitationScreenView
 import com.bmexcs.pickpic.presentation.shared.PickPicScaffold
 
@@ -59,6 +60,13 @@ fun Navigation(navController: NavHostController) {
         // Event Invitation Screen
         composable(Route.EventInvitation.route) {
             EventInvitationScreenView(navController)
+        }
+
+        // Create Event Screen
+        composable(Route.CreateEvent.route) {
+            PickPicScaffold("Create Event", navController) {
+                CreateEventScreenView(navController)
+            }
         }
     }
 }
