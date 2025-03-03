@@ -3,6 +3,8 @@ package com.bmexcs.pickpic.data.utils
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -18,11 +20,11 @@ object ApiService {
     private val client = OkHttpClient()
     private val gson = Gson()
 
-    fun <T> fetch(
+    suspend fun <T> fetch(
         endpoint: String,
         responseType: Class<T>,
         token: String
-    ): T {
+    ): T = withContext(Dispatchers.IO) {
         Log.d(TAG, "Fetching from endpoint: $endpoint")
 
         val url = buildUrl(endpoint)
@@ -48,17 +50,17 @@ object ApiService {
                 throw NotFoundException("User does not exist")
             }
 
-            return parseResponseBody(body, responseType)
+            return@withContext parseResponseBody(body, responseType)
         }
     }
 
     // TODO: test
-    fun <T, R> post(
+    suspend fun <T, R> post(
         endpoint: String,
         requestBody: R,
         responseType: Class<T>,
         token: String
-    ): T {
+    ): T = withContext(Dispatchers.IO) {
         Log.d(TAG, "Posting to endpoint: $endpoint")
 
         val url = buildUrl(endpoint)
@@ -83,17 +85,17 @@ object ApiService {
                 "Empty response body"
             )
 
-            return parseResponseBody(body, responseType)
+            return@withContext parseResponseBody(body, responseType)
         }
     }
 
     // TODO: test
-    fun <T, R> patch(
+    suspend fun <T, R> patch(
         endpoint: String,
         requestBody: R,
         responseType: Class<T>,
         token: String
-    ): T {
+    ): T = withContext(Dispatchers.IO) {
         Log.d(TAG, "Patching to endpoint: $endpoint")
 
         val url = buildUrl(endpoint)
@@ -118,7 +120,7 @@ object ApiService {
                 "Empty response body"
             )
 
-            return parseResponseBody(body, responseType)
+            return@withContext parseResponseBody(body, responseType)
         }
     }
 
