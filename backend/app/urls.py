@@ -45,7 +45,6 @@ urlpatterns = [
     path('authenticate/', views.authenticate, name='authenticate'),
 
     path('picture/', views.picture, name='picture'),
-    path('event/image-count/', views.event_image_count, name='event_image_count'),
-
-    path('list-users-events/<str:user_id>/', views.list_users_events, name='list_users_events'),
+    path('event/image-count/<uuid:event_id>/', views.event_image_count, name='event_image_count'),
+    path('list-users-events/<uuid:user_id>/', views.list_users_events, name='list_users_events'),
 ]

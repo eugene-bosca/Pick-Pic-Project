@@ -33,3 +33,9 @@ concrete-spider-449820-p0-b07324f24234.json
 
 frontend/google-services.json
 backend/deployment.txt
+.idea/gradle.xml
+.gitignore
+.idea/runConfigurations.xml
+.idea/vcs.xml
+.idea/workspace.xml
+.idea/caches/deviceStreaming.xml
