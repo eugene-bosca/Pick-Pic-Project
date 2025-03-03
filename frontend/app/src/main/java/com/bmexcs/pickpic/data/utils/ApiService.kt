@@ -3,6 +3,8 @@ package com.bmexcs.pickpic.data.utils
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -12,17 +14,17 @@ import okhttp3.OkHttpClient
 private const val TAG = "ApiService"
 
 object ApiService {
-    private const val BASE_URL = "URL"
+    private const val BASE_URL = "https://pick-pic-service-627889116714.northamerica-northeast2.run.app"
     private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
 
     private val client = OkHttpClient()
     private val gson = Gson()
 
-    fun <T> fetch(
+    suspend fun <T> fetch(
         endpoint: String,
         responseType: Class<T>,
         token: String
-    ): T {
+    ): T = withContext(Dispatchers.IO) {
         Log.d(TAG, "Fetching from endpoint: $endpoint")
 
         val url = buildUrl(endpoint)
@@ -43,17 +45,17 @@ object ApiService {
                 "Empty response body"
             )
 
-            return parseResponseBody(body, responseType)
+            return@withContext parseResponseBody(body, responseType)
         }
     }
 
     // TODO: test
-    fun <T, R> post(
+    suspend fun <T, R> post(
         endpoint: String,
         requestBody: R,
         responseType: Class<T>,
         token: String
-    ): T {
+    ): T = withContext(Dispatchers.IO) {
         Log.d(TAG, "Posting to endpoint: $endpoint")
 
         val url = buildUrl(endpoint)
@@ -78,17 +80,17 @@ object ApiService {
                 "Empty response body"
             )
 
-            return parseResponseBody(body, responseType)
+            return@withContext parseResponseBody(body, responseType)
         }
     }
 
     // TODO: test
-    fun <T, R> patch(
+    suspend fun <T, R> patch(
         endpoint: String,
         requestBody: R,
         responseType: Class<T>,
         token: String
-    ): T {
+    ): T = withContext(Dispatchers.IO) {
         Log.d(TAG, "Patching to endpoint: $endpoint")
 
         val url = buildUrl(endpoint)
@@ -113,7 +115,7 @@ object ApiService {
                 "Empty response body"
             )
 
-            return parseResponseBody(body, responseType)
+            return@withContext parseResponseBody(body, responseType)
         }
     }
 

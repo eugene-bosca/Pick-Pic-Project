@@ -3,6 +3,7 @@ package com.bmexcs.pickpic.di
 import android.content.Context
 import com.bmexcs.pickpic.data.repositories.AuthRepository
 import com.bmexcs.pickpic.data.sources.AuthDataSource
+import com.bmexcs.pickpic.data.sources.UserDataSource
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
@@ -21,7 +22,7 @@ object AuthModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(@ApplicationContext context: Context, authDataSource: AuthDataSource): AuthRepository {
-        return AuthRepository(context, authDataSource)
+    fun provideAuthRepository(@ApplicationContext context: Context, authDataSource: AuthDataSource, userDataSource: UserDataSource): AuthRepository {
+        return AuthRepository(context, authDataSource, userDataSource)
     }
 }

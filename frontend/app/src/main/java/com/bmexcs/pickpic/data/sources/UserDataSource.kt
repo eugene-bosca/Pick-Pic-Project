@@ -10,12 +10,11 @@ private const val TAG = "UserDataSource"
 class UserDataSource @Inject constructor(
     private val authDataSource: AuthDataSource
 ) {
-    suspend fun getUser(userId: String): User {
+    suspend fun getUser(firebaseId: String): User {
         Log.d(TAG, "Get user state")
 
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-        val user = ApiService.fetch("users/$userId", User::class.java, token)
-        return user
+        return ApiService.fetch("users/$firebaseId", User::class.java, token)
     }
 
     suspend fun updateUser(user: User) {
