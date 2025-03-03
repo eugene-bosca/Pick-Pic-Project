@@ -15,7 +15,7 @@ private const val TAG = "ApiService"
 
 object ApiService {
     private const val BASE_URL = "https://pick-pic-service-627889116714.northamerica-northeast2.run.app"
-    private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
+    private val jsonMediaType = "application/json".toMediaType()
 
     private val client = OkHttpClient()
     private val gson = Gson()
@@ -38,17 +38,15 @@ object ApiService {
         client.newCall(request).execute().use { response ->
             Log.d(TAG, "Response code: ${response.code}")
 
-            validateResponse(response)
+            if (response.code == 404) {
+                Log.d(TAG, "User does not exist")
+                throw NotFoundException("User does not exist")
+            }
 
             val body = response.body?.string() ?: throw HttpException(
                 response.code,
                 "Empty response body"
             )
-
-            if (response.code == 404) {
-                Log.d(TAG, "User does not exist")
-                throw NotFoundException("User does not exist")
-            }
 
             return@withContext parseResponseBody(body, responseType)
         }
@@ -77,8 +75,6 @@ object ApiService {
 
         client.newCall(request).execute().use { response ->
             Log.d(TAG, "Response code: ${response.code}")
-
-            validateResponse(response)
 
             val body = response.body?.string() ?: throw HttpException(
                 response.code,
@@ -113,8 +109,6 @@ object ApiService {
         client.newCall(request).execute().use { response ->
             Log.d(TAG, "Response code: ${response.code}")
 
-            validateResponse(response)
-
             val body = response.body?.string() ?: throw HttpException(
                 response.code,
                 "Empty response body"
@@ -125,12 +119,6 @@ object ApiService {
     }
 
     private fun buildUrl(path: String): String = "$BASE_URL/$path"
-
-    private fun validateResponse(response: Response) {
-        if (!response.isSuccessful) {
-            throw HttpException(response.code, "Error fetching data")
-        }
-    }
 
     private fun <T> parseResponseBody(body: String, modelClass: Class<T>): T {
         return try {

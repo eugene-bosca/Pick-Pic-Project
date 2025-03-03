@@ -16,11 +16,18 @@ class UserDataSource @Inject constructor(
 ) {
     suspend fun createUser(): User {
         val userCreation = UserCreation(
-            firebase_id = SerializableUUID(UUID.fromString(authDataSource.getCurrentUser().uid)),
+            firebase_id = authDataSource.getCurrentUser().uid,
+            display_name = authDataSource.getCurrentUser().displayName ?: "",
+            email = authDataSource.getCurrentUser().email ?: ""
         )
 
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-        return ApiService.post("users/", userCreation, User::class.java, token)
+        try {
+            return ApiService.post("users/", userCreation, User::class.java, token)
+        } catch (e: Exception) {
+            Log.e(TAG, "$e")
+            return User()
+        }
     }
 
     suspend fun getUser(userId: String): User? {
