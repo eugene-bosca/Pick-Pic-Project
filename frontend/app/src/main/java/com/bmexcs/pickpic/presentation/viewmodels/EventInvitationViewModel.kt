@@ -2,7 +2,7 @@ package com.bmexcs.pickpic.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.repositories.EventsRepository
+import com.bmexcs.pickpic.data.repositories.EventRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EventInvitationViewModel @Inject constructor(
-    private val eventRepository: EventsRepository
+    private val eventRepository: EventRepository
 ) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)

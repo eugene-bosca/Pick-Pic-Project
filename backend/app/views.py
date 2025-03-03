@@ -6,10 +6,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view, OpenApiTypes, OpenApiResponse
 
+from .models import User
+
 from django.http import FileResponse
 from django.contrib.auth.hashers import check_password
 from django.conf import settings
 
+import uuid
 import jwt
 from .google_cloud_storage.bucket import *
 from datetime import datetime
@@ -182,16 +185,14 @@ def user_pfp(request):
 
         User.objects.get(user_id=user_id).profile_picture = unique_name
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_201_CREATED)
     
 @api_view(['GET'])
-def event_image_count(request):
-
-    event_id = request.GET.get("event_id")
+def event_image_count(request, event_id):
 
     count = EventContent.objects.filter(event_id=event_id).count()
 
-    return Response(data={ "image_count": count },status=status.HTTP_200_OK)
+    return Response(data={ "image_count": count }, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def list_users_events(request, user_id):
@@ -223,7 +224,27 @@ def list_users_events(request, user_id):
         for event in invited_event_contents
     ]
 
-    return Response({
+    return Response(status=status.HTTP_200_OK ,data={
         "owned_events": owned_events_data,
         "invited_events": invited_events_data
     })
+
+@api_view(['GET'])
+def get_user_id_by_firebase_id(request, firebase_id):
+    """
+    Retrieves the user_id associated with a given firebase_id.
+
+    Args:
+        request: The HTTP request object.
+        firebase_id: The firebase_id to search for.
+
+    Returns:
+        Response: A JSON response containing the user_id or an error message.
+    """
+    try:
+        user = User.objects.get(firebase_id=firebase_id)
+        return Response({'user_id': str(user.user_id)}, status=status.HTTP_200_OK) # Convert UUID to string for JSON serialization
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
