@@ -2,7 +2,7 @@ package com.bmexcs.pickpic.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.SignInResult
+import com.bmexcs.pickpic.data.utils.SignInResult
 import com.bmexcs.pickpic.data.repositories.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

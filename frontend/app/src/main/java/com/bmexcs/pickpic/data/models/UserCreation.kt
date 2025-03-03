@@ -1,12 +1,11 @@
 package com.bmexcs.pickpic.data.models
 
-import kotlinx.serialization.Serializable
 import com.bmexcs.pickpic.data.serializable.SerializableUUID
+import kotlinx.serialization.Serializable
 import java.util.UUID
 
 @Serializable
-data class User(
-    val user_id: SerializableUUID = SerializableUUID(UUID(0, 0)),
+data class UserCreation(
     val firebase_id: SerializableUUID = SerializableUUID(UUID(0, 0)),
     val display_name: String = "",
     val email: String = "",

@@ -12,7 +12,7 @@ class UserRepository @Inject constructor(
 ) {
     // TODO: use UserDataSource
     private var dummyUser = User(
-        displayName = "Jordan",
+        display_name = "Jordan",
         email = "jordan@jordan.jordan",
         phone = "123-jordanjordanjordan"
     )

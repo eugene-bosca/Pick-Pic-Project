@@ -3,7 +3,7 @@ package com.bmexcs.pickpic.presentation.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.EventListItem
+import com.bmexcs.pickpic.data.models.ListUserEventsItem
 import com.bmexcs.pickpic.data.repositories.AuthRepository
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,8 +21,8 @@ class HomePageViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
     // Now we use JsonElement instead of Profile.
-    private val _events = MutableStateFlow<List<EventListItem>>(emptyList())
-    val events: StateFlow<List<EventListItem>> = _events
+    private val _events = MutableStateFlow<List<ListUserEventsItem>>(emptyList())
+    val events: StateFlow<List<ListUserEventsItem>> = _events
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading

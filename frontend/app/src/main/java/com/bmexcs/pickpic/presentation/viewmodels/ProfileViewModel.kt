@@ -47,7 +47,7 @@ class ProfileViewModel @Inject constructor(
     // Updates the display name field.
     fun updateDisplayName(displayName: String) {
         _user.update { currentProfile ->
-            currentProfile?.copy(displayName = displayName)
+            currentProfile?.copy(display_name = displayName)
         }
 
         viewModelScope.launch {

@@ -13,7 +13,7 @@ import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import com.bmexcs.pickpic.BuildConfig
-import com.bmexcs.pickpic.data.models.SignInResult
+import com.bmexcs.pickpic.data.utils.SignInResult
 import com.bmexcs.pickpic.data.sources.AuthDataSource
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
