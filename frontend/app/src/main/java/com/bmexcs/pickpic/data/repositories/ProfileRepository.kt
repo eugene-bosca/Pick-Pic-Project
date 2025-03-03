@@ -1,7 +1,7 @@
 package com.bmexcs.pickpic.data.repositories
 
 import android.util.Log
-import com.bmexcs.pickpic.data.models.Profile
+import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.sources.ProfileDataSource
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -12,24 +12,24 @@ class ProfileRepository @Inject constructor(
     private val profileDataSource: ProfileDataSource
 ) {
     // TODO: remove
-    private var dummyProfile = Profile(
+    private var dummyUser = User(
         displayName = "Jordan",
         email = "jordan@jordan.jordan",
         phone = "123-jordanjordanjordan"
     )
 
-    suspend fun getProfile(): Profile? {
-        Log.d("ProfileRepository", "Returning dummy profile: $dummyProfile")
-        return dummyProfile
+    suspend fun getProfile(): User? {
+        Log.d("ProfileRepository", "Returning dummy profile: $dummyUser")
+        return dummyUser
 
         // TODO: use this
 //        val user = authRepository.getCurrentUser() ?: return null
 //        return profileDataSource.getProfile(user.uid)
     }
 
-    suspend fun saveProfile(profile: Profile) {
-        Log.d("ProfileRepository", "Saving dummy profile: $profile")
-        dummyProfile = profile
+    suspend fun saveProfile(user: User) {
+        Log.d("ProfileRepository", "Saving dummy profile: $user")
+        dummyUser = user
 
         // TODO: use this
 //        Log.d("ProfileRepository", "Saving profile to repository: $profile")

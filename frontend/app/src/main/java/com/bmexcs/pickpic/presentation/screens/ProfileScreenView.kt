@@ -65,7 +65,7 @@ fun ProfileScreenView(
 
 @Composable
 fun EditableDisplayNameField(viewModel: ProfileViewModel) {
-    val profileState by viewModel.profile.collectAsState()
+    val profileState by viewModel.user.collectAsState()
 
     Text(
         text = "Display Name",
@@ -89,7 +89,7 @@ fun EditableDisplayNameField(viewModel: ProfileViewModel) {
 
 @Composable
 fun EditableEmailField(viewModel: ProfileViewModel) {
-    val profileState by viewModel.profile.collectAsState()
+    val profileState by viewModel.user.collectAsState()
 
     Text(
         text = "Email",
@@ -113,7 +113,7 @@ fun EditableEmailField(viewModel: ProfileViewModel) {
 
 @Composable
 fun EditablePhoneNumberField(viewModel: ProfileViewModel) {
-    val profileState by viewModel.profile.collectAsState()
+    val profileState by viewModel.user.collectAsState()
 
     Text(
         text = "Phone Number",

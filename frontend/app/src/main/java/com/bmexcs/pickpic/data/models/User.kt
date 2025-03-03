@@ -5,7 +5,7 @@ import com.bmexcs.pickpic.data.serializable.SerializableUUID
 import java.util.UUID
 
 @Serializable
-data class Profile(
+data class User(
     val id: SerializableUUID = SerializableUUID(UUID(0, 0)),
     val displayName: String = "",
     val email: String = "", // TODO: use Email class?

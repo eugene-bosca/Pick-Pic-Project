@@ -1,5 +1,3 @@
-@file:JvmName("ApiServiceKt")
-
 package com.bmexcs.pickpic.data.utils
 
 import android.util.Log
@@ -49,6 +47,7 @@ object ApiService {
         }
     }
 
+    // TODO: test
     fun <T, R> post(
         endpoint: String,
         requestBody: R,
