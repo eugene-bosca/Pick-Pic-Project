@@ -6,8 +6,7 @@ import java.util.UUID
 
 @Serializable
 data class Event(
-    val id: SerializableUUID = SerializableUUID(UUID(0, 0)),
-    val ownerId: SerializableUUID = SerializableUUID(UUID(0, 0)),
-    val userIds: List<SerializableUUID> = listOf(),
-    val imageIds: List<SerializableUUID> = listOf()
+    val event_id: SerializableUUID = SerializableUUID(UUID(0, 0)),
+    val event_name: String = "",
+    val owner: SerializableUUID = SerializableUUID(UUID(0, 0)),
 )

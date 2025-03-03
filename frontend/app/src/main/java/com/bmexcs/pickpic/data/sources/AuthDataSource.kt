@@ -11,14 +11,14 @@ import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-private const val TAG = "FIREBASE_DATASOURCE"
+private const val TAG = "AuthDataSource"
 
 class AuthDataSource @Inject constructor(
     private val firebaseAuth: FirebaseAuth
 ) {
 
-    fun getCurrentUser(): FirebaseUser? {
-        return firebaseAuth.currentUser
+    fun getCurrentUser(): FirebaseUser {
+        return firebaseAuth.currentUser ?: throw Exception("Current user is null")
     }
 
     suspend fun getIdToken(): String? {

@@ -76,7 +76,7 @@ fun EditableDisplayNameField(viewModel: ProfileViewModel) {
     Spacer(modifier = Modifier.height(4.dp))
 
     OutlinedTextField(
-        value = profileState?.displayName ?: "",
+        value = profileState?.display_name ?: "",
         onValueChange = { viewModel.updateDisplayName(it) },
         keyboardOptions = KeyboardOptions.Default.copy(
             keyboardType = KeyboardType.Email

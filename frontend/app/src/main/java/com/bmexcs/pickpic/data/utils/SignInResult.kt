@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.data.models
+package com.bmexcs.pickpic.data.utils
 
 sealed class SignInResult {
     data object Success : SignInResult()
