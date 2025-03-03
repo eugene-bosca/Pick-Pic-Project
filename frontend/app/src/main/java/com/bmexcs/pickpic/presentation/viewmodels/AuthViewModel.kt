@@ -2,7 +2,7 @@ package com.bmexcs.pickpic.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.SignInResult
+import com.bmexcs.pickpic.data.utils.SignInResult
 import com.bmexcs.pickpic.data.repositories.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,17 +28,12 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun signOut() {
-        viewModelScope.launch {
-            authRepository.signOut()
-        }
-    }
-
     private fun checkSignedInUser() {
-        _signInResult.value = if (authRepository.getCurrentUser() != null) {
+        _signInResult.value = try {
+            authRepository.getCurrentUser()
             SignInResult.Success
-        } else {
-            null
+        } catch (e: Exception) {
+            SignInResult.UnknownError
         }
     }
 }
