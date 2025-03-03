@@ -32,8 +32,3 @@ object Utils {
         }
     }
 }
-
-
-// Example usage:
-//val qrCodeBitmap = generateQRCode("myapp://invite?code=12345", 512, 512)
-// Display qrCodeBitmap in an ImageView

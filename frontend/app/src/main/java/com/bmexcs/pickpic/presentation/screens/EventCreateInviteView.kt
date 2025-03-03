@@ -30,10 +30,14 @@ fun EventCreateInviteView(
     val lifecycleOwner = LocalLifecycleOwner.current
     val view = LocalView.current
 
-    val inviteLink = "myapp://invite?eventId=$eventId"
+    val obfuscatedEventId = "***" // TODO: make call to backend here to get obfuscated event id
+    val event_name = "Event Name" // TODO: make call to backend (or fetch from frontend?) here to get event name
+
+
+    val inviteLink = "myapp://invite?eventId=$obfuscatedEventId"
     var qrCodeBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
-    LaunchedEffect(eventId) {
+    LaunchedEffect(obfuscatedEventId) {
         qrCodeBitmap = Utils.generateQRCode(inviteLink, 512, 512)
     }
 
@@ -45,7 +49,7 @@ fun EventCreateInviteView(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Event Invite",
+            text = "Invite your friends to join ${event_name}!",
             fontSize = 24.sp,
             modifier = Modifier.padding(bottom = 16.dp)
         )
