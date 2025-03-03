@@ -11,48 +11,48 @@ import com.bmexcs.pickpic.presentation.screens.RankingScreenView
 import com.bmexcs.pickpic.presentation.screens.SupportScreenView
 import com.bmexcs.pickpic.presentation.screens.AuthScreenView
 import com.bmexcs.pickpic.presentation.screens.EventInvitationScreenView
-import com.bmexcs.pickpic.presentation.shared.AppHeader
+import com.bmexcs.pickpic.presentation.shared.PickPicScaffold
 
 @Composable
 fun Navigation(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Route.Home.route) {
+    NavHost(navController = navController, startDestination = Route.Auth.route) {
         // Home Screen
         composable(Route.Home.route) {
-            AppHeader("Home Page", navController) {
+            PickPicScaffold("Home Page", navController) {
                 HomePageScreenView(navController)
             }
         }
 
         // Profile Screen
         composable(Route.Profile.route) {
-            AppHeader("Profile", navController) { 
+            PickPicScaffold("Profile", navController) {
                 ProfileScreenView(navController)
             }
         }
 
         // Support Screen
         composable(Route.Support.route) {
-            AppHeader("Support", navController) { 
+            PickPicScaffold("Support", navController) {
                 SupportScreenView(navController)
             }
         }
 
         // Event Screen
         composable(Route.Event.route) {
-            AppHeader("Events", navController) { 
+            PickPicScaffold("Events", navController) {
                 EventScreenView(navController)
             }
         }
 
         // Ranking Screen
         composable(Route.Ranking.route) {
-            AppHeader("Ranking", navController) { 
+            PickPicScaffold("Ranking", navController) {
                 RankingScreenView(navController)
             }
         }
 
         // Auth Screen
-        composable(Route.AuthPage.route) {
+        composable(Route.Auth.route) {
             AuthScreenView(navController)
         }
 
