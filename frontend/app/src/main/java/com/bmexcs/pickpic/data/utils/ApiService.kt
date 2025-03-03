@@ -12,7 +12,7 @@ import okhttp3.OkHttpClient
 private const val TAG = "ApiService"
 
 object ApiService {
-    private const val BASE_URL = "URL"
+    private const val BASE_URL = "https://pick-pic-service-627889116714.northamerica-northeast2.run.app"
     private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
 
     private val client = OkHttpClient()

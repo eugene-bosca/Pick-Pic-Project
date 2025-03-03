@@ -30,7 +30,7 @@ class CreateEventViewModel @Inject constructor(
             return
         }
 
-        val newEvent = CreateEvent(event_name = name, owner = SerializableUUID(UUID.fromString("68e24b1a-36c8-4de5-a751-ba414e77db0b")))
+        val newEvent = CreateEvent(event_name = name, owner = UUID.fromString("68e24b1a-36c8-4de5-a751-ba414e77db0b"))
         _event.value = newEvent
 
         viewModelScope.launch {
