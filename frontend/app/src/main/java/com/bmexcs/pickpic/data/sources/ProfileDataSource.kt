@@ -1,7 +1,7 @@
 package com.bmexcs.pickpic.data.sources
 
 import android.util.Log
-import com.bmexcs.pickpic.data.models.Profile
+import com.bmexcs.pickpic.data.models.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
@@ -17,7 +17,7 @@ class ProfileDataSource @Inject constructor(
 ) {
     private val client = OkHttpClient()
 
-    suspend fun getProfile(userId: String): Profile {
+    suspend fun getProfile(userId: String): User {
         val request = Request.Builder()
             .url("https://localhost:8080/users/$userId")
             .build()
@@ -28,21 +28,21 @@ class ProfileDataSource @Inject constructor(
                 if (!response.isSuccessful || responseBody == null) {
                     throw Exception("Failed to fetch profile")
                 }
-                Json.decodeFromString(Profile.serializer(), responseBody)
+                Json.decodeFromString(User.serializer(), responseBody)
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            Profile()
+            User()
         }
     }
 
-    suspend fun saveProfile(userId: String, profile: Profile) {
+    suspend fun saveProfile(userId: String, user: User) {
         Log.d("ProfileDataSource", "Profile saving")
         val jsonBody = Json.encodeToString(mapOf(
-            "display_name" to profile.displayName,
-            "email" to profile.email,
-            "phone" to profile.phone,
-            "profile_picture" to profile.profilePictureId.toString()
+            "display_name" to user.displayName,
+            "email" to user.email,
+            "phone" to user.phone,
+            "profile_picture" to user.profilePictureId.toString()
         ))
 
         val requestBody = jsonBody.toRequestBody("application/json".toMediaType())
