@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.EventListItem
 import com.bmexcs.pickpic.data.repositories.AuthRepository
-import com.bmexcs.pickpic.data.repositories.HomePageRepository
+import com.bmexcs.pickpic.data.repositories.EventRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +17,7 @@ import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class HomePageViewModel @Inject constructor(
-    private val listEvents: HomePageRepository,
+    private val eventRepository: EventRepository,
     private val authRepository: AuthRepository
 ) : ViewModel() {
     // Now we use JsonElement instead of Profile.
@@ -44,7 +44,7 @@ class HomePageViewModel @Inject constructor(
                     Log.d("HomePageViewModel", "Fetching events for user: $userId")
                     // Execute the network call on the IO dispatcher
                     val eventItems = withContext(Dispatchers.IO) {
-                        listEvents.getEvents("68e24b1a-36c8-4de5-a751-ba414e77db0b")
+                        eventRepository.getEvents("68e24b1a-36c8-4de5-a751-ba414e77db0b")
                     }
                     _events.value = eventItems
                     _errorMessage.value = null

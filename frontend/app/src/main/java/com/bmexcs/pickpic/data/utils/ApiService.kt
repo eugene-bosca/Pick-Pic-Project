@@ -82,6 +82,41 @@ object ApiService {
         }
     }
 
+    // TODO: test
+    fun <T, R> patch(
+        endpoint: String,
+        requestBody: R,
+        responseType: Class<T>,
+        token: String
+    ): T {
+        Log.d(TAG, "Patching to endpoint: $endpoint")
+
+        val url = buildUrl(endpoint)
+
+        val jsonBody = toJson(requestBody)
+        val requestBodyObj = jsonBody.toRequestBody(jsonMediaType)
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .addHeader("Content-Type", "application/json")
+            .patch(requestBodyObj)
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            Log.d(TAG, "Response code: ${response.code}")
+
+            validateResponse(response)
+
+            val body = response.body?.string() ?: throw HttpException(
+                response.code,
+                "Empty response body"
+            )
+
+            return parseResponseBody(body, responseType)
+        }
+    }
+
     private fun buildUrl(path: String): String = "$BASE_URL/$path"
 
     private fun validateResponse(response: Response) {

@@ -5,7 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.User
-import com.bmexcs.pickpic.data.repositories.ProfileRepository
+import com.bmexcs.pickpic.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val profileRepository: ProfileRepository,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     // UI state for the profile (use StateFlow to observe profile data in the UI)
@@ -37,7 +37,7 @@ class ProfileViewModel @Inject constructor(
     // Loads the current profile.
     fun loadProfile() {
         viewModelScope.launch {
-            val result = profileRepository.getProfile()
+            val result = userRepository.getUser()
             if (result != null) {
                 _user.value = result // Cache in ViewModel
             }
@@ -51,7 +51,7 @@ class ProfileViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            _user.value?.let { profileRepository.saveProfile(it) }
+            _user.value?.let { userRepository.updateUser(it) }
         }
     }
 
@@ -62,7 +62,7 @@ class ProfileViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            _user.value?.let { profileRepository.saveProfile(it) }
+            _user.value?.let { userRepository.updateUser(it) }
         }
     }
 
@@ -73,14 +73,14 @@ class ProfileViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            _user.value?.let { profileRepository.saveProfile(it) }
+            _user.value?.let { userRepository.updateUser(it) }
         }
     }
 
     // Logs the user out.
     fun logOut() {
         viewModelScope.launch {
-            profileRepository.signOut()
+            userRepository.signOut()
         }
     }
 }

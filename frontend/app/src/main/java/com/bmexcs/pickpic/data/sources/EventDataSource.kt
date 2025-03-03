@@ -5,7 +5,7 @@ import com.bmexcs.pickpic.data.models.EventListResponse
 import com.bmexcs.pickpic.data.utils.ApiService
 import javax.inject.Inject
 
-class HomePageDataSource @Inject constructor(
+class EventDataSource @Inject constructor(
     private val authDataSource: AuthDataSource
 ) {
     suspend fun getEvents(userId: String): List<EventListItem> {
