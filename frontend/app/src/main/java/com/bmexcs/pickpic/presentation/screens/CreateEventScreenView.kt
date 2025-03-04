@@ -30,6 +30,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,8 +55,7 @@ fun CreateEventScreenView(
             contentDescription = "Background Image",
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.5f)
-                .clip(RoundedCornerShape(bottomStart = 80.dp, bottomEnd = 80.dp)),
+                .fillMaxHeight(),
             contentScale = ContentScale.Crop
         )
     }
@@ -91,7 +91,7 @@ fun CreateEventScreenView(
                                     "Event created successfully!",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                                navController.navigate(Route.CreateEvent.route)
+                                navController.navigate(Route.Home.route)
                             },
                             onError = { errorMessage ->
                                 Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
@@ -119,6 +119,7 @@ fun EditableEventNameField(viewModel: CreateEventViewModel = hiltViewModel()) {
     Text(
         text = "New Event Name",
         fontSize = 18.sp,
+        fontWeight = FontWeight.Bold,
         modifier = Modifier.padding(start = 8.dp)
     )
 
@@ -131,7 +132,8 @@ fun EditableEventNameField(viewModel: CreateEventViewModel = hiltViewModel()) {
             viewModel.eventName.value = newValue},
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier.fillMaxWidth(),
-        singleLine = true
+        singleLine = true,
+        placeholder = { Text("Name") }
     )
 }
 
