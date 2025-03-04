@@ -30,7 +30,7 @@ class EventContent(models.Model):
     image_id = models.ForeignKey(Image, on_delete=models.CASCADE)
 
 class EventUser(models.Model):
-    event = models.ForeignKey(EventContent, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     class Meta:

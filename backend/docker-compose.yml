@@ -18,6 +18,8 @@ services:
       dockerfile: Dockerfile.web
     container_name: django_container
     restart: always
+    depends_on:
+      - cloud-sql-proxy
     env_file:
       - .env
     ports:

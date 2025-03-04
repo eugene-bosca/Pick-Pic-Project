@@ -4,13 +4,14 @@ from .serializers import UserSerializer, UserSettingsSerializer, EventSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view, OpenApiTypes, OpenApiResponse
+from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view, OpenApiTypes, OpenApiResponse, OpenApiExample
 
 from .models import User
 
 from django.http import FileResponse
 from django.contrib.auth.hashers import check_password
 from django.conf import settings
+from rest_framework.request import Request
 
 import uuid
 import jwt
@@ -23,8 +24,7 @@ import mimetypes
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    lookup_field = "firebase_id"  # Set firebase_id as the lookup field
-
+    
 # UserSettings ViewSet
 class UserSettingsViewSet(viewsets.ModelViewSet):
     queryset = UserSettings.objects.all()
@@ -58,11 +58,14 @@ class ScoredByViewSet(viewsets.ModelViewSet):
     queryset = ScoredBy.objects.all()
     serializer_class = ScoredBySerializer
 
+class CreateNewEventViewSet(viewsets.ViewSet):
+    serializer = EventSerializer
+
 # Secret key for JWT
 SECRET_KEY = settings.SECRET_KEY  # Use Django's secret key
 
 @api_view(['POST'])
-def authenticate(request):
+def authenticate(request: Request):
     username = request.data.get('username')
     password = request.data.get('password')
 
@@ -114,7 +117,7 @@ def authenticate(request):
     )
 )    
 @api_view(['GET', 'PUT'])
-def picture(request):
+def picture(request: Request):
     if request.method == 'GET':
         
         picture_name = request.GET.get("picture_name")
@@ -147,7 +150,7 @@ def picture(request):
         return Response(status=status.HTTP_201_CREATED)
     
 @api_view(['GET', 'PUT'])
-def user_pfp(request):
+def user_pfp(request: Request):
 
     user_id = request.GET.get("user_id")
 
@@ -188,49 +191,50 @@ def user_pfp(request):
         return Response(status=status.HTTP_201_CREATED)
     
 @api_view(['GET'])
-def event_image_count(request, event_id):
+def event_image_count(request: Request, event_id):
 
     count = EventContent.objects.filter(event_id=event_id).count()
 
     return Response(data={ "image_count": count }, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-def list_users_events(request, user_id):
-    user = User.objects.get(user_id=user_id)
+def list_users_events(request: Request, user_id):
 
-    owned_events = Event.objects.filter(owner_id=user)
-    invited_events = EventUser.objects.filter(user_id=user)
+    owned_events = Event.objects.filter(owner_id=user_id)
 
-    owned_event_contents = EventContent.objects.filter(event__in=owned_events)
+    invited_event_ids = EventUser.objects.filter(user_id=user_id).values_list('event_id', flat=True)
 
-    invited_events = EventUser.objects.filter(user=user)
-    invited_event_contents = EventContent.objects.filter(event__in=[ie.event for ie in invited_events])
-
-    owned_events_data = [
-        {
-            "owner_display_name": event.event.owner.display_name,
-            "owner_profile_picture": event.event.owner.profile_picture, 
-            "event_name": event.event.event_name,
-        }
-        for event in owned_event_contents
-    ]
-
-    invited_events_data = [
-        {
-            "owner_display_name": event.event.owner.display_name,
-            "owner_profile_picture": event.event.owner.profile_picture, 
-            "event_name": event.event.event_name,
-        }
-        for event in invited_event_contents
-    ]
-
+    invited_events = Event.objects.filter(event_id__in=invited_event_ids)
+    
     return Response(status=status.HTTP_200_OK ,data={
-        "owned_events": owned_events_data,
-        "invited_events": invited_events_data
+        "owned_events": EventSerializer(owned_events, many=True).data,
+        "invited_events": EventUserSerializer(invited_events, many=True).data
     })
+ 
+@api_view(['POST'])
+def create_new_event(request: Request):
+
+    user_id = request.data.get('user_id')
+    event_name = request.data.get('event_name')
+
+    event = Event.objects.create(event_name=event_name, user_id=user_id)
+
+    eventUser = EventUser.objects.create(event_id=event.event_id, user_id=user_id)
+
+    return Response(status=status.HTTP_201_CREATED, data=event)
+
+@api_view(['POST'])
+def invite_to_event(request: Request):
+
+    user_id = request.data.get('user_id')
+    event_id = request.data.get('event_id') 
+
+    eventUser = EventUser.objects.create(event_id=event_id, user_id=user_id)
+
+    return Response(status=status.HTTP_202_ACCEPTED, data=eventUser)
 
 @api_view(['GET'])
-def get_user_id_by_firebase_id(request, firebase_id):
+def get_user_id_by_firebase_id(request: Request, firebase_id):
     """
     Retrieves the user_id associated with a given firebase_id.
 
@@ -241,9 +245,13 @@ def get_user_id_by_firebase_id(request, firebase_id):
     Returns:
         Response: A JSON response containing the user_id or an error message.
     """
+
+    print(firebase_id)
+    print(User.objects.all())
+
     try:
         user = User.objects.get(firebase_id=firebase_id)
-        return Response({'user_id': str(user.user_id)}, status=status.HTTP_200_OK) # Convert UUID to string for JSON serialization
+        return Response({'user_id': user.user_id}, status=status.HTTP_200_OK) # Convert UUID to string for JSON serialization
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
