@@ -57,7 +57,7 @@ fun HomePageScreenView(
                 )
                 Text("Join Event")
             }
-            ElevatedButton(onClick = { navController.navigate(Route.Event.route) }) {
+            ElevatedButton(onClick = { navController.navigate(Route.CreateEvent.route) }) {
                 Icon(
                     painter = painterResource(R.drawable.add_circle_24px),
                     contentDescription = "Create Event Icon",
@@ -87,10 +87,10 @@ fun HomePageScreenView(
                     items(events) { eventItem: ListUserEventsItem ->
                         ListItem(
                             headlineContent = {
-                                Text("${eventItem.name}")
+                                Text(eventItem.event_name)
                             },
                             supportingContent = {
-                                Text("Event Owner: ${eventItem.owner}")
+                                Text("Event Owner: ${eventItem.owner.display_name}")
                             },
                             trailingContent = {
                                 IconButton(onClick = { /* doSomething() */ }) {
