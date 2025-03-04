@@ -27,6 +27,7 @@ class AuthDataSource @Inject constructor(
 
             return tokenResult?.token
         } else {
+            Log.e(TAG, "User is not authenticated")
             throw Exception("User is not authenticated")
         }
     }
