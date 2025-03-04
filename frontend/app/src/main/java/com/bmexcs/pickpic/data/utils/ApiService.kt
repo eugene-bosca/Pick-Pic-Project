@@ -25,7 +25,6 @@ object ApiService {
         token: String
     ): T = withContext(Dispatchers.IO) {
         Log.d(TAG, "Fetching from endpoint: $endpoint")
-
         val url = buildUrl(endpoint)
 
         val request = Request.Builder()

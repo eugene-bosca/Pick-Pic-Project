@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ListUserEventsItem(
     val event_id: String = "",
-    val name: String = "",
-    val owner: String = "",
-    val pfp_path: String = ""
+    val event_name: String = "",
+    val owner: User = User()
 )

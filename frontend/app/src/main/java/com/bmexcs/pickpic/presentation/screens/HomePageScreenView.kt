@@ -87,10 +87,10 @@ fun HomePageScreenView(
                     items(events) { eventItem: ListUserEventsItem ->
                         ListItem(
                             headlineContent = {
-                                Text("${eventItem.name}")
+                                Text(eventItem.event_name)
                             },
                             supportingContent = {
-                                Text("Event Owner: ${eventItem.owner}")
+                                Text("Event Owner: ${eventItem.owner.display_name}")
                             },
                             trailingContent = {
                                 IconButton(onClick = { /* doSomething() */ }) {
