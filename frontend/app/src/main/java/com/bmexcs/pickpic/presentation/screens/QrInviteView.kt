@@ -41,125 +41,70 @@ fun EventCreateInviteView(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-
-    var obfuscatedEventId by remember { mutableStateOf<String?>(null) }
-    var eventName by remember { mutableStateOf<String?>(null) }
-    var qrCodeBitmap by remember { mutableStateOf<Bitmap?>(null) }
-    var inviteLink by remember { mutableStateOf<String?>(null) }
+    val inviteState by viewModel.inviteState.collectAsState()
 
     LaunchedEffect(eventId) {
-        scope.launch(Dispatchers.IO) {
-            try {
-                // Fetch obfuscated event ID
-                val obfuscatedIdResult = fetchObfuscatedEventId(eventId)
-                obfuscatedEventId = obfuscatedIdResult.first
-                eventName = obfuscatedIdResult.second
-
-                // Generate invite link
-                obfuscatedEventId?.let {
-                    inviteLink = "myapp://invite?eventId=$it"
-                    qrCodeBitmap = generateQRCode(inviteLink!!, 512, 512)
-                }
-            } catch (e: Exception) {
-                Log.e("EventCreateInviteView", "Error fetching data: ${e.message}")
-                // Handle error (e.g., show a toast or error message)
-            }
-        }
+        viewModel.fetchInviteDetails(eventId)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        eventName?.let { name ->
-            Text(
-                text = "Invite your friends to join $name!",
-                fontSize = 24.sp,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+    when (inviteState) {
+        is QrInviteViewModel.InviteState.Loading -> {
+            Text("Loading...")
         }
-
-        qrCodeBitmap?.let { bitmap ->
-            Image(
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = "QR Code",
-                modifier = Modifier.size(256.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        inviteLink?.let { link ->
-            Text(
-                text = link,
+        is QrInviteViewModel.InviteState.Success -> {
+            val successState = inviteState as QrInviteViewModel.InviteState.Success
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                textAlign = TextAlign.Center,
-                fontSize = 16.sp
-            )
-        }
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                successState.eventName?.let { name ->
+                    Text(
+                        text = "Invite your friends to join $name!",
+                        fontSize = 24.sp,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
 
-        Button(onClick = {
-            inviteLink?.let { link ->
-                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText("Invite Link", link)
-                clipboard.setPrimaryClip(clip)
-                android.widget.Toast.makeText(context, "Link copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+                successState.qrCodeBitmap?.let { bitmap ->
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = "QR Code",
+                        modifier = Modifier.size(256.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                successState.inviteLink?.let { link ->
+                    Text(
+                        text = link,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        textAlign = TextAlign.Center,
+                        fontSize = 16.sp
+                    )
+                }
+
+                Button(onClick = {
+                    successState.inviteLink?.let { link ->
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText("Invite Link", link)
+                        clipboard.setPrimaryClip(clip)
+                        android.widget.Toast.makeText(context, "Link copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }) {
+                    Text("Copy Link")
+                }
             }
-        }) {
-            Text("Copy Link")
         }
-    }
-}
-
-private suspend fun fetchObfuscatedEventId(eventId: String): Pair<String?, String?> = withContext(Dispatchers.IO) {
-    val client = OkHttpClient()
-    val request = Request.Builder()
-        .url("YOUR_BACKEND_URL/generate_invite_link/$eventId/") // Replace with your backend URL
-        .build()
-
-    try {
-        val response = client.newCall(request).execute()
-        if (response.isSuccessful) {
-            val responseBody = response.body?.string()
-            val json = JSONObject(responseBody)
-            val inviteLink = json.getString("invite_link")
-            val obfuscatedId = inviteLink.substringAfterLast("/") // Extract the obfuscated ID
-            val eventName = fetchEventName(eventId)
-            return@withContext Pair(obfuscatedId, eventName)
-        } else {
-            Log.e("EventCreateInviteView", "Failed to fetch obfuscated ID: ${response.code}")
-            return@withContext Pair(null, null)
+        is QrInviteViewModel.InviteState.Error -> {
+            val errorState = inviteState as QrInviteViewModel.InviteState.Error
+            Text("Error: ${errorState.errorMessage}")
         }
-    } catch (e: Exception) {
-        Log.e("EventCreateInviteView", "Error fetching obfuscated ID: ${e.message}")
-        return@withContext Pair(null, null)
-    }
-}
-
-private suspend fun fetchEventName(eventId: String): String? = withContext(Dispatchers.IO){
-    val client = OkHttpClient()
-    val request = Request.Builder()
-        .url("YOUR_BACKEND_URL/events/$eventId/") //Replace with your backend url
-        .build()
-
-    try{
-        val response = client.newCall(request).execute()
-        if(response.isSuccessful){
-            val responseBody = response.body?.string()
-            val json = JSONObject(responseBody)
-            return@withContext json.getString("event_name")
-        } else{
-            Log.e("EventCreateInviteView", "Failed to fetch event name: ${response.code}")
-            return@withContext null
-        }
-    }catch(e: Exception){
-        Log.e("EventCreateInviteView", "Error fetching event name: ${e.message}")
-        return@withContext null
     }
 }
 
