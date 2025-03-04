@@ -21,6 +21,7 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.coroutineScope
 import java.security.MessageDigest
 import java.util.UUID
 import javax.inject.Inject
@@ -120,6 +121,25 @@ class AuthRepository @Inject constructor(
                     authDataSource.firebaseAuthWithGoogle(googleIdToken)
                 }
             }
+        }
+        coroutineScope {
+            checkUserExists()
+        }
+    }
+
+    private suspend fun checkUserExists() {
+        // Check if user with firebaseID exists. If not, returns null.
+        Log.i(TAG, "Check if User exists")
+        val user: User? = userDataSource.getUser(authDataSource.getCurrentUser().uid);
+        Log.i(TAG, "Check Completed")
+
+        // If null, create user.
+        if (user == null) {
+            val newUser = userDataSource.createUser()
+            Log.d(TAG, "User created: $newUser")
+        }
+        else {
+            Log.d(TAG, "User exists: $user")
         }
     }
 }

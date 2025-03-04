@@ -24,12 +24,12 @@ from . import views
 
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet)
-router.register(r'user-settings', views.UserSettingsViewSet)
+router.register(r'user_settings', views.UserSettingsViewSet)
 router.register(r'event', views.EventViewSet)
-router.register(r'event-users', views.EventUserViewSet)
+router.register(r'event_users', views.EventUserViewSet)
 router.register(r'images', views.ImageViewSet)
-router.register(r'event-contents', views.EventContentViewSet)
-router.register(r'scored-by', views.ScoredByViewSet)
+router.register(r'event_contents', views.EventContentViewSet)
+router.register(r'scored_by', views.ScoredByViewSet)
 urlpatterns = [
     # swagger
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
@@ -45,9 +45,16 @@ urlpatterns = [
     path('authenticate/', views.authenticate, name='authenticate'),
 
     path('picture/', views.picture, name='picture'),
+
     path('event/image-count/<uuid:event_id>/', views.event_image_count, name='event_image_count'),
     path('list-users-events/<uuid:user_id>/', views.list_users_events, name='list_users_events'),
 
     path('generate_invite_link/<uuid:event_id>/', views.generate_invite_link, name='generate_invite_link'),
     path('resolve_invite_link/<str:encoded_event_id>/', views.resolve_invite_link, name='resolve_invite_link'),
+
+    path('event/image-count/<str:event_id>/', views.event_image_count, name='event_image_count'),
+    path('list_users_events/<str:user_id>/', views.list_users_events, name='List Users Events'),
+    path('get_user_id_by_firebase_id/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='exchange_user_id_for_firebase_id'),
+    path('create_new_event/', views.create_new_event, name='create new event'),
+    path('invite_to_event/', views.invite_to_event, name='invite user to event'),
 ]
