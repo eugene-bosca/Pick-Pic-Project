@@ -1,8 +1,7 @@
 package com.bmexcs.pickpic.data.repositories
 
-import android.util.Log
 import com.bmexcs.pickpic.data.models.Event
-import com.bmexcs.pickpic.data.models.Image
+import com.bmexcs.pickpic.data.models.EventContent
 import com.bmexcs.pickpic.data.sources.EventsDataSource
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -21,12 +20,12 @@ class EventsRepository @Inject constructor(
         // TODO: add user to event
     }
 
-    suspend fun getImageByEventId(eventId: String): List<Image> {
+    suspend fun getImageByEventId(eventId: String): List<EventContent> {
         return eventsDataSource.getImagesByEventId(eventId)
     }
 
-    suspend fun addImageByEventId(image: Image) {
-        eventsDataSource.addImageByEventId(image)
+    suspend fun addImageByEventId(eventContent: EventContent) {
+        eventsDataSource.addImageByEventId(eventContent)
     }
 
     suspend fun deleteImageByEventId(imageId: String) {

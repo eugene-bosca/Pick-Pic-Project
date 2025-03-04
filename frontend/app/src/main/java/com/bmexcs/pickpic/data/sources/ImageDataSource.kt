@@ -2,41 +2,21 @@ package com.bmexcs.pickpic.data.sources
 
 import android.graphics.Bitmap
 import com.bmexcs.pickpic.data.serializable.SerializableUUID
+import com.bmexcs.pickpic.data.utils.ApiService
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 import javax.inject.Inject
 
-class ImageDataSource @Inject constructor() {
-    suspend fun getImageByImageId(imageId: SerializableUUID): Bitmap? {
-        val client = OkHttpClient()
+class ImageDataSource @Inject constructor(
+    private val authDataSource: AuthDataSource
+) {
+    private val client = OkHttpClient()
 
-        // Get List of Image Objects
-        val request = Request.Builder()
-            .url("https://pick-pic-service-627889116714.northamerica-northeast2.run.app/api/images/$imageId")
-            .build()
+    suspend fun getImageByImageId(imageId: String): Bitmap {
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+        val response = ApiService.fetch("images/$imageId", Bitmap::class.java, token)
 
-        try {
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    return null
-                }
-                val responseBody = response.body?.string()
-
-                if (responseBody != null) {
-                    val jsonObject = JSONObject(responseBody)
-
-                    if (jsonObject.getString("status") == "success") {
-                        val jsonArray = jsonObject.getJSONArray("image")
-
-                        return null
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        return null
+        return response
     }
 }

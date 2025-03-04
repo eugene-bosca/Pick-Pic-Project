@@ -118,6 +118,33 @@ object ApiService {
         }
     }
 
+    suspend fun <T> delete(
+        endpoint: String,
+        responseType: Class<T>,
+        token: String
+    ): T = withContext(Dispatchers.IO) {
+        Log.d(TAG, "Patching to endpoint: $endpoint")
+
+        val url = buildUrl(endpoint)
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .delete()
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            Log.d(TAG, "Response code: ${response.code}")
+
+            val body = response.body?.string() ?: throw HttpException(
+                response.code,
+                "Empty response body"
+            )
+
+            return@withContext parseResponseBody(body, responseType)
+        }
+    }
+
     private fun buildUrl(path: String): String = "$BASE_URL/$path"
 
     private fun <T> parseResponseBody(body: String, modelClass: Class<T>): T {

@@ -17,7 +17,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
 import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.shared.ImageFull
@@ -30,22 +29,37 @@ fun EventScreenView(
 ) {
 
     val images by viewModel.images.collectAsState()
+    val event by viewModel.event.collectAsState()
     var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
 
     Column (
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
     ){
-        ElevatedButton(onClick = {navController.navigate(Route.Ranking.route)}) {
-            Icon(
-                painter = painterResource(R.drawable.podium),
-                contentDescription = "Rank Photos Icon",
-                modifier = Modifier.padding(end = 8.dp)
-            )
-            Text("Rank Photos")
+        Row(
+        ) {
+            ElevatedButton(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                onClick = {viewModel.addImageByEventId(event)},
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.add_circle_24px),
+                    contentDescription = "Rank Photos Icon",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("Add Photos")
+            }
+            ElevatedButton(onClick = {navController.navigate(Route.Ranking.route)}) {
+                Icon(
+                    painter = painterResource(R.drawable.podium),
+                    contentDescription = "Rank Photos Icon",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("Rank Photos")
+            }
         }
-        Spacer(modifier = Modifier.height(33.dp))
 
+        Spacer(modifier = Modifier.height(33.dp))
             if (images.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -95,8 +109,4 @@ fun EventScreenView(
             }
         }
     }
-    ImageFull(
-        imageUrl = fullScreenImageUrl,
-        onDismiss = { fullScreenImageUrl = null } // Reset the state to dismiss the dialog
-    )
-}
+

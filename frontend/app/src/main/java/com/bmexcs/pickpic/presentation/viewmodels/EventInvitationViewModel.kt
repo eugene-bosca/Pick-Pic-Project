@@ -29,7 +29,7 @@ class EventInvitationViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             _isLoading.value = true
             try {
-                _eventId.value?.let { eventRepository.addUserToEvent() }
+                _eventId.value?.let { eventRepository.addUserToEvent("test") }
                 _isLoading.value = false
             } catch (e: Exception) {
                 _errorMessage.value = "Failed to accept event: ${e.message}"
