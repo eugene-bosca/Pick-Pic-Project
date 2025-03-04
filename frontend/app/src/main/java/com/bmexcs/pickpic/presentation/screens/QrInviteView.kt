@@ -18,7 +18,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.bmexcs.pickpic.presentation.viewmodels.QrInviteViewModel
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
@@ -34,7 +36,8 @@ import java.util.Hashtable
 @Composable
 fun EventCreateInviteView(
     navController: NavHostController,
-    eventId: String
+    viewModel: QrInviteViewModel = hiltViewModel(),
+    eventId: String,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
