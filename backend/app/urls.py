@@ -47,4 +47,7 @@ urlpatterns = [
     path('picture/', views.picture, name='picture'),
     path('event/image-count/<uuid:event_id>/', views.event_image_count, name='event_image_count'),
     path('list-users-events/<uuid:user_id>/', views.list_users_events, name='list_users_events'),
+
+    path('generate_invite_link/<uuid:event_id>/', views.generate_invite_link, name='generate_invite_link'),
+    path('resolve_invite_link/<str:encoded_event_id>/', views.resolve_invite_link, name='resolve_invite_link'),
 ]
