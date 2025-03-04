@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.tasks.await
+import okhttp3.OkHttpClient
 import javax.inject.Inject
 
 private const val TAG = "AuthDataSource"
@@ -16,7 +17,6 @@ private const val TAG = "AuthDataSource"
 class AuthDataSource @Inject constructor(
     private val firebaseAuth: FirebaseAuth
 ) {
-
     fun getCurrentUser(): FirebaseUser {
         return firebaseAuth.currentUser ?: throw Exception("Current user is null")
     }
