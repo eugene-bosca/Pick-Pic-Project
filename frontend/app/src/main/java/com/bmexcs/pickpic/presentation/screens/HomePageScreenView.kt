@@ -18,14 +18,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.R
 import androidx.navigation.NavHostController
+import com.bmexcs.pickpic.data.models.Event
 import com.bmexcs.pickpic.data.models.ListUserEventsItem
 import com.bmexcs.pickpic.navigation.Route
+import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 import com.bmexcs.pickpic.presentation.viewmodels.HomePageViewModel
 
 @Composable
 fun HomePageScreenView(
     navController: NavHostController,
-    viewModel: HomePageViewModel = hiltViewModel()
+    viewModel: HomePageViewModel = hiltViewModel(),
+    eventsViewModel: EventsViewModel = hiltViewModel()
 ) {
     val events by viewModel.events.collectAsState()
 
@@ -85,20 +88,26 @@ fun HomePageScreenView(
                     contentPadding = PaddingValues(horizontal = 16.dp)
                 ) {
                     items(events) { eventItem: ListUserEventsItem ->
-                        ListItem(
-                            headlineContent = {
-                                Text(eventItem.event_name)
-                            },
-                            supportingContent = {
-                                Text("Event Owner: ${eventItem.owner.display_name}")
-                            },
-                            trailingContent = {
-                                IconButton(onClick = { /* doSomething() */ }) {
-                                    Icon(Icons.Filled.MoreVert, contentDescription = null)
+                        ElevatedButton(onClick = {
+                            eventsViewModel.setEvent(Event(event_id = eventItem.event_id, event_name = eventItem.event_name))
+                            eventsViewModel.getImageByEventId(eventItem.event_id)
+                            navController.navigate(Route.Event.route)
+                        }) {
+                            ListItem(
+                                headlineContent = {
+                                    Text(eventItem.event_name)
+                                },
+                                supportingContent = {
+                                    Text("Event Owner: ${eventItem.owner.display_name}")
+                                },
+                                trailingContent = {
+                                    IconButton(onClick = { /* doSomething() */ }) {
+                                        Icon(Icons.Filled.MoreVert, contentDescription = null)
 
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                         HorizontalDivider()
                     }
                 }

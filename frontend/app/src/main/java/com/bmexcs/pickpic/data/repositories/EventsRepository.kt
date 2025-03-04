@@ -24,8 +24,8 @@ class EventsRepository @Inject constructor(
         return eventsDataSource.getImagesByEventId(eventId)
     }
 
-    suspend fun addImageByEventId(eventContent: EventContent) {
-        eventsDataSource.addImageByEventId(eventContent)
+    suspend fun addImageByEvent(eventContent: EventContent) {
+        eventsDataSource.addImageByEvent(eventContent)
     }
 
     suspend fun deleteImageByEventId(imageId: String) {

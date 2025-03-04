@@ -1,5 +1,15 @@
 package com.bmexcs.pickpic.presentation.screens
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.provider.MediaStore
+import android.widget.ImageView
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -13,14 +23,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.navigation.Route
-import com.bmexcs.pickpic.presentation.shared.ImageFull
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
+import java.io.InputStream
 
 @Composable
 fun EventScreenView(
@@ -29,8 +40,16 @@ fun EventScreenView(
 ) {
 
     val images by viewModel.images.collectAsState()
-    val event by viewModel.event.collectAsState()
-    var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            // Use the context and uri to convert the image to byte array
+            viewModel.addImageByEvent(viewModel.uriToByteArray(context, it))
+        }
+    }
 
     Column (
         modifier = Modifier.fillMaxSize(),
@@ -40,7 +59,7 @@ fun EventScreenView(
         ) {
             ElevatedButton(
                 modifier = Modifier.padding(horizontal = 20.dp),
-                onClick = {viewModel.addImageByEventId(event)},
+                onClick = {launcher.launch("image/*")},
             ) {
                 Icon(
                     painter = painterResource(R.drawable.add_circle_24px),
@@ -77,15 +96,16 @@ fun EventScreenView(
                     horizontalArrangement = Arrangement.spacedBy(16.dp), // Space between images
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(images) { bitmap ->
+                    items(images) { stream ->
                         ElevatedCard (
                             modifier = Modifier
                                 .size(width = 150.dp, height = 225.dp)
                                 .border(width = 1.dp, color = Color.Black)
                         ) {
-                            if(bitmap != null) {
+                            if(stream != null) {
+                                val imageBytes = android.util.Base64.decode(stream, 0)
                                 Image(
-                                    bitmap = bitmap.asImageBitmap(),
+                                    bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size).asImageBitmap(),
                                     contentDescription = "Event image",
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier
