@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.ListUserEventsItem
 import com.bmexcs.pickpic.data.repositories.AuthRepository
 import com.bmexcs.pickpic.data.repositories.EventRepository
+import com.bmexcs.pickpic.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +19,7 @@ import kotlinx.coroutines.withContext
 @HiltViewModel
 class HomePageViewModel @Inject constructor(
     private val eventRepository: EventRepository,
-    private val authRepository: AuthRepository
+    private val userRepository: UserRepository
 ) : ViewModel() {
     // Now we use JsonElement instead of Profile.
     private val _events = MutableStateFlow<List<ListUserEventsItem>>(emptyList())
@@ -30,28 +31,17 @@ class HomePageViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
-    private var user: String? = null
-
-    init {
-        user = authRepository.getCurrentUser()?.uid
-    }
-
     fun fetchEvents() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                user?.let { userId ->
-                    Log.d("HomePageViewModel", "Fetching events for user: $userId")
-                    // Execute the network call on the IO dispatcher
-                    val eventItems = withContext(Dispatchers.IO) {
-                        eventRepository.getEvents("68e24b1a-36c8-4de5-a751-ba414e77db0b")
-                    }
-                    _events.value = eventItems
-                    _errorMessage.value = null
-                } ?: run {
-                    _errorMessage.value = "User is not authenticated"
-                    Log.d("HomePageViewModel", "User is not authenticated")
+                Log.d("HomePageViewModel", "Fetching events for user: ${userRepository.getUser().user_id}")
+                // Execute the network call on the IO dispatcher
+                val eventItems = withContext(Dispatchers.IO) {
+                    eventRepository.getEvents()
                 }
+                _events.value = eventItems
+                _errorMessage.value = null
             } catch (e: Exception) {
                 _errorMessage.value = e.localizedMessage ?: "An unknown error occurred"
                 Log.e("HomePageViewModel", "Error fetching events", e)

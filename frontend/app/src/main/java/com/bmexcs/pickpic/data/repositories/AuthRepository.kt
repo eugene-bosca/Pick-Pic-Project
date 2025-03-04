@@ -13,7 +13,6 @@ import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import com.bmexcs.pickpic.BuildConfig
-import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.utils.SignInResult
 import com.bmexcs.pickpic.data.sources.AuthDataSource
 import com.bmexcs.pickpic.data.sources.UserDataSource
@@ -21,7 +20,6 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.coroutineScope
 import java.security.MessageDigest
 import java.util.UUID
 import javax.inject.Inject
@@ -77,6 +75,10 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    suspend fun initUserState() {
+        userDataSource.initUserWithFirebase()
+    }
+
     private fun buildGoogleSignInRequest(): GetCredentialRequest {
         // Create the nonce.
         val rawNonce = UUID.randomUUID().toString()
@@ -122,24 +124,8 @@ class AuthRepository @Inject constructor(
                 }
             }
         }
-        coroutineScope {
-            checkUserExists()
-        }
-    }
 
-    private suspend fun checkUserExists() {
-        // Check if user with firebaseID exists. If not, returns null.
-        Log.i(TAG, "Check if User exists")
-        val user: User? = userDataSource.getUser(authDataSource.getCurrentUser().uid);
-        Log.i(TAG, "Check Completed")
-
-        // If null, create user.
-        if (user == null) {
-            val newUser = userDataSource.createUser()
-            Log.d(TAG, "User created: $newUser")
-        }
-        else {
-            Log.d(TAG, "User exists: $user")
-        }
+        // Retrieve and cache the user ID associated with the Firebase ID.
+        initUserState()
     }
 }

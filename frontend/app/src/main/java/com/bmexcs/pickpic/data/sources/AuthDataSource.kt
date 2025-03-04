@@ -9,7 +9,6 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.tasks.await
-import okhttp3.OkHttpClient
 import javax.inject.Inject
 
 private const val TAG = "AuthDataSource"
@@ -28,7 +27,6 @@ class AuthDataSource @Inject constructor(
 
             return tokenResult?.token
         } else {
-            Log.e(TAG, "User is not authenticated")
             throw Exception("User is not authenticated")
         }
     }

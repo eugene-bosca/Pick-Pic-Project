@@ -8,7 +8,6 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
 import okhttp3.OkHttpClient
 
 private const val TAG = "ApiService"
@@ -20,7 +19,7 @@ object ApiService {
     private val client = OkHttpClient()
     private val gson = Gson()
 
-    suspend fun <T> fetch(
+    suspend fun <T> get(
         endpoint: String,
         responseType: Class<T>,
         token: String
@@ -39,8 +38,7 @@ object ApiService {
             Log.d(TAG, "Response code: ${response.code}")
 
             if (response.code == 404) {
-                Log.d(TAG, "User does not exist")
-                throw NotFoundException("User does not exist")
+                throw NotFoundException("Endpoint does not exist")
             }
 
             val body = response.body?.string() ?: throw HttpException(
@@ -64,6 +62,8 @@ object ApiService {
         val url = buildUrl(endpoint)
 
         val jsonBody = toJson(requestBody)
+        Log.d(TAG, "jsonBody = $jsonBody")
+
         val requestBodyObj = jsonBody.toRequestBody(jsonMediaType)
 
         val request = Request.Builder()
