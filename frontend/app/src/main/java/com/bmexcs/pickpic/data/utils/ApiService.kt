@@ -137,7 +137,7 @@ object ApiService {
         token: String,
         contentType: HttpContentType = HttpContentType.JSON
     ): T = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Patching to endpoint: $endpoint")
+        Log.d(TAG, "Putting to endpoint: $endpoint")
 
         val url = buildUrl(endpoint)
 
@@ -147,7 +147,7 @@ object ApiService {
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
-            .addHeader("Content-Type", contentType.toString())
+            .addHeader("Content-Type", "image/jpeg")
             .put(requestBodyObj)
             .build()
 
@@ -172,7 +172,7 @@ object ApiService {
         responseType: Class<T>,
         token: String
     ): T = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Patching to endpoint: $endpoint")
+        Log.d(TAG, "Deleting to endpoint: $endpoint")
 
         val url = buildUrl(endpoint)
 

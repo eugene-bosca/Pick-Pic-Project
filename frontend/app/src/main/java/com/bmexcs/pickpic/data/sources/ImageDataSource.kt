@@ -1,10 +1,8 @@
 package com.bmexcs.pickpic.data.sources
 
-import android.graphics.Bitmap
+import android.util.Log
 import com.bmexcs.pickpic.data.utils.ApiService
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.json.JSONObject
 import javax.inject.Inject
 
 class ImageDataSource @Inject constructor(
@@ -19,8 +17,9 @@ class ImageDataSource @Inject constructor(
         return response
     }
 
-    suspend fun addImageBinary(imageByte: ByteArray?) : String {
+    suspend fun addImageBinary(eventId: String, imageByte: ByteArray?) : String {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-        return ApiService.put("picture", imageByte, String::class.java, token)
+        Log.d("EVENT", eventId)
+        return ApiService.put("picture/$eventId", imageByte, String::class.java, token)
     }
 }

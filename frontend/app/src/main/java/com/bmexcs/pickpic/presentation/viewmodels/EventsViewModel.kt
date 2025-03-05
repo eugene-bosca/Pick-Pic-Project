@@ -1,5 +1,6 @@
 package com.bmexcs.pickpic.presentation.viewmodels
 
+import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -10,7 +11,6 @@ import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.Event
 import com.bmexcs.pickpic.data.models.EventContent
 import com.bmexcs.pickpic.data.models.Image
-import com.bmexcs.pickpic.data.repositories.AuthRepository
 import com.bmexcs.pickpic.data.repositories.EventsRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,11 +19,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 import javax.inject.Inject
+
 
 @HiltViewModel
 class EventsViewModel @Inject constructor(
@@ -62,19 +62,7 @@ class EventsViewModel @Inject constructor(
     fun addImageByEvent(imageByte: ByteArray?) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            val imageId = imageRepository.addImageBinary(imageByte)
-
-            val image = Image(
-                image_id = imageId,
-                file_name = "test"
-            )
-
-            val eventContent = EventContent(
-                event = event.value,
-                image_id = image
-            )
-
-            eventsRepository.addImageByEvent(eventContent)
+            val imageId = imageRepository.addImageBinary("035f8345-a25c-45f2-a88f-d994f4cfa667", imageByte)
         }
     }
 
@@ -88,6 +76,7 @@ class EventsViewModel @Inject constructor(
     fun uriToByteArray(context: Context, uri: Uri?): ByteArray? {
         var inputStream: InputStream? = null
         var byteArray: ByteArray? = null
+
         try {
             if(uri == null) {
                 return null
