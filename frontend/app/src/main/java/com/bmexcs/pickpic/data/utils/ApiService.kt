@@ -5,7 +5,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.OkHttpClient
@@ -14,7 +13,6 @@ private const val TAG = "ApiService"
 
 object ApiService {
     private const val BASE_URL = "https://pick-pic-service-627889116714.northamerica-northeast2.run.app"
-    private val jsonMediaType = "application/json".toMediaType()
 
     private val client = OkHttpClient()
     private val gson = Gson()
@@ -34,7 +32,11 @@ object ApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            Log.d(TAG, "Response code: ${response.code}")
+            if (response.code != 200) {
+                Log.w(TAG, "Response code: ${response.code}")
+            } else {
+                Log.i(TAG, "Got response ${response.code}")
+            }
 
             if (response.code == 404) {
                 throw NotFoundException("Endpoint does not exist")
@@ -54,7 +56,8 @@ object ApiService {
         endpoint: String,
         requestBody: R,
         responseType: Class<T>,
-        token: String
+        token: String,
+        contentType: HttpContentType = HttpContentType.JSON
     ): T = withContext(Dispatchers.IO) {
         Log.d(TAG, "Posting to endpoint: $endpoint")
 
@@ -63,7 +66,7 @@ object ApiService {
         val jsonBody = toJson(requestBody)
         Log.d(TAG, "jsonBody = $jsonBody")
 
-        val requestBodyObj = jsonBody.toRequestBody(jsonMediaType)
+        val requestBodyObj = jsonBody.toRequestBody(contentType.toMediaType())
 
         val request = Request.Builder()
             .url(url)
@@ -73,7 +76,11 @@ object ApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            Log.d(TAG, "Response code: ${response.code}")
+            if (response.code != 200) {
+                Log.w(TAG, "Response code: ${response.code}")
+            } else {
+                Log.i(TAG, "Got response ${response.code}")
+            }
 
             val body = response.body?.string() ?: throw HttpException(
                 response.code,
@@ -89,14 +96,15 @@ object ApiService {
         endpoint: String,
         requestBody: R,
         responseType: Class<T>,
-        token: String
+        token: String,
+        contentType: HttpContentType = HttpContentType.JSON
     ): T = withContext(Dispatchers.IO) {
         Log.d(TAG, "Patching to endpoint: $endpoint")
 
         val url = buildUrl(endpoint)
 
         val jsonBody = toJson(requestBody)
-        val requestBodyObj = jsonBody.toRequestBody(jsonMediaType)
+        val requestBodyObj = jsonBody.toRequestBody(contentType.toMediaType())
 
         val request = Request.Builder()
             .url(url)
@@ -106,7 +114,11 @@ object ApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            Log.d(TAG, "Response code: ${response.code}")
+            if (response.code != 200) {
+                Log.w(TAG, "Response code: ${response.code}")
+            } else {
+                Log.i(TAG, "Got response ${response.code}")
+            }
 
             val body = response.body?.string() ?: throw HttpException(
                 response.code,
@@ -122,14 +134,15 @@ object ApiService {
         endpoint: String,
         requestBody: R,
         responseType: Class<T>,
-        token: String
+        token: String,
+        contentType: HttpContentType = HttpContentType.JSON
     ): T = withContext(Dispatchers.IO) {
         Log.d(TAG, "Patching to endpoint: $endpoint")
 
         val url = buildUrl(endpoint)
 
         val jsonBody = toJson(requestBody)
-        val requestBodyObj = jsonBody.toRequestBody(jsonMediaType)
+        val requestBodyObj = jsonBody.toRequestBody(contentType.toMediaType())
 
         val request = Request.Builder()
             .url(url)
@@ -139,7 +152,11 @@ object ApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            Log.d(TAG, "Response code: ${response.code}")
+            if (response.code != 200) {
+                Log.w(TAG, "Response code: ${response.code}")
+            } else {
+                Log.i(TAG, "Got response ${response.code}")
+            }
 
             val body = response.body?.string() ?: throw HttpException(
                 response.code,
@@ -166,7 +183,11 @@ object ApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            Log.d(TAG, "Response code: ${response.code}")
+            if (response.code != 200) {
+                Log.w(TAG, "Response code: ${response.code}")
+            } else {
+                Log.i(TAG, "Got response ${response.code}")
+            }
 
             val body = response.body?.string() ?: throw HttpException(
                 response.code,
