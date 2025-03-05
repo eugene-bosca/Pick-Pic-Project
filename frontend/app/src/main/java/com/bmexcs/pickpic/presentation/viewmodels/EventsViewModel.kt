@@ -70,7 +70,7 @@ class EventsViewModel @Inject constructor(
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
             // replace static id with an actual id
-            val eventPicture = imageRepository.addImageBinary("b3a54208-6622-4386-b32f-b6d10f81670e", imageByte)
+            val eventPicture = imageRepository.addImageBinary(event.value.event_id, imageByte)
         }
     }
 
