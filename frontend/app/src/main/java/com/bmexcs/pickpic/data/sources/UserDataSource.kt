@@ -3,41 +3,69 @@ package com.bmexcs.pickpic.data.sources
 import android.util.Log
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserCreation
-import com.bmexcs.pickpic.data.serializable.SerializableUUID
+import com.bmexcs.pickpic.data.models.UserId
 import com.bmexcs.pickpic.data.utils.ApiService
 import com.bmexcs.pickpic.data.utils.NotFoundException
-import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Singleton
 
 private const val TAG = "UserDataSource"
 
+@Singleton
 class UserDataSource @Inject constructor(
     private val authDataSource: AuthDataSource
 ) {
-    suspend fun createUser(): User {
-        val userCreation = UserCreation(
-            firebase_id = authDataSource.getCurrentUser().uid,
-            display_name = authDataSource.getCurrentUser().displayName ?: "",
-            email = authDataSource.getCurrentUser().email ?: ""
-        )
+    private var cachedUser: User? = null
 
-        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-        try {
-            return ApiService.post("users/", userCreation, User::class.java, token)
-        } catch (e: Exception) {
-            Log.e(TAG, "$e")
-            return User()
+    fun getUser(): User {
+        return cachedUser ?: throw Exception("Null user")
+    }
+
+    suspend fun initUserWithFirebase() {
+        val firebaseId = authDataSource.getCurrentUser().uid
+        val token = authDataSource.getIdToken() ?: throw Exception("Invalid Firebase ID token")
+
+        Log.d(TAG, "Initialize user state with firebaseId=$firebaseId")
+
+        cachedUser = try {
+            val userId = ApiService.get(
+                endpoint = "get_user_id_by_firebase_id/$firebaseId",
+                UserId::class.java,
+                token
+            ).user_id
+
+            val user = ApiService.get(
+                endpoint = "users/$userId",
+                User::class.java,
+                token
+            )
+            user
+        } catch (e: NotFoundException) {
+            createUser()
         }
     }
 
-    suspend fun getUser(userId: String): User? {
-        Log.d(TAG, "Get user state")
-
+    private suspend fun createUser(): User {
+        val userCreation = UserCreation(
+            firebase_id = authDataSource.getCurrentUser().uid,
+            display_name = authDataSource.getCurrentUser().displayName ?: throw Exception("Empty display name"),
+            email = authDataSource.getCurrentUser().email ?: throw Exception("Empty email field")
+        )
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        Log.d(TAG, "createUser with firebaseID=${authDataSource.getCurrentUser().uid}")
+
         return try {
-            ApiService.fetch("users/$userId", User::class.java, token)
-        } catch (e: NotFoundException) {
-            null
+            val newUser = ApiService.post(
+                endpoint = "users/",
+                userCreation,
+                User::class.java,
+                token
+            )
+            newUser
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to create new user: $e")
+            User()
         }
     }
 

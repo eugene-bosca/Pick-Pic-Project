@@ -9,4 +9,5 @@ sealed class Route(val route: String) {
     data object Auth : Route("auth")
     data object EventInvitation : Route("event_invitation")
     data object EventCreateInviteView : Route("event_create_invite")
+    data object CreateEvent : Route("create_event")
 }
