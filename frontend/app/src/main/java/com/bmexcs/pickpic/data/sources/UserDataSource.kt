@@ -29,13 +29,13 @@ class UserDataSource @Inject constructor(
 
         cachedUser = try {
             val userId = ApiService.get(
-                endpoint = "get_user_id_by_firebase_id/$firebaseId",
+                endpoint = "get_user_id_by_firebase_id/$firebaseId/",
                 UserId::class.java,
                 token
             ).user_id
 
             val user = ApiService.get(
-                endpoint = "users/$userId",
+                endpoint = "users/$userId/",
                 User::class.java,
                 token
             )
@@ -72,8 +72,15 @@ class UserDataSource @Inject constructor(
     suspend fun updateUser(user: User) {
         Log.d(TAG, "Updating user state")
 
+        val userUpdate = UserCreation(
+            firebase_id = user.firebase_id,
+            display_name = user.display_name,
+            email = user.email,
+            phone = user.phone,
+            profile_picture = user.profile_picture
+        )
+
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-        // TODO: change response object type
-        val result = ApiService.patch("users/${user.user_id}", user, User::class.java, token)
+        cachedUser = ApiService.put("users/${user.user_id}/", userUpdate, User::class.java, token)
     }
 }
