@@ -33,6 +33,7 @@ class EventContent(models.Model):
 class EventUser(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    accepted = models.BooleanField(default=False)
     
     class Meta:
         unique_together = ('event', 'user')
@@ -40,10 +41,3 @@ class EventUser(models.Model):
 class ScoredBy(models.Model):
     image_id = models.ForeignKey(Image, on_delete=models.CASCADE, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-class PendingInvite(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    
-    class Meta:
-        unique_together = ('event', 'user')

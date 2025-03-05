@@ -420,65 +420,27 @@ def get_highest_scored_image(request: Request, event_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-@api_view(['POST'])
-def add_pending_invite(request: Request, event_id, user_id):
-    """
-    Adds a pending invite for a user to an event.
-
-    Args:
-        request: The HTTP request object.
-        event_id: The UUID of the event.
-        user_id: The UUID of the user.
-
-    Returns:
-        Response: A JSON response indicating success or failure.
-    """
-    try:
-        event_id = uuid.UUID(str(event_id))
-        user_id = uuid.UUID(str(user_id))
-
-        event = Event.objects.get(event_id=event_id)
-        user = User.objects.get(user_id=user_id)
-
-        if PendingInvite.objects.filter(event=event, user=user).exists():
-            return Response({'error': 'Pending invite already exists'}, status=status.HTTP_400_BAD_REQUEST)
-
-        PendingInvite.objects.create(event=event, user=user)
-        return Response({'message': 'Pending invite added successfully'}, status=status.HTTP_201_CREATED)
-
-    except Event.DoesNotExist:
-        return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-    except ValueError:
-        return Response({'error': 'Invalid UUID format'}, status=status.HTTP_400_BAD_REQUEST)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 @api_view(['DELETE'])
-def remove_pending_invite(request: Request, event_id, user_id):
+def remove_event_user(request, event_id, user_id):
     """
-    Removes a pending invite for a user from an event.
-
-    Args:
-        request: The HTTP request object.
-        event_id: The UUID of the event.
-        user_id: The UUID of the user.
-
-    Returns:
-        Response: A JSON response indicating success or failure.
+    Removes a user from an event.
     """
     try:
-        event_id = uuid.UUID(str(event_id))
-        user_id = uuid.UUID(str(user_id))
+        event_user = EventUser.objects.get(event__event_id=event_id, user__user_id=user_id)
+        event_user.delete()
+        return Response({'message': 'User removed from event successfully.'}, status=status.HTTP_204_NO_CONTENT)
+    except EventUser.DoesNotExist:
+        return Response({'error': 'Event user not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        pending_invite = PendingInvite.objects.get(event__event_id=event_id, user__user_id=user_id)
-        pending_invite.delete()
-        return Response({'message': 'Pending invite removed successfully'}, status=status.HTTP_204_NO_CONTENT)
-
-    except PendingInvite.DoesNotExist:
-        return Response({'error': 'Pending invite not found'}, status=status.HTTP_404_NOT_FOUND)
-    except ValueError:
-        return Response({'error': 'Invalid UUID format'}, status=status.HTTP_400_BAD_REQUEST)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+@api_view(['PUT'])
+def accept_event_user(request, event_id, user_id):
+    """
+    Changes the 'accepted' status of an EventUser to True.
+    """
+    try:
+        event_user = EventUser.objects.get(event__event_id=event_id, user__user_id=user_id)
+        event_user.accepted = True
+        event_user.save()
+        return Response({'message': 'Event user accepted successfully.'}, status=status.HTTP_200_OK)
+    except EventUser.DoesNotExist:
+        return Response({'error': 'Event user not found.'}, status=status.HTTP_404_NOT_FOUND)

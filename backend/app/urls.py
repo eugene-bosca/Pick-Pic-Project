@@ -45,6 +45,8 @@ urlpatterns = [
     path('authenticate/', views.authenticate, name='authenticate'),
 
     path('picture/', views.picture, name='picture'),
+    path('event/<uuid:event_id>/highest_scored_image/', views.get_highest_scored_image, name='get_highest_scored_image'),
+
 
     path('event/image-count/<uuid:event_id>/', views.event_image_count, name='event_image_count'),
     path('list-users-events/<uuid:user_id>/', views.list_users_events, name='list_users_events'),
@@ -63,7 +65,6 @@ urlpatterns = [
     path('event/<uuid:event_id>/highest_scored_image/', views.get_highest_scored_image, name='get_highest_scored_image'),
 
     # pending invites
-    path('event/<uuid:event_id>/highest_scored_image/', views.get_highest_scored_image, name='get_highest_scored_image'),
-    path('add_pending_invite/<uuid:event_id>/<uuid:user_id>/', views.add_pending_invite, name='add_pending_invite'),
-    path('remove_pending_invite/<uuid:event_id>/<uuid:user_id>/', views.remove_pending_invite, name='remove_pending_invite'),
+    path('events/<uuid:event_id>/users/<uuid:user_id>/remove/', views.remove_event_user, name='remove_event_user'),
+    path('events/<uuid:event_id>/users/<uuid:user_id>/accept/', views.accept_event_user, name='accept_event_user'),
 ]
