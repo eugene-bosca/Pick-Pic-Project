@@ -27,11 +27,8 @@ class ProfileViewModel @Inject constructor(
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user
 
-    var emailInput by mutableStateOf("")
-        private set
-
-    var phoneInput by mutableStateOf("")
-        private set
+    private var emailInput by mutableStateOf("")
+    private var phoneInput by mutableStateOf("")
 
     val isEmailValid by derivedStateOf {
         emailInput.isNotEmpty() &&
@@ -46,6 +43,7 @@ class ProfileViewModel @Inject constructor(
     // Loads the current profile.
     fun loadProfile() {
         viewModelScope.launch {
+            Log.i(TAG, "Loading profile")
             val result = userRepository.getUser()
             _user.value = result
 
