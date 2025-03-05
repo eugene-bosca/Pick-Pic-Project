@@ -5,7 +5,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 import base64
-from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view, OpenApiTypes, OpenApiResponse, OpenApiExample
 
 from .models import User
 
@@ -53,6 +52,16 @@ class EventContentViewSet(viewsets.ModelViewSet):
     queryset = EventContent.objects.all()
     serializer_class = EventContentSerializer
     lookup_field = "event_id"
+
+    def retrieve(self, request, *args, **kwargs):
+        event_id = kwargs.get(self.lookup_field)
+        queryset = self.queryset.filter(event_id=event_id)
+
+        if not queryset.exists():
+            return Response(data={[]}, status=status.HTTP_200_OK)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 # ScoredBy ViewSet
 class ScoredByViewSet(viewsets.ModelViewSet):
