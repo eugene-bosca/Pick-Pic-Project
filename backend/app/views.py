@@ -430,7 +430,7 @@ def remove_event_user(request, event_id, user_id):
     try:
         event_user = EventUser.objects.get(event__event_id=event_id, user__user_id=user_id)
         event_user.delete()
-        return Response({'message': 'User removed from event successfully.'}, status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
     except EventUser.DoesNotExist:
         return Response({'error': 'Event user not found.'}, status=status.HTTP_404_NOT_FOUND)
 
