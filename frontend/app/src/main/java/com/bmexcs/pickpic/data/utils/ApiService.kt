@@ -71,7 +71,7 @@ object ApiService {
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
-            .addHeader("Content-Type", "application/json")
+            .addHeader("Content-Type", contentType.toString())
             .post(requestBodyObj)
             .build()
 
@@ -109,7 +109,7 @@ object ApiService {
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
-            .addHeader("Content-Type", "application/json")
+            .addHeader("Content-Type", contentType.toString())
             .patch(requestBodyObj)
             .build()
 
@@ -147,7 +147,7 @@ object ApiService {
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
-            .addHeader("Content-Type", "application/json")
+            .addHeader("Content-Type", contentType.toString())
             .put(requestBodyObj)
             .build()
 
