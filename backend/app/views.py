@@ -357,3 +357,23 @@ def add_user_to_event(request: Request, event_id, user_id):
         return Response({'error': 'Invalid UUID format'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def get_user_id_from_email(request: Request, email):
+    """
+    Retrieves the user_id associated with a given email address.
+
+    Args:
+        request: The HTTP request object.
+        email: The email address to search for.
+
+    Returns:
+        Response: A JSON response containing the user_id or an error message.
+    """
+    try:
+        user = User.objects.get(email=email)
+        return Response({'user_id': str(user.user_id)}, status=status.HTTP_200_OK) # Convert UUID to string for JSON serialization
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
