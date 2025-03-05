@@ -89,8 +89,8 @@ fun HomePageScreenView(
                 ) {
                     items(events) { eventItem: ListUserEventsItem ->
                         ElevatedButton(onClick = {
-                            eventsViewModel.setEvent(Event(event_id = eventItem.event_id, event_name = eventItem.event_name))
                             eventsViewModel.getImageByEventId(eventItem.event_id)
+                            eventsViewModel.setEvent(Event(event_id = eventItem.event_id, event_name = eventItem.event_name))
                             navController.navigate(Route.Event.route)
                         }) {
                             ListItem(

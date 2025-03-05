@@ -10,8 +10,8 @@ class ImageRepository @Inject constructor(
     private val imageDataSource: ImageDataSource
 ) {
 
-    suspend fun getImageByImageId(imageId: String): String {
-        return imageDataSource.getImageBinary(imageId);
+    suspend fun getImageByImageId(eventId: String, imageId: String): String {
+        return imageDataSource.getImageBinary(eventId, imageId);
     }
 
     suspend fun addImageBinary(eventId:String, imageByte: ByteArray?) : String {

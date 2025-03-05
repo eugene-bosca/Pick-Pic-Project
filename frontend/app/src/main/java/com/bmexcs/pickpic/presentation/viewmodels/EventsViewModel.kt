@@ -1,6 +1,5 @@
 package com.bmexcs.pickpic.presentation.viewmodels
 
-import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -10,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.Event
 import com.bmexcs.pickpic.data.models.EventContent
-import com.bmexcs.pickpic.data.models.Image
 import com.bmexcs.pickpic.data.repositories.EventsRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,9 +17,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
-import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
+import java.util.Arrays
 import javax.inject.Inject
 
 
@@ -34,6 +32,13 @@ class EventsViewModel @Inject constructor(
     // Backing property for the dog images list
     private val _images = MutableStateFlow<List<String?>>(emptyList())
     val images: StateFlow<List<String?>> = _images
+
+
+    private val _imageTest = MutableStateFlow<ByteArray?>(null)
+    val imageTest = _imageTest
+
+    private val _imageTestBitmap = MutableStateFlow<Bitmap?>(null)
+    val imageTestBitmap = _imageTestBitmap
 
     private val _event = MutableStateFlow<Event>(Event())
     val event = _event
@@ -52,7 +57,7 @@ class EventsViewModel @Inject constructor(
             val imageBitmapList = mutableListOf<String?>()
 
             for(image in images) {
-                imageBitmapList.add(imageRepository.getImageByImageId(image.image_id.image_id))
+                imageBitmapList.add(imageRepository.getImageByImageId(eventId, image.image_id.image_id))
             }
 
             _images.value = imageBitmapList
@@ -62,7 +67,8 @@ class EventsViewModel @Inject constructor(
     fun addImageByEvent(imageByte: ByteArray?) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            val imageId = imageRepository.addImageBinary("035f8345-a25c-45f2-a88f-d994f4cfa667", imageByte)
+            Log.d("Find EventId", event.value.event_id)
+            val imageId = imageRepository.addImageBinary(event.value.event_id, imageByte)
         }
     }
 
@@ -84,14 +90,16 @@ class EventsViewModel @Inject constructor(
 
             // Open an InputStream from the URI
             inputStream = context.contentResolver.openInputStream(uri)
-
+            Log.d("File Type", context.contentResolver.getType(uri).toString())
             // Read the InputStream into a Bitmap
             val bitmap = BitmapFactory.decodeStream(inputStream)
 
             // Convert the Bitmap to ByteArray
             if (bitmap != null) {
+                _imageTestBitmap.value = bitmap
                 val byteArrayOutputStream = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
+
                 byteArray = byteArrayOutputStream.toByteArray()
             }
         } catch (e: IOException) {
@@ -99,6 +107,7 @@ class EventsViewModel @Inject constructor(
         } finally {
             inputStream?.close()
         }
+
         return byteArray
     }
 }

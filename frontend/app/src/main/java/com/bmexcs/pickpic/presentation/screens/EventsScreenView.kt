@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.ImageView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -21,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -31,7 +33,6 @@ import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
-import java.io.InputStream
 
 @Composable
 fun EventScreenView(
@@ -41,18 +42,41 @@ fun EventScreenView(
 
     val images by viewModel.images.collectAsState()
     val context = LocalContext.current
+    var bitmap : Bitmap? = null
+    val testBitmap = viewModel.imageTestBitmap.collectAsState().value
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        // Use the context and uri to convert the image to byte array
-        viewModel.addImageByEvent(viewModel.uriToByteArray(context, uri))
+        uri?.let {
+            Log.d("Uri Path", uri.path.toString())
+            val test = viewModel.uriToByteArray(context, uri)
+            if (test != null) {
+                bitmap = BitmapFactory.decodeByteArray(test, 0, test.size)
+                Log.d("New Bitmap", bitmap.toString())
+            }
+        }
+            // Use the context and uri to convert the image to byte array
+//        viewModel.addImageByEvent(viewModel.uriToByteArray(context, uri))
     }
 
     Column (
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
     ){
+        val bitmap1 = bitmap
+        Log.d("Old Bitmap", testBitmap.toString())
+        if(bitmap1 != null) {
+            Image(
+                bitmap = bitmap1.asImageBitmap(),
+                contentDescription = "Event image",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(all = 15.dp)
+                    .padding(bottom = 20.dp)
+                    .border(width = 1.dp, color = Color.Black)
+            )
+        }
         Row(
         ) {
             ElevatedButton(
