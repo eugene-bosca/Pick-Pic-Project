@@ -41,7 +41,12 @@ class EventsViewModel @Inject constructor(
         eventsRepository.event.value = event
     }
 
-    init {
+    fun getEventFromRepository () {
+        _event.value = eventsRepository.event.value
+    }
+
+    fun initializeEventsScreenView() {
+        getEventFromRepository()
         getImageByEventId(event.value.event_id)
     }
 
