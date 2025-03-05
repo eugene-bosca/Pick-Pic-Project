@@ -56,9 +56,11 @@ class EventsViewModel @Inject constructor(
             val images = eventsRepository.getImageByEventId(eventId)
             val imageBitmapList = mutableListOf<ByteArray?>()
 
-            val byteArray = imageRepository.getImageByImageId(images[0].event.event_id, images[0].image.image_id)
-            Log.d("ByteArray Test", byteArray.contentToString())
-            imageBitmapList.add(byteArray)
+            for(image in images) {
+                val byteArray = imageRepository.getImageByImageId(image.event.event_id, image.image.image_id)
+                imageBitmapList.add(byteArray)
+            }
+
 
             _images.value = imageBitmapList
         }

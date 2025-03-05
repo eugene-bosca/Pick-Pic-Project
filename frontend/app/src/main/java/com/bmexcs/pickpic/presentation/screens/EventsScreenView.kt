@@ -108,17 +108,22 @@ fun EventScreenView(
                                 .size(width = 150.dp, height = 225.dp)
                                 .border(width = 1.dp, color = Color.Black)
                         ) {
+
                             if(stream != null) {
-                                Image(
-                                    bitmap = BitmapFactory.decodeByteArray(stream, 0, stream.size).asImageBitmap(),
-                                    contentDescription = "Event image",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(all = 15.dp)
-                                        .padding(bottom = 20.dp)
-                                        .border(width = 1.dp, color = Color.Black)
-                                )
+                                val bitmap = BitmapFactory.decodeByteArray(stream, 0, stream.size)
+
+                                if(bitmap != null) {
+                                    Image(
+                                        bitmap = bitmap.asImageBitmap(),
+                                        contentDescription = "Event image",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(all = 15.dp)
+                                            .padding(bottom = 20.dp)
+                                            .border(width = 1.dp, color = Color.Black)
+                                    )
+                                }
                             } else {
                                 Box(
                                     modifier = Modifier
