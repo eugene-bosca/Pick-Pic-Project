@@ -1,16 +1,24 @@
 package com.bmexcs.pickpic.data.utils
 
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 
 enum class HttpContentType {
     JSON {
-        override fun toMediaType() = "application/json".toMediaType()
+        override fun toString() = "application/json"
     },
 
     OCTET_STREAM {
-        override fun toMediaType() = "application/octet-stream".toMediaType()
+        override fun toString() = "application/octet-stream"
+    },
+
+    PNG {
+        override fun toString() = "image/png"
+    },
+
+    JPEG {
+        override fun toString() = "image/jpeg"
     };
 
-    abstract fun toMediaType(): MediaType
+    abstract override fun toString(): String
+    fun toMediaType() = toString().toMediaType()
 }
