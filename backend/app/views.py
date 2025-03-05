@@ -377,3 +377,83 @@ def get_user_id_from_email(request: Request, email):
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+def get_highest_scored_image(request: Request, event_id):
+    """
+    Retrieves the image with the highest score for a given event.
+
+    Args:
+        request: The HTTP request object.
+        event_id: The UUID of the event.
+
+    Returns:
+        Response: A FileResponse containing the image or an error message.
+    """
+    try:
+        event_id = uuid.UUID(str(event_id))
+        
+        # Find the image with the highest score in the event
+        highest_scored_image = Image.objects.filter(
+            eventcontent__event_id=event_id
+        ).order_by('-score').first()
+
+        if not highest_scored_image:
+            return Response({'error': 'No images found for this event'}, status=status.HTTP_404_NOT_FOUND)
+
+        file_name = highest_scored_image.file_name
+
+        if not file_name:
+          return Response({'error': 'Image file name not set'}, status=status.HTTP_404_NOT_FOUND)
+
+        file_bytes = download_from_gcs('pick-pic', file_name)
+        file_stream = io.BytesIO(file_bytes)
+
+        content_type, _ = mimetypes.guess_type(file_name)
+        if content_type is None:
+            content_type = "application/octet-stream"
+
+        return FileResponse(file_stream, content_type=content_type, status=status.HTTP_200_OK)
+
+    except ValueError:
+        return Response({'error': 'Invalid UUID format'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['DELETE'])
+def remove_event_user(request, event_id, user_id):
+    """
+    Removes a user from an event.
+    """
+    try:
+        event_user = EventUser.objects.get(event__event_id=event_id, user__user_id=user_id)
+        event_user.delete()
+        return Response({'message': 'User removed from event successfully.'}, status=status.HTTP_204_NO_CONTENT)
+    except EventUser.DoesNotExist:
+        return Response({'error': 'Event user not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['PUT'])
+def accept_event_user(request, event_id, user_id):
+    """
+    Changes the 'accepted' status of an EventUser to True.
+    """
+    try:
+        event_user = EventUser.objects.get(event__event_id=event_id, user__user_id=user_id)
+        event_user.accepted = True
+        event_user.save()
+        return Response({'message': 'Event user accepted successfully.'}, status=status.HTTP_200_OK)
+    except EventUser.DoesNotExist:
+        return Response({'error': 'Event user not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+def get_pending_events(request, user_id):
+    """
+    Retrieves a list of Event objects where the user is invited but has not accepted.
+    """
+    try:
+        pending_events = EventUser.objects.filter(user__user_id=user_id, accepted=False)
+        events = [pe.event for pe in pending_events]
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -45,6 +45,8 @@ urlpatterns = [
     path('authenticate/', views.authenticate, name='authenticate'),
 
     path('picture/', views.picture, name='picture'),
+    path('event/<uuid:event_id>/highest_scored_image/', views.get_highest_scored_image, name='get_highest_scored_image'),
+
 
     path('event/image-count/<uuid:event_id>/', views.event_image_count, name='event_image_count'),
     path('list-users-events/<uuid:user_id>/', views.list_users_events, name='list_users_events'),
@@ -60,4 +62,10 @@ urlpatterns = [
     path('get_user_id_by_firebase_id/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='exchange_user_id_for_firebase_id'),
     path('create_new_event/', views.create_new_event, name='create new event'),
     path('get_user_id_from_email/<str:email>/', views.get_user_id_from_email, name='get user id from email'),
+    path('event/<uuid:event_id>/highest_scored_image/', views.get_highest_scored_image, name='get_highest_scored_image'),
+
+    # pending invites
+    path('events/<uuid:event_id>/users/<uuid:user_id>/remove/', views.remove_event_user, name='remove_event_user'),
+    path('events/<uuid:event_id>/users/<uuid:user_id>/accept/', views.accept_event_user, name='accept_event_user'),
+    path('users/<uuid:user_id>/pending_events_full/', views.get_pending_events, name='get_pending_events'),
 ]
