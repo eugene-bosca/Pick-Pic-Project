@@ -59,5 +59,5 @@ urlpatterns = [
     path('list_users_events/<str:user_id>/', views.list_users_events, name='List Users Events'),
     path('get_user_id_by_firebase_id/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='exchange_user_id_for_firebase_id'),
     path('create_new_event/', views.create_new_event, name='create new event'),
-    path('get_user_id_from_email', views.get_user_id_from_email, name='get user id from email'),
+    path('get_user_id_from_email/<str:email>/', views.get_user_id_from_email, name='get user id from email'),
 ]
