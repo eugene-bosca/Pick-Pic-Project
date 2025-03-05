@@ -67,4 +67,5 @@ urlpatterns = [
     # pending invites
     path('events/<uuid:event_id>/users/<uuid:user_id>/remove/', views.remove_event_user, name='remove_event_user'),
     path('events/<uuid:event_id>/users/<uuid:user_id>/accept/', views.accept_event_user, name='accept_event_user'),
+    path('users/<uuid:user_id>/pending_events_full/', views.get_pending_events, name='get_pending_events'),
 ]

@@ -444,3 +444,16 @@ def accept_event_user(request, event_id, user_id):
         return Response({'message': 'Event user accepted successfully.'}, status=status.HTTP_200_OK)
     except EventUser.DoesNotExist:
         return Response({'error': 'Event user not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+def get_pending_events(request, user_id):
+    """
+    Retrieves a list of Event objects where the user is invited but has not accepted.
+    """
+    try:
+        pending_events = EventUser.objects.filter(user__user_id=user_id, accepted=False)
+        events = [pe.event for pe in pending_events]
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
