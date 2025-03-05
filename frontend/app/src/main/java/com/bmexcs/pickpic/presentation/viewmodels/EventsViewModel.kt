@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.Event
 import com.bmexcs.pickpic.data.models.EventContent
+import com.bmexcs.pickpic.data.models.Image
 import com.bmexcs.pickpic.data.repositories.EventsRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,21 +31,11 @@ class EventsViewModel @Inject constructor(
 ) : ViewModel() {
 
     // Backing property for the dog images list
-    private val _images = MutableStateFlow<List<String?>>(emptyList())
-    val images: StateFlow<List<String?>> = _images
-
-
-    private val _imageTest = MutableStateFlow<ByteArray?>(null)
-    val imageTest = _imageTest
-
-    private val _imageTestBitmap = MutableStateFlow<Bitmap?>(null)
-    val imageTestBitmap = _imageTestBitmap
+    private val _images = MutableStateFlow<List<ByteArray?>>(emptyList())
+    val images: StateFlow<List<ByteArray?>> = _images
 
     private val _event = MutableStateFlow<Event>(Event())
     val event = _event
-
-    private val _eventContent = MutableStateFlow<EventContent?>(null)
-    val eventContent = _eventContent
 
     fun setEvent(event: Event) {
         _event.value = event
@@ -54,22 +45,21 @@ class EventsViewModel @Inject constructor(
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
             val images = eventsRepository.getImageByEventId(eventId)
-            val imageBitmapList = mutableListOf<String?>()
+            val imageBitmapList = mutableListOf<ByteArray?>()
 
-            for(image in images) {
-                imageBitmapList.add(imageRepository.getImageByImageId(eventId, image.image_id.image_id))
-            }
+            val byteArray = imageRepository.getImageByImageId(images[0].event.event_id, images[0].image.image_id)
+            Log.d("ByteArray Test", byteArray.contentToString())
+            imageBitmapList.add(byteArray)
 
             _images.value = imageBitmapList
         }
     }
 
-    fun addImageByEvent(imageByte: ByteArray?) {
+    fun addImageByEvent(imageByte: ByteArray) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            Log.d("Find EventId", event.value.event_id)
             // replace static id with an actual id
-            val imageId = imageRepository.addImageBinary("b3a54208-6622-4386-b32f-b6d10f81670e", imageByte)
+            val eventPicture = imageRepository.addImageBinary("b3a54208-6622-4386-b32f-b6d10f81670e", imageByte)
         }
     }
 
@@ -91,13 +81,12 @@ class EventsViewModel @Inject constructor(
 
             // Open an InputStream from the URI
             inputStream = context.contentResolver.openInputStream(uri)
-            Log.d("File Type", context.contentResolver.getType(uri).toString())
+
             // Read the InputStream into a Bitmap
             val bitmap = BitmapFactory.decodeStream(inputStream)
 
             // Convert the Bitmap to ByteArray
             if (bitmap != null) {
-                _imageTestBitmap.value = bitmap
                 val byteArrayOutputStream = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
 

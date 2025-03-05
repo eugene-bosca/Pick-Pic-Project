@@ -1,6 +1,7 @@
 package com.bmexcs.pickpic.data.repositories
 
-import android.graphics.Bitmap
+import com.bmexcs.pickpic.data.models.EventContent
+import com.bmexcs.pickpic.data.models.EventPicture
 import com.bmexcs.pickpic.data.sources.ImageDataSource
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -10,11 +11,11 @@ class ImageRepository @Inject constructor(
     private val imageDataSource: ImageDataSource
 ) {
 
-    suspend fun getImageByImageId(eventId: String, imageId: String): String {
+    suspend fun getImageByImageId(eventId: String, imageId: String): ByteArray? {
         return imageDataSource.getImageBinary(eventId, imageId);
     }
 
-    suspend fun addImageBinary(eventId:String, imageByte: ByteArray?) : String {
+    suspend fun addImageBinary(eventId:String, imageByte: ByteArray) : EventPicture {
         return imageDataSource.addImageBinary(eventId, imageByte)
     }
 }

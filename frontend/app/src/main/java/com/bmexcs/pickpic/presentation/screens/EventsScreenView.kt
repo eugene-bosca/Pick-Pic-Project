@@ -42,41 +42,23 @@ fun EventScreenView(
 
     val images by viewModel.images.collectAsState()
     val context = LocalContext.current
-    var bitmap : Bitmap? = null
-    val testBitmap = viewModel.imageTestBitmap.collectAsState().value
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            Log.d("Uri Path", uri.path.toString())
-            val test = viewModel.uriToByteArray(context, uri)
-            if (test != null) {
-                bitmap = BitmapFactory.decodeByteArray(test, 0, test.size)
-                Log.d("New Bitmap", bitmap.toString())
+            // Use the context and uri to convert the image to byte array
+            val byteArray = viewModel.uriToByteArray(context, uri)
+            if(byteArray != null) {
+                viewModel.addImageByEvent(byteArray)
             }
         }
-            // Use the context and uri to convert the image to byte array
-        viewModel.addImageByEvent(viewModel.uriToByteArray(context, uri))
     }
 
     Column (
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
     ){
-        val bitmap1 = bitmap
-        Log.d("Old Bitmap", testBitmap.toString())
-        if(bitmap1 != null) {
-            Image(
-                bitmap = bitmap1.asImageBitmap(),
-                contentDescription = "Event image",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(all = 15.dp)
-                    .padding(bottom = 20.dp)
-                    .border(width = 1.dp, color = Color.Black)
-            )
-        }
         Row(
         ) {
             ElevatedButton(
@@ -119,15 +101,15 @@ fun EventScreenView(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(images) { stream ->
+                        Log.d("Stream", stream.contentToString())
                         ElevatedCard (
                             modifier = Modifier
                                 .size(width = 150.dp, height = 225.dp)
                                 .border(width = 1.dp, color = Color.Black)
                         ) {
                             if(stream != null) {
-                                val imageBytes = android.util.Base64.decode(stream, 0)
                                 Image(
-                                    bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size).asImageBitmap(),
+                                    bitmap = BitmapFactory.decodeByteArray(stream, 0, stream.size).asImageBitmap(),
                                     contentDescription = "Event image",
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier

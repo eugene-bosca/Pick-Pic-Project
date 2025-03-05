@@ -24,7 +24,7 @@ object ApiService {
     ): T = withContext(Dispatchers.IO) {
         Log.d(TAG, "Fetching from endpoint: $endpoint")
         val url = buildUrl(endpoint)
-
+        Log.d(TAG, "URL: $url")
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
@@ -48,6 +48,35 @@ object ApiService {
             )
 
             return@withContext parseResponseBody(body, responseType)
+        }
+    }
+
+    suspend fun <T> getImage(
+        endpoint: String,
+        responseType: Class<T>,
+        token: String
+    ) : ByteArray? = withContext(Dispatchers.IO) {
+        Log.d(TAG, "Fetching from endpoint: $endpoint")
+        val url = buildUrl(endpoint)
+        Log.d(TAG, "URL: $url")
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            if (response.code != 200) {
+                Log.w(TAG, "Response code: ${response.code}")
+            } else {
+                Log.i(TAG, "Got response ${response.code}")
+            }
+
+            if (response.code == 404) {
+                throw NotFoundException("Endpoint does not exist")
+            }
+
+            return@withContext response.body?.bytes()
         }
     }
 
@@ -236,7 +265,7 @@ object ApiService {
 
     private fun buildUrl(path: String): String = "$BASE_URL/$path"
 
-    private fun <T> parseResponseBody(body: String, modelClass: Class<T>): T {
+    fun <T> parseResponseBody(body: String, modelClass: Class<T>): T {
         Log.d("parseResponseBody", body)
         return try {
             gson.fromJson(body, modelClass)
