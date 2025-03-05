@@ -317,3 +317,43 @@ def resolve_invite_link(request, encoded_event_id):
         return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+def add_user_to_event(request: Request, event_id, user_id):
+    """
+    Adds a user to an event.
+
+    Args:
+        request: The HTTP request object.
+        event_id: The UUID of the event.
+        user_id: The UUID of the user.
+
+    Returns:
+        Response: A JSON response indicating success or failure.
+    """
+    try:
+        # Convert UUID strings to UUID objects
+        event_id = uuid.UUID(str(event_id))
+        user_id = uuid.UUID(str(user_id))
+
+        # Check if the event and user exist
+        event = Event.objects.get(event_id=event_id)
+        user = User.objects.get(user_id=user_id)
+
+        # Check if the user is already in the event
+        if EventUser.objects.filter(event_id=event_id, user_id=user_id).exists():
+            return Response({'error': 'User already in event'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Add the user to the event
+        EventUser.objects.create(event_id=event_id, user_id=user_id)
+
+        return Response({'message': 'User added to event successfully'}, status=status.HTTP_201_CREATED)
+
+    except Event.DoesNotExist:
+        return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except ValueError:
+        return Response({'error': 'Invalid UUID format'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
