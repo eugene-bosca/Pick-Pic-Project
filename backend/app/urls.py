@@ -45,9 +45,19 @@ urlpatterns = [
     path('authenticate/', views.authenticate, name='authenticate'),
 
     path('picture/', views.picture, name='picture'),
+
+    path('event/image-count/<uuid:event_id>/', views.event_image_count, name='event_image_count'),
+    path('list-users-events/<uuid:user_id>/', views.list_users_events, name='list_users_events'),
+
+    # invite related
+    path('invite_to_event/', views.invite_to_event, name='invite user to event'),
+    path('generate_invite_link/<uuid:event_id>/', views.generate_invite_link, name='generate_invite_link'),
+    path('resolve_invite_link/<str:encoded_event_id>/', views.resolve_invite_link, name='resolve_invite_link'),
+    path('add_user_to_event/<uuid:event_id>/<uuid:user_id>/', views.add_user_to_event, name='add_user_to_event'),
+
     path('event/image-count/<str:event_id>/', views.event_image_count, name='event_image_count'),
     path('list_users_events/<str:user_id>/', views.list_users_events, name='List Users Events'),
     path('get_user_id_by_firebase_id/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='exchange_user_id_for_firebase_id'),
     path('create_new_event/', views.create_new_event, name='create new event'),
-    path('invite_to_event/', views.invite_to_event, name='invite user to event'),
+    path('get_user_id_from_email/<str:email>/', views.get_user_id_from_email, name='get user id from email'),
 ]
