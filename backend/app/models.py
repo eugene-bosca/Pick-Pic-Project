@@ -8,6 +8,7 @@ class User(models.Model):
     email = models.EmailField(max_length=255, unique=True)
     phone = models.CharField(max_length=30, blank=True, null=True) 
     profile_picture = models.CharField(max_length=50, blank=True, null=True)
+    pending_invites = models.ForeignKey('PendingInvite', on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return self.display_name
@@ -24,6 +25,7 @@ class Event(models.Model):
 class Image(models.Model):
     image_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     file_name = models.CharField(max_length=50, blank=True)
+    score = models.IntegerField(default=0)
 
 class EventContent(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, primary_key=True)
@@ -39,3 +41,10 @@ class EventUser(models.Model):
 class ScoredBy(models.Model):
     image_id = models.ForeignKey(Image, on_delete=models.CASCADE, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+class PendingInvite(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    class Meta:
+        unique_together = ('event', 'user')

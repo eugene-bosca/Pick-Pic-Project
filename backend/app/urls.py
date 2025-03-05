@@ -60,4 +60,10 @@ urlpatterns = [
     path('get_user_id_by_firebase_id/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='exchange_user_id_for_firebase_id'),
     path('create_new_event/', views.create_new_event, name='create new event'),
     path('get_user_id_from_email/<str:email>/', views.get_user_id_from_email, name='get user id from email'),
+    path('event/<uuid:event_id>/highest_scored_image/', views.get_highest_scored_image, name='get_highest_scored_image'),
+
+    # pending invites
+    path('event/<uuid:event_id>/highest_scored_image/', views.get_highest_scored_image, name='get_highest_scored_image'),
+    path('add_pending_invite/<uuid:event_id>/<uuid:user_id>/', views.add_pending_invite, name='add_pending_invite'),
+    path('remove_pending_invite/<uuid:event_id>/<uuid:user_id>/', views.remove_pending_invite, name='remove_pending_invite'),
 ]

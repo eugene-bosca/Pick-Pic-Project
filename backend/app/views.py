@@ -377,3 +377,108 @@ def get_user_id_from_email(request: Request, email):
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+def get_highest_scored_image(request: Request, event_id):
+    """
+    Retrieves the image with the highest score for a given event.
+
+    Args:
+        request: The HTTP request object.
+        event_id: The UUID of the event.
+
+    Returns:
+        Response: A FileResponse containing the image or an error message.
+    """
+    try:
+        event_id = uuid.UUID(str(event_id))
+        
+        # Find the image with the highest score in the event
+        highest_scored_image = Image.objects.filter(
+            eventcontent__event_id=event_id
+        ).order_by('-score').first()
+
+        if not highest_scored_image:
+            return Response({'error': 'No images found for this event'}, status=status.HTTP_404_NOT_FOUND)
+
+        file_name = highest_scored_image.file_name
+
+        if not file_name:
+          return Response({'error': 'Image file name not set'}, status=status.HTTP_404_NOT_FOUND)
+
+        file_bytes = download_from_gcs('pick-pic', file_name)
+        file_stream = io.BytesIO(file_bytes)
+
+        content_type, _ = mimetypes.guess_type(file_name)
+        if content_type is None:
+            content_type = "application/octet-stream"
+
+        return FileResponse(file_stream, content_type=content_type, status=status.HTTP_200_OK)
+
+    except ValueError:
+        return Response({'error': 'Invalid UUID format'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['POST'])
+def add_pending_invite(request: Request, event_id, user_id):
+    """
+    Adds a pending invite for a user to an event.
+
+    Args:
+        request: The HTTP request object.
+        event_id: The UUID of the event.
+        user_id: The UUID of the user.
+
+    Returns:
+        Response: A JSON response indicating success or failure.
+    """
+    try:
+        event_id = uuid.UUID(str(event_id))
+        user_id = uuid.UUID(str(user_id))
+
+        event = Event.objects.get(event_id=event_id)
+        user = User.objects.get(user_id=user_id)
+
+        if PendingInvite.objects.filter(event=event, user=user).exists():
+            return Response({'error': 'Pending invite already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        PendingInvite.objects.create(event=event, user=user)
+        return Response({'message': 'Pending invite added successfully'}, status=status.HTTP_201_CREATED)
+
+    except Event.DoesNotExist:
+        return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except ValueError:
+        return Response({'error': 'Invalid UUID format'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['DELETE'])
+def remove_pending_invite(request: Request, event_id, user_id):
+    """
+    Removes a pending invite for a user from an event.
+
+    Args:
+        request: The HTTP request object.
+        event_id: The UUID of the event.
+        user_id: The UUID of the user.
+
+    Returns:
+        Response: A JSON response indicating success or failure.
+    """
+    try:
+        event_id = uuid.UUID(str(event_id))
+        user_id = uuid.UUID(str(user_id))
+
+        pending_invite = PendingInvite.objects.get(event__event_id=event_id, user__user_id=user_id)
+        pending_invite.delete()
+        return Response({'message': 'Pending invite removed successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+    except PendingInvite.DoesNotExist:
+        return Response({'error': 'Pending invite not found'}, status=status.HTTP_404_NOT_FOUND)
+    except ValueError:
+        return Response({'error': 'Invalid UUID format'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
