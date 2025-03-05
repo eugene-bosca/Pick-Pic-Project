@@ -4,11 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -16,10 +19,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -32,6 +37,10 @@ fun EventInvitationScreenView(
     viewModel: EventInvitationViewModel = hiltViewModel()
 ) {
     val events by viewModel.events.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchEvents()
+    }
 
     Column(
         modifier = Modifier
@@ -64,9 +73,19 @@ fun EventInvitationScreenView(
                             Text("Event Owner: ${eventItem.owner.display_name}")
                         },
                         trailingContent = {
-                            IconButton(onClick = { /* doSomething() */ }) {
-                                Icon(Icons.Filled.MoreVert, contentDescription = null)
-
+                            Row () {
+                                IconButton(onClick = { modelView.acceptEvent(eventItem.event_id) }) {
+                                    Icon(Icons.Filled.Check,
+                                        contentDescription = null,
+                                        tint = Color.Green
+                                    )
+                                }
+                                IconButton(onClick = { modelView.declineEvent(eventItem.event_id) }) {
+                                    Icon(Icons.Filled.Close,
+                                        contentDescription = null,
+                                        tint = Color.Red
+                                    )
+                                }
                             }
                         }
                     )

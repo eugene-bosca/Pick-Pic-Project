@@ -29,6 +29,16 @@ class EventDataSource @Inject constructor(
         return eventResponse.owned_events + eventResponse.invited_events
     }
 
+    suspend fun getUserEventsPending(): List<ListUserEventsItem> {
+        val userId = userDataSource.getUser().user_id
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        Log.d(TAG, "getUserEventsPending for $userId")
+
+        val eventResponse = ApiService.getList("/users/$userId/pending_events_full", ListUserEventsItem::class.java, token)
+        return eventResponse
+    }
+
     suspend fun postEvent(name: String): CreateEvent {
         val newEvent = CreateEvent(
             event_name = name,
@@ -74,4 +84,6 @@ class EventDataSource @Inject constructor(
             return@withContext null
         }
     }
+
+    suspend fun acceptEvent(eventId: String))
 }

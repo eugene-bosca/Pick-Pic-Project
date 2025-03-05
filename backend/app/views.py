@@ -203,7 +203,7 @@ def list_users_events(request: Request, user_id):
 
     owned_events = Event.objects.filter(owner_id=user_id)
 
-    invited_event_ids = EventUser.objects.filter(user_id=user_id).values_list('event_id', flat=True)
+    invited_event_ids = EventUser.objects.filter(user_id=user_id, accepted = True).values_list('event_id', flat=True)
 
     invited_events = Event.objects.filter(event_id__in=invited_event_ids)
     

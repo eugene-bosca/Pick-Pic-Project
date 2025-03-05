@@ -1,14 +1,17 @@
 package com.bmexcs.pickpic.data.utils
 
 import android.util.Log
+import com.bmexcs.pickpic.data.models.ListUserEventsItem
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.OkHttpClient
+import java.lang.reflect.Type
 
 private const val TAG = "ApiService"
 
@@ -46,6 +49,47 @@ object ApiService {
             )
 
             return@withContext parseResponseBody(body, responseType)
+        }
+    }
+
+    suspend fun <T> getList(
+        endpoint: String,
+        responseType: Class<T>,  // Type of the list elements (not List<T>)
+        token: String
+    ): List<T> = withContext(Dispatchers.IO) {
+        Log.d(TAG, "Fetching from endpoint: $endpoint")
+        val url = buildUrl(endpoint)
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            Log.d(TAG, "Response code: ${response.code}")
+
+            if (response.code == 404) {
+                throw NotFoundException("Endpoint does not exist")
+            }
+
+            val body = response.body?.string()
+            if (body.isNullOrEmpty()) {
+                throw HttpException(response.code, "Empty response body")
+            }
+
+            try {
+                // Create a Type for List<T>
+                val listType: Type = TypeToken.getParameterized(List::class.java, responseType).type
+
+                // Ensure the return type is explicitly List<T>
+                val parsedResponse: List<T> = Gson().fromJson(body, listType)
+                    ?: throw IllegalStateException("Failed to parse response")
+
+                return@withContext parsedResponse
+            } catch (e: Exception) {
+                throw IllegalStateException("Error parsing response: ${e.message}", e)
+            }
         }
     }
 
