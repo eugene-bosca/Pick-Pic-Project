@@ -8,6 +8,7 @@ import com.bmexcs.pickpic.data.models.EmptyResponse
 import com.bmexcs.pickpic.data.models.ListUserEventsItem
 import com.bmexcs.pickpic.data.models.ListUserEventsResponse
 import com.bmexcs.pickpic.data.utils.ApiService
+import com.bmexcs.pickpic.data.utils.EventApiService
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,13 +20,15 @@ class EventDataSource @Inject constructor(
     private val userDataSource: UserDataSource
 ) {
 
+    private val api = EventApiService()
+
     suspend fun getEvents(): List<ListUserEventsItem> {
         val userId = userDataSource.getUser().user_id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         Log.d(TAG, "getEvents for $userId")
 
-        val eventResponse = ApiService.get("list_users_events/$userId/", ListUserEventsResponse::class.java, token)
+        val eventResponse = api.getListUsersEvents(userId, token)
         return eventResponse.owned_events + eventResponse.invited_events
     }
 
@@ -40,7 +43,7 @@ class EventDataSource @Inject constructor(
     }
 
     suspend fun postEvent(name: String): CreateEvent {
-        val newEvent = CreateEvent(
+        val event = CreateEvent(
             event_name = name,
             owner = userDataSource.getUser().user_id
         )
@@ -48,7 +51,7 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "postEvent for ${userDataSource.getUser().user_id}")
 
-        ApiService.post("event/", newEvent, EmptyResponse::class.java, token)
+        val newEvent = api.post(event, token)
         return newEvent
     }
 
@@ -85,25 +88,23 @@ class EventDataSource @Inject constructor(
         }
     }
 
-    suspend fun acceptEvent(eventId: String): EmptyResponse {
-        val emptyRequestBody = EmptyResponse()
+    suspend fun acceptEvent(eventId: String): Boolean {
         val userId = userDataSource.getUser().user_id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         Log.d(TAG, "accept for $eventId")
 
-        val eventResponse = ApiService.put("events/$eventId/users/$userId/accept/", emptyRequestBody, EmptyResponse::class.java, token)
+        val eventResponse = api.putAcceptUser(eventId, userId, token)
         return eventResponse
     }
 
-    suspend fun declineEvent(eventId: String): EmptyResponse {
-        val emptyRequestBody = EmptyResponse()
+    suspend fun declineEvent(eventId: String): Boolean {
         val userId = userDataSource.getUser().user_id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         Log.d(TAG, "declineEvent for $eventId")
 
-        val eventResponse = ApiService.delete("events/$eventId/users/$userId/remove/", emptyRequestBody, EmptyResponse::class.java, token)
+        val eventResponse = api.deleteRemoveUser(eventId, userId, token)
         return eventResponse
     }
 }

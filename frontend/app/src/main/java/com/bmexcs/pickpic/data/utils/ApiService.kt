@@ -1,7 +1,6 @@
 package com.bmexcs.pickpic.data.utils
 
 import android.util.Log
-import com.bmexcs.pickpic.data.models.ListUserEventsItem
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
@@ -10,6 +9,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.OkHttpClient
+import okhttp3.Response
 import java.lang.reflect.Type
 
 private const val TAG = "ApiService"
@@ -19,6 +19,33 @@ object ApiService {
 
     private val client = OkHttpClient()
     private val gson = Gson()
+
+    fun handleResponseStatus(response: Response): Boolean {
+        val code = response.code
+
+        if (code == 200 || code == 201) {
+            Log.w(TAG, "Response code: $code")
+            return true
+        }
+
+        if (code == 400) {
+            throw HttpException(code, "Bad request")
+        }
+        else if (code == 401) {
+            throw HttpException(code, "Unauthorized")
+        }
+        else if (code == 403) {
+            throw HttpException(code, "Forbidden")
+        }
+        else if (code == 404) {
+            throw NotFoundException("Endpoint does not exist")
+        }
+        else if (code in 501..599) {
+            throw HttpException(code, "Internal server error")
+        }
+        Log.w(TAG, "Issue with request: $response")
+        return false
+    }
 
     suspend fun <T> get(
         endpoint: String,
@@ -35,17 +62,9 @@ object ApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
+            val responseOK = handleResponseStatus(response)
 
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
-
-            val body = response.body?.string() ?: throw HttpException(
+            var body = response.body?.string() ?: throw HttpException(
                 response.code,
                 "Empty response body"
             )
@@ -120,11 +139,7 @@ object ApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string() ?: throw HttpException(
                 response.code,
@@ -158,42 +173,7 @@ object ApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            val body = response.body?.string() ?: throw HttpException(
-                response.code,
-                "Empty response body"
-            )
-
-            return@withContext parseResponseBody(body, responseType)
-        }
-    }
-
-    suspend fun <T> delete(
-        endpoint: String,
-        responseType: Class<T>,
-        token: String
-    ): T = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Deleting to endpoint: $endpoint")
-
-        val url = buildUrl(endpoint)
-
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "Bearer $token")
-            .delete()
-            .build()
-
-        client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string() ?: throw HttpException(
                 response.code,
@@ -227,11 +207,7 @@ object ApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string() ?: throw HttpException(
                 response.code,
@@ -242,9 +218,37 @@ object ApiService {
         }
     }
 
-    private fun buildUrl(path: String): String = "$BASE_URL/$path"
+    suspend fun <T> delete(
+        endpoint: String,
+        responseType: Class<T>,
+        token: String
+    ): T = withContext(Dispatchers.IO) {
+        Log.d(TAG, "Deleting to endpoint: $endpoint")
+
+        val url = buildUrl(endpoint)
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .delete()
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            handleResponseStatus(response)
+
+            val body = response.body?.string() ?: throw HttpException(
+                response.code,
+                "Empty response body"
+            )
+
+            return@withContext parseResponseBody(body, responseType)
+        }
+    }
+
+    fun buildUrl(path: String): String = "$BASE_URL/$path"
 
     private fun <T> parseResponseBody(body: String, modelClass: Class<T>): T {
+        Log.d("parseResponseBody", body)
         return try {
             gson.fromJson(body, modelClass)
         } catch (e: JsonSyntaxException) {
