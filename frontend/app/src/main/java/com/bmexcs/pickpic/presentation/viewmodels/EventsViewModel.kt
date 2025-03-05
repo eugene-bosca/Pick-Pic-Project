@@ -38,7 +38,11 @@ class EventsViewModel @Inject constructor(
     val event = _event
 
     fun setEvent(event: Event) {
-        _event.value = event
+        eventsRepository.event.value = event
+    }
+
+    init {
+        getImageByEventId(event.value.event_id)
     }
 
     fun getImageByEventId(eventId: String) {

@@ -22,6 +22,7 @@ import com.bmexcs.pickpic.R
 import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.data.models.Event
 import com.bmexcs.pickpic.data.models.ListUserEventsItem
+import com.bmexcs.pickpic.data.repositories.EventsRepository
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 import com.bmexcs.pickpic.presentation.viewmodels.HomePageViewModel
@@ -30,7 +31,7 @@ import com.bmexcs.pickpic.presentation.viewmodels.HomePageViewModel
 fun HomePageScreenView(
     navController: NavHostController,
     viewModel: HomePageViewModel = hiltViewModel(),
-    eventsViewModel: EventsViewModel = hiltViewModel()
+    eventsViewModel: EventsViewModel = hiltViewModel(),
 ) {
     val events by viewModel.events.collectAsState()
 
@@ -125,12 +126,11 @@ fun CreateEventButton(navController: NavHostController) {
 fun EventListing(
     eventsViewModel: EventsViewModel,
     eventItem: ListUserEventsItem,
-    navController: NavHostController
+    navController: NavHostController,
 ) {
     ElevatedButton(
         onClick = {
             eventsViewModel.setEvent(Event(event_id = eventItem.event_id, event_name = eventItem.event_name))
-            eventsViewModel.getImageByEventId(eventItem.event_id)
             navController.navigate(Route.Event.route)
         },
         shape = RoundedCornerShape(16.dp),

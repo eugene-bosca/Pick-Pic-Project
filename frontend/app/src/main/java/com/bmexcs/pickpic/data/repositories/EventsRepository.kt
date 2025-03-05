@@ -4,6 +4,7 @@ import com.bmexcs.pickpic.data.models.Event
 import com.bmexcs.pickpic.data.models.EventContent
 import com.bmexcs.pickpic.data.models.EventPicture
 import com.bmexcs.pickpic.data.sources.EventsDataSource
+import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -11,6 +12,9 @@ import javax.inject.Singleton
 class EventsRepository @Inject constructor(
     private val eventsDataSource: EventsDataSource
 ) {
+
+    private val _event = MutableStateFlow<Event>(Event())
+    val event = _event
 
     fun getEvents(): List<Event> {
         // TODO: access the user id, etc.
