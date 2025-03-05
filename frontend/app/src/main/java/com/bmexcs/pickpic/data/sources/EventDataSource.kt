@@ -36,7 +36,7 @@ class EventDataSource @Inject constructor(
                 val eventName = fetchEventName(eventId)
                 return@withContext Pair(obfuscatedId, eventName)
             } catch (e: Exception) {
-                Log.e("EventDataSource", "Error fetching obfuscated ID: ${e.message}")
+                Log.e("EventDataSource", "Error fetching obfuscated ID: ${e.message}, eventId: $eventId")
                 return@withContext Pair(null, null)
             }
         }

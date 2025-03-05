@@ -37,12 +37,12 @@ import java.util.Hashtable
 fun EventCreateInviteView(
     navController: NavHostController,
     viewModel: QrInviteViewModel = hiltViewModel(),
-    eventId: String,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val inviteState by viewModel.inviteState.collectAsState()
 
+    val eventId = navController.currentBackStackEntry?.arguments?.getString("eventId") ?: ""
     LaunchedEffect(eventId) {
         viewModel.fetchInviteDetails(eventId)
     }
