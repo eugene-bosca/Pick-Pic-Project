@@ -58,6 +58,11 @@ fun ProfileScreenView(
         EditablePhoneNumberField(viewModel)
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Submit button
+        SubmitButton(viewModel)
+
+        Spacer(modifier = Modifier.weight(1f))
+
         // Log Out Button
         LogOutButton(viewModel, navController)
     }
@@ -90,6 +95,7 @@ fun EditableDisplayNameField(viewModel: ProfileViewModel) {
 @Composable
 fun EditableEmailField(viewModel: ProfileViewModel) {
     val profileState by viewModel.user.collectAsState()
+    val isEmailValid by remember { derivedStateOf { viewModel.isEmailValid } }
 
     Text(
         text = "Email",
@@ -107,13 +113,20 @@ fun EditableEmailField(viewModel: ProfileViewModel) {
         ),
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier.fillMaxWidth(),
-        singleLine = true
+        singleLine = true,
+        isError = !isEmailValid,
+        supportingText = {
+            if (!isEmailValid) {
+                Text(text = "Invalid email format", color = MaterialTheme.colorScheme.error)
+            }
+        }
     )
 }
 
 @Composable
 fun EditablePhoneNumberField(viewModel: ProfileViewModel) {
     val profileState by viewModel.user.collectAsState()
+    val isPhoneValid by remember { derivedStateOf { viewModel.isPhoneValid } }
 
     Text(
         text = "Phone Number",
@@ -131,8 +144,30 @@ fun EditablePhoneNumberField(viewModel: ProfileViewModel) {
         ),
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier.fillMaxWidth(),
-        singleLine = true
+        singleLine = true,
+        isError = !isPhoneValid,
+        supportingText = {
+            if (!isPhoneValid) {
+                Text(text = "Invalid phone format", color = MaterialTheme.colorScheme.error)
+            }
+        }
     )
+}
+
+@Composable
+fun SubmitButton(viewModel: ProfileViewModel) {
+    val isEmailValid by remember { derivedStateOf { viewModel.isEmailValid } }
+    val isPhoneValid by remember { derivedStateOf { viewModel.isPhoneValid } }
+
+    Button(
+        onClick = {
+            viewModel.submit()
+        },
+        modifier = Modifier.fillMaxWidth(),
+        enabled = isEmailValid && isPhoneValid
+    ) {
+        Text("Submit", fontSize = 16.sp)
+    }
 }
 
 @Composable

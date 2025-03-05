@@ -25,7 +25,7 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "getEvents for $userId")
 
-        val eventResponse = ApiService.get("list_users_events/$userId", ListUserEventsResponse::class.java, token)
+        val eventResponse = ApiService.get("list_users_events/$userId/", ListUserEventsResponse::class.java, token)
         return eventResponse.owned_events + eventResponse.invited_events
     }
 
