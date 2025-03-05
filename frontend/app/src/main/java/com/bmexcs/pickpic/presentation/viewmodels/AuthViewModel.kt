@@ -1,5 +1,6 @@
 package com.bmexcs.pickpic.presentation.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.utils.SignInResult
@@ -9,6 +10,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private const val TAG = "AuthViewModel"
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
@@ -35,7 +38,8 @@ class AuthViewModel @Inject constructor(
                 authRepository.initUserState()
                 SignInResult.Success
             } catch (e: Exception) {
-                SignInResult.UnknownError
+                Log.e(TAG, "checkSignedInUser error: $e")
+                null
             }
         }
     }
