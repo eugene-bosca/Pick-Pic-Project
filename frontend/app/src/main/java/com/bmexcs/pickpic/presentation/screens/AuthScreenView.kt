@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -82,7 +83,7 @@ fun AuthScreenView(
 
             Spacer(Modifier.height(20.dp))
 
-            AuthButton(
+            GoogleAuthButton(
                 "Sign in with Google",
                 onClick = { authViewModel.signInWithGoogle() }
             )
@@ -146,17 +147,24 @@ fun AuthPasswordField() {
 }
 
 @Composable
-fun AuthButton(text: String, onClick: () -> Unit) {
+fun GoogleAuthButton(text: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier.width(250.dp)
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_google_logo),
+            contentDescription = "Google Icon",
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             fontSize = 18.sp,
             text = text
         )
     }
 }
+
 
 @Composable
 fun AuthBox(content: @Composable() (() -> Unit)) {
