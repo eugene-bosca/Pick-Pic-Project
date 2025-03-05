@@ -18,7 +18,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from app.views import authenticate, picture
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from . import views
 
@@ -27,7 +26,7 @@ router.register(r'users', views.UserViewSet)
 router.register(r'user_settings', views.UserSettingsViewSet)
 router.register(r'event', views.EventViewSet)
 router.register(r'event_users', views.EventUserViewSet)
-router.register(r'images', views.ImageViewSet)
+# router.register(r'images', views.ImageViewSet)
 router.register(r'event_contents', views.EventContentViewSet)
 router.register(r'scored_by', views.ScoredByViewSet)
 urlpatterns = [
@@ -44,7 +43,9 @@ urlpatterns = [
     # custom endpoints
     path('authenticate/', views.authenticate, name='authenticate'),
 
-    path('picture/', views.picture, name='picture'),
+    path('picture/<str:event_id>/', views.upload_picture, name='Upload Image'),
+    path('picture/<str:event_id>/<str:image_id>/', views.download_picture, name='Download Image'),
+    path('event/image-count/<str:event_id>/', views.event_image_count, name='Event Image Count'),
     path('event/<uuid:event_id>/highest_scored_image/', views.get_highest_scored_image, name='get_highest_scored_image'),
 
 
@@ -59,6 +60,9 @@ urlpatterns = [
 
     path('event/image-count/<str:event_id>/', views.event_image_count, name='event_image_count'),
     path('list_users_events/<str:user_id>/', views.list_users_events, name='List Users Events'),
+    path('get_user_id_by_firebase_id/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='Exchange User ID For Firebase ID'),
+    path('create_new_event/', views.create_new_event, name='Create New Event'),
+    path('invite_to_event/', views.invite_to_event, name='Invite User to Event'),
     path('get_user_id_by_firebase_id/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='exchange_user_id_for_firebase_id'),
     path('create_new_event/', views.create_new_event, name='create new event'),
     path('get_user_id_from_email/<str:email>/', views.get_user_id_from_email, name='get user id from email'),

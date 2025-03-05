@@ -99,42 +99,33 @@ def authenticate(request: Request):
         return Response({"exists": False, "comment": "User does not exist"}, status=404)
     except User.MultipleObjectsReturned:
         return Response({"exists": False, "comment": "Multiple users with the same username exist???"}, status=500)
-
-@extend_schema_view(
-    get=extend_schema(
-        parameters=[
-            OpenApiParameter("picture_name", str, OpenApiParameter.QUERY, description="picture name"),
-        ],
-        responses={200: OpenApiResponse(
-            description="File download",
-        )}
-    ),
-    post=extend_schema(
-        request={
-            "image/jpeg": OpenApiTypes.BINARY,
-            "image/png": OpenApiTypes.BINARY,
-        },
-        responses={204: None}
-    )
-)    
-@api_view(['GET', 'PUT'])
-def picture(request: Request):
-    if request.method == 'GET':
+ 
+@api_view(['GET'])
+def download_picture(request: Request, event_id=None, image_id=None):
         
-        picture_name = request.GET.get("picture_name")
+    event_exists = Event.objects.filter(event_id=event_id).exists()
 
-        file_bytes = download_from_gcs('pick-pic', picture_name)
+    if not event_exists:
+        return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event-image pair not found" })
 
-        file_stream = io.BytesIO(file_bytes)
+    filename = Image.objects.get(image_id=image_id).file_name
 
-        content_type, _ = mimetypes.guess_type(picture_name)
-        if content_type is None:
-            content_type = "application/octet-stream"
+    file_bytes = download_from_gcs('pick-pic', filename)
 
-        return FileResponse(file_stream, content_type=content_type, status=status.HTTP_200_OK)
+    file_stream = io.BytesIO(file_bytes)
 
-    elif request.method == 'PUT':
+    content_type, _ = mimetypes.guess_type(filename)
+    if content_type is None:
+        content_type = "application/octet-stream"
+
+    return FileResponse(file_stream, filename=filename, content_type=content_type, status=status.HTTP_200_OK)
+
+@api_view(['PUT'])
+def upload_picture(request: Request, event_id=None):
         
+        if not Event.objects.filter(event_id=event_id).exists():
+            return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event not found" }) 
+
         file_bytes = request.body
         content_type = request.headers.get('Content-Type') 
         unique_name = datetime.now().strftime("%Y%m%d%H%M%S%f")
@@ -148,7 +139,14 @@ def picture(request: Request):
 
         upload_to_gcs('pick-pic', file_bytes, unique_name, content_type)
 
-        return Response(status=status.HTTP_201_CREATED)
+        new_image = Image.objects.create(file_name=unique_name)
+        
+        try:
+            event_content = EventContent.objects.create(event_id=event_id, image_id=(new_image.image_id))
+        except Exception as e:
+            print(e)
+
+        return Response(status=status.HTTP_201_CREATED, data=EventContentSerializer(event_content).data)
     
 @api_view(['GET', 'PUT'])
 def user_pfp(request: Request):
@@ -209,7 +207,7 @@ def list_users_events(request: Request, user_id):
     
     return Response(status=status.HTTP_200_OK ,data={
         "owned_events": EventSerializer(owned_events, many=True).data,
-        "invited_events": EventUserSerializer(invited_events, many=True).data
+        "invited_events": EventSerializer(invited_events, many=True).data
     })
  
 @api_view(['POST'])
@@ -218,11 +216,15 @@ def create_new_event(request: Request):
     user_id = request.data.get('user_id')
     event_name = request.data.get('event_name')
 
-    event = Event.objects.create(event_name=event_name, user_id=user_id)
+    event_owner = User.objects.get(user_id=user_id)
+    try:
+        event = Event.objects.create(event_name=event_name, owner=event_owner)
 
-    eventUser = EventUser.objects.create(event_id=event.event_id, user_id=user_id)
+        EventUser.objects.create(event_id=event.event_id, user_id=user_id)
 
-    return Response(status=status.HTTP_201_CREATED, data=event)
+        return Response(status=status.HTTP_201_CREATED, data=EventSerializer(event).data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def invite_to_event(request: Request):
@@ -232,7 +234,7 @@ def invite_to_event(request: Request):
 
     eventUser = EventUser.objects.create(event_id=event_id, user_id=user_id)
 
-    return Response(status=status.HTTP_202_ACCEPTED, data=eventUser)
+    return Response(status=status.HTTP_202_ACCEPTED, data=UserSerializer(eventUser).data)
 
 @api_view(['GET'])
 def get_user_id_by_firebase_id(request: Request, firebase_id):
