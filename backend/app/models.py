@@ -24,18 +24,23 @@ class Event(models.Model):
 class Image(models.Model):
     image_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     file_name = models.CharField(max_length=50, blank=True)
+    score = models.IntegerField(default=0)
 
 class EventContent(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, primary_key=True)
-    image_id = models.ForeignKey(Image, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
 
 class EventUser(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    accepted = models.BooleanField(default=False)
     
     class Meta:
         unique_together = ('event', 'user')
 
 class ScoredBy(models.Model):
-    image_id = models.ForeignKey(Image, on_delete=models.CASCADE, primary_key=True)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('image', 'user')

@@ -18,11 +18,11 @@ import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.viewmodels.EventInvitationViewModel
 
 @Composable
-fun EventInvitationScreenView(
+fun EventInvitationDecisionScreenView(
     navController: NavHostController,
     viewModel: EventInvitationViewModel = hiltViewModel()
 ) {
-    val eventName by viewModel.eventName.collectAsState()
+    val eventName = 0
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -47,7 +47,7 @@ fun EventInvitationScreenView(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Button(onClick = {
-                    viewModel.acceptEvent()
+//                    viewModel.acceptEvent()
                     navController.navigate(Route.Event.route)
                 }) {
                     Text("Accept")

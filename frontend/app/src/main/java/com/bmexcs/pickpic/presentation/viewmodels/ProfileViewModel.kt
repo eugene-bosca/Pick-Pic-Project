@@ -1,7 +1,10 @@
 package com.bmexcs.pickpic.presentation.viewmodels
 
+import android.util.Log
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.User
@@ -13,6 +16,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
+private const val TAG = "ProfileViewModel"
+
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
@@ -22,25 +27,28 @@ class ProfileViewModel @Inject constructor(
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user
 
-    // TODO: use the validators
-    // https://developer.android.com/develop/ui/compose/quick-guides/content/validate-input
+    private var emailInput by mutableStateOf("")
+    private var phoneInput by mutableStateOf("")
+
     val isEmailValid by derivedStateOf {
-        val email = _user.value?.email.orEmpty()
-        email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        emailInput.isNotEmpty() &&
+                android.util.Patterns.EMAIL_ADDRESS.matcher(emailInput).matches()
     }
 
     val isPhoneValid by derivedStateOf {
-        val phone = _user.value?.phone.orEmpty()
-        phone.isNotEmpty() && android.util.Patterns.PHONE.matcher(phone).matches()
+        phoneInput.isEmpty() ||
+                android.util.Patterns.PHONE.matcher(phoneInput).matches()
     }
 
     // Loads the current profile.
     fun loadProfile() {
         viewModelScope.launch {
+            Log.i(TAG, "Loading profile")
             val result = userRepository.getUser()
-            if (result != null) {
-                _user.value = result // Cache in ViewModel
-            }
+            _user.value = result
+
+            emailInput = result.email
+            phoneInput = result.phone
         }
     }
 
@@ -49,29 +57,26 @@ class ProfileViewModel @Inject constructor(
         _user.update { currentProfile ->
             currentProfile?.copy(display_name = displayName)
         }
-
-        viewModelScope.launch {
-            _user.value?.let { userRepository.updateUser(it) }
-        }
     }
 
     // Updates the email field.
     fun updateEmail(email: String) {
+        emailInput = email
         _user.update { currentProfile ->
             currentProfile?.copy(email = email)
-        }
-
-        viewModelScope.launch {
-            _user.value?.let { userRepository.updateUser(it) }
         }
     }
 
     // Updates the phone number field.
     fun updatePhoneNumber(phoneNumber: String) {
+        phoneInput = phoneNumber
         _user.update { currentProfile ->
             currentProfile?.copy(phone = phoneNumber)
         }
+    }
 
+    // Submits the user profile update.
+    fun submit() {
         viewModelScope.launch {
             _user.value?.let { userRepository.updateUser(it) }
         }

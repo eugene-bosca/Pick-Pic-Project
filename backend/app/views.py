@@ -4,7 +4,7 @@ from .serializers import UserSerializer, UserSettingsSerializer, EventSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view, OpenApiTypes, OpenApiResponse, OpenApiExample
+import base64
 
 from .models import User
 
@@ -53,6 +53,16 @@ class EventContentViewSet(viewsets.ModelViewSet):
     serializer_class = EventContentSerializer
     lookup_field = "event_id"
 
+    def retrieve(self, request, *args, **kwargs):
+        event_id = kwargs.get(self.lookup_field)
+        queryset = self.queryset.filter(event_id=event_id)
+
+        if not queryset.exists():
+            return Response(data={[]}, status=status.HTTP_200_OK)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
 # ScoredBy ViewSet
 class ScoredByViewSet(viewsets.ModelViewSet):
     queryset = ScoredBy.objects.all()
@@ -98,42 +108,33 @@ def authenticate(request: Request):
         return Response({"exists": False, "comment": "User does not exist"}, status=404)
     except User.MultipleObjectsReturned:
         return Response({"exists": False, "comment": "Multiple users with the same username exist???"}, status=500)
-
-@extend_schema_view(
-    get=extend_schema(
-        parameters=[
-            OpenApiParameter("picture_name", str, OpenApiParameter.QUERY, description="picture name"),
-        ],
-        responses={200: OpenApiResponse(
-            description="File download",
-        )}
-    ),
-    post=extend_schema(
-        request={
-            "image/jpeg": OpenApiTypes.BINARY,
-            "image/png": OpenApiTypes.BINARY,
-        },
-        responses={204: None}
-    )
-)    
-@api_view(['GET', 'PUT'])
-def picture(request: Request):
-    if request.method == 'GET':
+ 
+@api_view(['GET'])
+def download_picture(request: Request, event_id=None, image_id=None):
         
-        picture_name = request.GET.get("picture_name")
+    event_exists = Event.objects.filter(event_id=event_id).exists()
 
-        file_bytes = download_from_gcs('pick-pic', picture_name)
+    if not event_exists:
+        return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event-image pair not found" })
 
-        file_stream = io.BytesIO(file_bytes)
+    filename = Image.objects.get(image_id=image_id).file_name
 
-        content_type, _ = mimetypes.guess_type(picture_name)
-        if content_type is None:
-            content_type = "application/octet-stream"
+    file_bytes = download_from_gcs('pick-pic', filename)
 
-        return FileResponse(file_stream, content_type=content_type, status=status.HTTP_200_OK)
+    file_stream = io.BytesIO(file_bytes)
 
-    elif request.method == 'PUT':
+    content_type, _ = mimetypes.guess_type(filename)
+    if content_type is None:
+        content_type = "application/octet-stream"
+
+    return FileResponse(file_stream, filename=filename, content_type=content_type, status=status.HTTP_200_OK)
+
+@api_view(['PUT'])
+def upload_picture(request: Request, event_id=None):
         
+        if not Event.objects.filter(event_id=event_id).exists():
+            return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event not found" }) 
+
         file_bytes = request.body
         content_type = request.headers.get('Content-Type') 
         unique_name = datetime.now().strftime("%Y%m%d%H%M%S%f")
@@ -147,7 +148,14 @@ def picture(request: Request):
 
         upload_to_gcs('pick-pic', file_bytes, unique_name, content_type)
 
-        return Response(status=status.HTTP_201_CREATED)
+        new_image = Image.objects.create(file_name=unique_name)
+        
+        try:
+            event_content = EventContent.objects.create(event_id=event_id, image_id=(new_image.image_id))
+        except Exception as e:
+            print(e)
+
+        return Response(status=status.HTTP_201_CREATED, data=EventContentSerializer(event_content).data)
     
 @api_view(['GET', 'PUT'])
 def user_pfp(request: Request):
@@ -202,13 +210,13 @@ def list_users_events(request: Request, user_id):
 
     owned_events = Event.objects.filter(owner_id=user_id)
 
-    invited_event_ids = EventUser.objects.filter(user_id=user_id).values_list('event_id', flat=True)
+    invited_event_ids = EventUser.objects.filter(user_id=user_id, accepted = True).values_list('event_id', flat=True)
 
     invited_events = Event.objects.filter(event_id__in=invited_event_ids)
     
     return Response(status=status.HTTP_200_OK ,data={
         "owned_events": EventSerializer(owned_events, many=True).data,
-        "invited_events": EventUserSerializer(invited_events, many=True).data
+        "invited_events": EventSerializer(invited_events, many=True).data
     })
  
 @api_view(['POST'])
@@ -217,11 +225,15 @@ def create_new_event(request: Request):
     user_id = request.data.get('user_id')
     event_name = request.data.get('event_name')
 
-    event = Event.objects.create(event_name=event_name, user_id=user_id)
+    event_owner = User.objects.get(user_id=user_id)
+    try:
+        event = Event.objects.create(event_name=event_name, owner=event_owner)
 
-    eventUser = EventUser.objects.create(event_id=event.event_id, user_id=user_id)
+        EventUser.objects.create(event_id=event.event_id, user_id=user_id)
 
-    return Response(status=status.HTTP_201_CREATED, data=event)
+        return Response(status=status.HTTP_201_CREATED, data=EventSerializer(event).data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def invite_to_event(request: Request):
@@ -231,7 +243,7 @@ def invite_to_event(request: Request):
 
     eventUser = EventUser.objects.create(event_id=event_id, user_id=user_id)
 
-    return Response(status=status.HTTP_202_ACCEPTED, data=eventUser)
+    return Response(status=status.HTTP_202_ACCEPTED, data=UserSerializer(eventUser).data)
 
 @api_view(['GET'])
 def get_user_id_by_firebase_id(request: Request, firebase_id):
@@ -254,5 +266,205 @@ def get_user_id_by_firebase_id(request: Request, firebase_id):
         return Response({'user_id': user.user_id}, status=status.HTTP_200_OK) # Convert UUID to string for JSON serialization
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+def generate_invite_link(request, event_id):
+    """
+    Generates an obfuscated invite link for an event.
+
+    Args:
+        request: The HTTP request object.
+        event_id: The ID of the event to generate the link for.
+
+    Returns:
+        Response: A JSON response containing the obfuscated invite link or an error message.
+    """
+    try:
+        # Check if the event exists, to go to except statements
+        event = Event.objects.get(event_id=event_id)
+
+        # Basic obfuscation: base64 encode the event ID
+        encoded_event_id = base64.urlsafe_b64encode(str(event_id).encode()).decode().rstrip('=')
+
+        # Construct the invite link using the base URL and encoded event ID
+        base_url = settings.INVITE_BASE_URL  # Define this in your settings
+        invite_link = f"{base_url}/{encoded_event_id}"
+
+        return Response({'invite_link': invite_link}, status=status.HTTP_200_OK)
+
+    except Event.DoesNotExist:
+        return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def resolve_invite_link(request, encoded_event_id):
+    """
+    Resolves an obfuscated invite link to get the event ID.
+
+    Args:
+        request: The HTTP request object.
+        encoded_event_id: The obfuscated event ID from the invite link.
+
+    Returns:
+        Response: A JSON response containing the event ID or an error message.
+    """
+    try:
+        # Decode the obfuscated event ID
+        padded_encoded_id = encoded_event_id + '=' * (4 - len(encoded_event_id) % 4)
+        decoded_event_id_bytes = base64.urlsafe_b64decode(padded_encoded_id)
+        decoded_event_id = uuid.UUID(decoded_event_id_bytes.decode())
+
+        # Check if the event exists, to go to except statements
+        event = Event.objects.get(event_id=decoded_event_id)
+
+        return Response({'event_id': str(decoded_event_id)}, status=status.HTTP_200_OK)
+
+    except (base64.binascii.Error, ValueError):
+        return Response({'error': 'Invalid invite link'}, status=status.HTTP_400_BAD_REQUEST)
+    except Event.DoesNotExist:
+        return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+def add_user_to_event(request: Request, event_id, user_id):
+    """
+    Adds a user to an event.
+
+    Args:
+        request: The HTTP request object.
+        event_id: The UUID of the event.
+        user_id: The UUID of the user.
+
+    Returns:
+        Response: A JSON response indicating success or failure.
+    """
+    try:
+        # Convert UUID strings to UUID objects
+        event_id = uuid.UUID(str(event_id))
+        user_id = uuid.UUID(str(user_id))
+
+        # Check if the event and user exist
+        event = Event.objects.get(event_id=event_id)
+        user = User.objects.get(user_id=user_id)
+
+        # Check if the user is already in the event
+        if EventUser.objects.filter(event_id=event_id, user_id=user_id).exists():
+            return Response({'error': 'User already in event'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Add the user to the event
+        EventUser.objects.create(event_id=event_id, user_id=user_id)
+
+        return Response({'message': 'User added to event successfully'}, status=status.HTTP_201_CREATED)
+
+    except Event.DoesNotExist:
+        return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except ValueError:
+        return Response({'error': 'Invalid UUID format'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def get_user_id_from_email(request: Request, email):
+    """
+    Retrieves the user_id associated with a given email address.
+
+    Args:
+        request: The HTTP request object.
+        email: The email address to search for.
+
+    Returns:
+        Response: A JSON response containing the user_id or an error message.
+    """
+    try:
+        user = User.objects.get(email=email)
+        return Response({'user_id': str(user.user_id)}, status=status.HTTP_200_OK) # Convert UUID to string for JSON serialization
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+def get_highest_scored_image(request: Request, event_id):
+    """
+    Retrieves the image with the highest score for a given event.
+
+    Args:
+        request: The HTTP request object.
+        event_id: The UUID of the event.
+
+    Returns:
+        Response: A FileResponse containing the image or an error message.
+    """
+    try:
+        event_id = uuid.UUID(str(event_id))
+        
+        # Find the image with the highest score in the event
+        highest_scored_image = Image.objects.filter(
+            eventcontent__event_id=event_id
+        ).order_by('-score').first()
+
+        if not highest_scored_image:
+            return Response({'error': 'No images found for this event'}, status=status.HTTP_404_NOT_FOUND)
+
+        file_name = highest_scored_image.file_name
+
+        if not file_name:
+          return Response({'error': 'Image file name not set'}, status=status.HTTP_404_NOT_FOUND)
+
+        file_bytes = download_from_gcs('pick-pic', file_name)
+        file_stream = io.BytesIO(file_bytes)
+
+        content_type, _ = mimetypes.guess_type(file_name)
+        if content_type is None:
+            content_type = "application/octet-stream"
+
+        return FileResponse(file_stream, content_type=content_type, status=status.HTTP_200_OK)
+
+    except ValueError:
+        return Response({'error': 'Invalid UUID format'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['DELETE'])
+def remove_event_user(request, event_id, user_id):
+    """
+    Removes a user from an event.
+    """
+    try:
+        event_user = EventUser.objects.get(event__event_id=event_id, user__user_id=user_id)
+        event_user.delete()
+        return Response(status=status.HTTP_200_OK)
+    except EventUser.DoesNotExist:
+        return Response({'error': 'Event user not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['PUT'])
+def accept_event_user(request, event_id, user_id):
+    """
+    Changes the 'accepted' status of an EventUser to True.
+    """
+    try:
+        event_user = EventUser.objects.get(event__event_id=event_id, user__user_id=user_id)
+        event_user.accepted = True
+        event_user.save()
+        return Response({'message': 'Event user accepted successfully.'}, status=status.HTTP_200_OK)
+    except EventUser.DoesNotExist:
+        return Response({'error': 'Event user not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+def get_pending_events(request, user_id):
+    """
+    Retrieves a list of Event objects where the user is invited but has not accepted.
+    """
+    try:
+        pending_events = EventUser.objects.filter(user__user_id=user_id, accepted=False)
+        events = [pe.event for pe in pending_events]
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

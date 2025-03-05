@@ -3,8 +3,7 @@ package com.bmexcs.pickpic.data.sources
 import android.util.Log
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserCreation
-import com.bmexcs.pickpic.data.models.UserId
-import com.bmexcs.pickpic.data.utils.ApiService
+import com.bmexcs.pickpic.data.utils.UserApiService
 import com.bmexcs.pickpic.data.utils.NotFoundException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -17,6 +16,8 @@ class UserDataSource @Inject constructor(
 ) {
     private var cachedUser: User? = null
 
+    private val api = UserApiService()
+
     fun getUser(): User {
         return cachedUser ?: throw Exception("Null user")
     }
@@ -28,17 +29,8 @@ class UserDataSource @Inject constructor(
         Log.d(TAG, "Initialize user state with firebaseId=$firebaseId")
 
         cachedUser = try {
-            val userId = ApiService.get(
-                endpoint = "get_user_id_by_firebase_id/$firebaseId",
-                UserId::class.java,
-                token
-            ).user_id
-
-            val user = ApiService.get(
-                endpoint = "users/$userId",
-                User::class.java,
-                token
-            )
+            val userId = api.getUserIdByFirebaseId(firebaseId, token)
+            val user = api.get(userId, token)
             user
         } catch (e: NotFoundException) {
             createUser()
@@ -56,12 +48,7 @@ class UserDataSource @Inject constructor(
         Log.d(TAG, "createUser with firebaseID=${authDataSource.getCurrentUser().uid}")
 
         return try {
-            val newUser = ApiService.post(
-                endpoint = "users/",
-                userCreation,
-                User::class.java,
-                token
-            )
+            val newUser = api.post(userCreation, token)
             newUser
         } catch (e: Exception) {
             Log.e(TAG, "Failed to create new user: $e")
@@ -73,7 +60,6 @@ class UserDataSource @Inject constructor(
         Log.d(TAG, "Updating user state")
 
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-        // TODO: change response object type
-        val result = ApiService.patch("users/${user.user_id}", user, User::class.java, token)
+        cachedUser = api.put(user, token)
     }
 }

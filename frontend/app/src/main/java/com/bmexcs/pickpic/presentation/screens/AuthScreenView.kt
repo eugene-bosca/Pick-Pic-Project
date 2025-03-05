@@ -1,12 +1,16 @@
 package com.bmexcs.pickpic.presentation.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -24,6 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
@@ -32,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.data.utils.SignInResult
 import androidx.navigation.NavHostController
+import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.viewmodels.AuthViewModel
 
@@ -44,6 +51,19 @@ fun AuthScreenView(
 
     if (signInResult is SignInResult.Success) {
         navController.navigate(Route.Home.route)
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ){
+        Image(
+            painterResource(id = R.drawable.pickpic_login_background),
+            contentDescription = "Background Image",
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(),
+            contentScale = ContentScale.Crop
+        )
     }
 
     Box(
@@ -63,7 +83,7 @@ fun AuthScreenView(
 
             Spacer(Modifier.height(20.dp))
 
-            AuthButton(
+            GoogleAuthButton(
                 "Sign in with Google",
                 onClick = { authViewModel.signInWithGoogle() }
             )
@@ -127,17 +147,24 @@ fun AuthPasswordField() {
 }
 
 @Composable
-fun AuthButton(text: String, onClick: () -> Unit) {
+fun GoogleAuthButton(text: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier.width(250.dp)
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_google_logo),
+            contentDescription = "Google Icon",
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             fontSize = 18.sp,
             text = text
         )
     }
 }
+
 
 @Composable
 fun AuthBox(content: @Composable() (() -> Unit)) {
