@@ -8,7 +8,6 @@ class User(models.Model):
     email = models.EmailField(max_length=255, unique=True)
     phone = models.CharField(max_length=30, blank=True, null=True) 
     profile_picture = models.CharField(max_length=50, blank=True, null=True)
-    pending_invites = models.ForeignKey('PendingInvite', on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return self.display_name
