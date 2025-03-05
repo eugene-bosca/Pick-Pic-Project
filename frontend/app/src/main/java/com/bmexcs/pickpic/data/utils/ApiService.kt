@@ -3,11 +3,14 @@ package com.bmexcs.pickpic.data.utils
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.OkHttpClient
+import okhttp3.Response
+import java.lang.reflect.Type
 
 private const val TAG = "ApiService"
 
@@ -16,6 +19,33 @@ object ApiService {
 
     private val client = OkHttpClient()
     private val gson = Gson()
+
+    fun handleResponseStatus(response: Response): Boolean {
+        val code = response.code
+
+        if (code == 200 || code == 201) {
+            Log.w(TAG, "Response code: $code")
+            return true
+        }
+
+        if (code == 400) {
+            throw HttpException(code, "Bad request")
+        }
+        else if (code == 401) {
+            throw HttpException(code, "Unauthorized")
+        }
+        else if (code == 403) {
+            throw HttpException(code, "Forbidden")
+        }
+        else if (code == 404) {
+            throw NotFoundException("Endpoint does not exist")
+        }
+        else if (code in 501..599) {
+            throw HttpException(code, "Internal server error")
+        }
+        Log.w(TAG, "Issue with request: $response")
+        return false
+    }
 
     suspend fun <T> get(
         endpoint: String,
@@ -32,22 +62,55 @@ object ApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
+            val responseOK = handleResponseStatus(response)
 
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
-
-            val body = response.body?.string() ?: throw HttpException(
+            var body = response.body?.string() ?: throw HttpException(
                 response.code,
                 "Empty response body"
             )
 
             return@withContext parseResponseBody(body, responseType)
+        }
+    }
+
+    suspend fun <T> getList(
+        endpoint: String,
+        responseType: Class<T>,  // Type of the list elements (not List<T>)
+        token: String
+    ): List<T> = withContext(Dispatchers.IO) {
+        Log.d(TAG, "Fetching from endpoint: $endpoint")
+        val url = buildUrl(endpoint)
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            Log.d(TAG, "Response code: ${response.code}")
+
+            if (response.code == 404) {
+                throw NotFoundException("Endpoint does not exist")
+            }
+
+            val body = response.body?.string()
+            if (body.isNullOrEmpty()) {
+                throw HttpException(response.code, "Empty response body")
+            }
+
+            try {
+                // Create a Type for List<T>
+                val listType: Type = TypeToken.getParameterized(List::class.java, responseType).type
+
+                // Ensure the return type is explicitly List<T>
+                val parsedResponse: List<T> = Gson().fromJson(body, listType)
+                    ?: throw IllegalStateException("Failed to parse response")
+
+                return@withContext parsedResponse
+            } catch (e: Exception) {
+                throw IllegalStateException("Error parsing response: ${e.message}", e)
+            }
         }
     }
 
@@ -76,11 +139,7 @@ object ApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string() ?: throw HttpException(
                 response.code,
@@ -114,11 +173,7 @@ object ApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string() ?: throw HttpException(
                 response.code,
@@ -152,11 +207,7 @@ object ApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string() ?: throw HttpException(
                 response.code,
@@ -183,11 +234,7 @@ object ApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string() ?: throw HttpException(
                 response.code,
@@ -198,9 +245,10 @@ object ApiService {
         }
     }
 
-    private fun buildUrl(path: String): String = "$BASE_URL/$path"
+    fun buildUrl(path: String): String = "$BASE_URL/$path"
 
     private fun <T> parseResponseBody(body: String, modelClass: Class<T>): T {
+        Log.d("parseResponseBody", body)
         return try {
             gson.fromJson(body, modelClass)
         } catch (e: JsonSyntaxException) {

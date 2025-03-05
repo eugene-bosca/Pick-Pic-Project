@@ -49,7 +49,7 @@ fun HomePageScreenView(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ElevatedButton(onClick = { navController.navigate(Route.Event.route) }) {
+            ElevatedButton(onClick = { navController.navigate(Route.EventInvitation.route) }) {
                 Icon(
                     painter = painterResource(R.drawable.group_add_24px),
                     contentDescription = "Join Events Icon",
