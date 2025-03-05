@@ -147,7 +147,7 @@ object ApiService {
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
-            .addHeader("Content-Type", "image/jpeg")
+            .addHeader("Content-Type", contentType.toString())
             .put(requestBodyObj)
             .build()
 

@@ -34,7 +34,6 @@ class EventSerializer(serializers.ModelSerializer):
 
         return Event.objects.create(owner=owner_uuid, event_name=event_name, **validated_data)
 
-
 class EventUserSerializer(serializers.ModelSerializer):
     event = EventSerializer()
     user = UserSerializer()
@@ -42,9 +41,6 @@ class EventUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventUser
         fields = "__all__"
-
-
-
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,7 +50,7 @@ class ImageSerializer(serializers.ModelSerializer):
 
 class EventContentSerializer(serializers.ModelSerializer):
     event = EventSerializer()
-    image_id = ImageSerializer()
+    image = ImageSerializer()
 
     class Meta:
         model = EventContent
@@ -62,7 +58,7 @@ class EventContentSerializer(serializers.ModelSerializer):
 
 
 class ScoredBySerializer(serializers.ModelSerializer):
-    image_id = ImageSerializer()
+    image = ImageSerializer()
     user = UserSerializer()
 
     class Meta:
