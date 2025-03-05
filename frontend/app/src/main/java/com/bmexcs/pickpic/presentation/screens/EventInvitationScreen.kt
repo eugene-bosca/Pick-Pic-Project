@@ -74,13 +74,13 @@ fun EventInvitationScreenView(
                         },
                         trailingContent = {
                             Row () {
-                                IconButton(onClick = { modelView.acceptEvent(eventItem.event_id) }) {
+                                IconButton(onClick = { viewModel.acceptEvent(eventItem.event_id) }) {
                                     Icon(Icons.Filled.Check,
                                         contentDescription = null,
                                         tint = Color.Green
                                     )
                                 }
-                                IconButton(onClick = { modelView.declineEvent(eventItem.event_id) }) {
+                                IconButton(onClick = { viewModel.declineEvent(eventItem.event_id) }) {
                                     Icon(Icons.Filled.Close,
                                         contentDescription = null,
                                         tint = Color.Red

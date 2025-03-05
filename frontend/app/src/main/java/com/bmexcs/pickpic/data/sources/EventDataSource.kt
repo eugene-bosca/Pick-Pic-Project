@@ -85,5 +85,25 @@ class EventDataSource @Inject constructor(
         }
     }
 
-    suspend fun acceptEvent(eventId: String))
+    suspend fun acceptEvent(eventId: String): EmptyResponse {
+        val emptyRequestBody = EmptyResponse()
+        val userId = userDataSource.getUser().user_id
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        Log.d(TAG, "accept for $eventId")
+
+        val eventResponse = ApiService.put("events/$eventId/users/$userId/accept/", emptyRequestBody, EmptyResponse::class.java, token)
+        return eventResponse
+    }
+
+    suspend fun declineEvent(eventId: String): EmptyResponse {
+        val emptyRequestBody = EmptyResponse()
+        val userId = userDataSource.getUser().user_id
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        Log.d(TAG, "declineEvent for $eventId")
+
+        val eventResponse = ApiService.delete("events/$eventId/users/$userId/remove/", emptyRequestBody, EmptyResponse::class.java, token)
+        return eventResponse
+    }
 }

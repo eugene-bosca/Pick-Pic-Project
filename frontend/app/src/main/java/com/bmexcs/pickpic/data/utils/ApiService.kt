@@ -161,6 +161,44 @@ object ApiService {
         }
     }
 
+    // TODO: test
+    suspend fun <T, R> put(
+        endpoint: String,
+        requestBody: R,
+        responseType: Class<T>,
+        token: String,
+        contentType: HttpContentType = HttpContentType.JSON
+    ): T = withContext(Dispatchers.IO) {
+        Log.d(TAG, "Putting to endpoint: $endpoint")
+
+        val url = buildUrl(endpoint)
+
+        val jsonBody = toJson(requestBody)
+        val requestBodyObj = jsonBody.toRequestBody(contentType.toMediaType())
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .addHeader("Content-Type", contentType.toString())
+            .put(requestBodyObj)
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            if (response.code != 200) {
+                Log.w(TAG, "Response code: ${response.code}")
+            } else {
+                Log.i(TAG, "Got response ${response.code}")
+            }
+
+            val body = response.body?.string() ?: throw HttpException(
+                response.code,
+                "Empty response body"
+            )
+
+            return@withContext parseResponseBody(body, responseType)
+        }
+    }
+
     private fun buildUrl(path: String): String = "$BASE_URL/$path"
 
     private fun <T> parseResponseBody(body: String, modelClass: Class<T>): T {

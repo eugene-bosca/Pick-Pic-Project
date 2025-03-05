@@ -25,4 +25,12 @@ class EventRepository @Inject constructor(
     suspend fun getUserEventsPending(): List<ListUserEventsItem> {
         return eventDataSource.getUserEventsPending()
     }
+
+    suspend fun acceptEvent(eventId: String) {
+        eventDataSource.acceptEvent(eventId)
+    }
+
+    suspend fun declineEvent(eventId: String) {
+        eventDataSource.declineEvent(eventId)
+    }
 }

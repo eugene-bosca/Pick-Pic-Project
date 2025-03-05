@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.ListUserEventsItem
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
+import com.bmexcs.pickpic.data.sources.EventDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,8 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class EventInvitationViewModel @Inject constructor(
     private val eventRepository: EventRepository,
-    private val userRepository: UserRepository
-
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _events = MutableStateFlow<List<ListUserEventsItem>>(emptyList())
@@ -53,8 +53,24 @@ class EventInvitationViewModel @Inject constructor(
     fun acceptEvent(eventId: String) {
         viewModelScope.launch {
             try {
-
-
+                eventRepository.acceptEvent(eventId)
+                fetchEvents()
+            } catch (e: Exception) {
+                _errorMessage.value = e.localizedMessage ?: "An unknown error occurred"
+                Log.e("EventInvitationViewModel", "Error accepting event", e)
             }
+        }
+    }
+
+    fun declineEvent(eventId: String) {
+        viewModelScope.launch {
+            try {
+                eventRepository.declineEvent(eventId)
+                fetchEvents()
+            } catch (e: Exception) {
+                _errorMessage.value = e.localizedMessage ?: "An unknown error occurred"
+                Log.e("EventInvitationViewModel", "Error declining event", e)
+            }
+        }
     }
 }
