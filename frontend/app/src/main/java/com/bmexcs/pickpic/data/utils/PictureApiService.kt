@@ -2,6 +2,8 @@ package com.bmexcs.pickpic.data.utils
 
 import android.util.Log
 import com.bmexcs.pickpic.data.models.EventDetailsResponse
+import com.bmexcs.pickpic.data.utils.ApiService.buildUrl
+import com.bmexcs.pickpic.data.utils.ApiService.handleResponseStatus
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -13,15 +15,13 @@ import java.net.URL
 private const val TAG = "PictureApiService"
 
 class PictureApiService {
-    private val baseUrl = URL("https://pick-pic-service-627889116714.northamerica-northeast2.run.app")
-
     private val client = OkHttpClient()
 
     // GET /picture/{event_id}/{image_id}/
     // Response: ByteArray
     suspend fun get(eventId: String, imageId: String, token: String): String = withContext(Dispatchers.IO) {
         val endpoint = "picture/$eventId/$imageId/"
-        val url = URL("$baseUrl/$endpoint")
+        val url = buildUrl(endpoint)
 
         Log.d(TAG, "GET: $url")
 
@@ -33,15 +33,7 @@ class PictureApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string()
                 ?: throw HttpException(response.code, "Empty response body")

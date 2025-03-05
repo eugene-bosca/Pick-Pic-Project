@@ -4,6 +4,8 @@ import android.util.Log
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserCreation
 import com.bmexcs.pickpic.data.models.UserId
+import com.bmexcs.pickpic.data.utils.ApiService.buildUrl
+import com.bmexcs.pickpic.data.utils.ApiService.handleResponseStatus
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -16,8 +18,6 @@ import java.net.URL
 private const val TAG = "UserApiService"
 
 class UserApiService {
-    private val baseUrl = URL("https://pick-pic-service-627889116714.northamerica-northeast2.run.app")
-
     private val client = OkHttpClient()
     private val gson = Gson()
 
@@ -25,7 +25,7 @@ class UserApiService {
     // Response: String (User UUID)
     suspend fun getUserIdByFirebaseId(firebaseId: String, token: String): String = withContext(Dispatchers.IO) {
         val endpoint = "get_user_id_by_firebase_id/$firebaseId/"
-        val url = URL("$baseUrl/$endpoint")
+        val url = buildUrl(endpoint)
 
         Log.d(TAG, "GET: $url")
 
@@ -36,15 +36,7 @@ class UserApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string()
                 ?: throw HttpException(response.code, "Empty response body")
@@ -60,7 +52,7 @@ class UserApiService {
     // Response: String (User UUID)
     suspend fun getUserIdByEmail(email: String, token: String): String = withContext(Dispatchers.IO) {
         val endpoint = "get_user_id_from_email/$email/"
-        val url = URL("$baseUrl/$endpoint")
+        val url = buildUrl(endpoint)
 
         Log.d(TAG, "GET: $url")
 
@@ -71,15 +63,7 @@ class UserApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string()
                 ?: throw HttpException(response.code, "Empty response body")
@@ -95,7 +79,7 @@ class UserApiService {
     // Response: models.User
     suspend fun post(userCreation: UserCreation, token: String): User = withContext(Dispatchers.IO) {
         val endpoint = "users/"
-        val url = URL("$baseUrl/$endpoint")
+        val url = buildUrl(endpoint)
 
         Log.d(TAG, "POST: $url")
 
@@ -110,15 +94,7 @@ class UserApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string()
                 ?: throw HttpException(response.code, "Empty response body")
@@ -134,7 +110,7 @@ class UserApiService {
     // Response: models.User
     suspend fun get(userId: String, token: String): User = withContext(Dispatchers.IO) {
         val endpoint = "users/$userId/"
-        val url = URL("$baseUrl/$endpoint")
+        val url = buildUrl(endpoint)
 
         Log.d(TAG, "GET: $url")
 
@@ -145,15 +121,7 @@ class UserApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string()
                 ?: throw HttpException(response.code, "Empty response body")
@@ -169,7 +137,7 @@ class UserApiService {
     // Response: models.User
     suspend fun put(user: User, token: String): User = withContext(Dispatchers.IO) {
         val endpoint = "users/${user.user_id}/"
-        val url = URL("$baseUrl/$endpoint")
+        val url = buildUrl(endpoint)
 
         Log.d(TAG, "PUT: $url")
 
@@ -192,15 +160,7 @@ class UserApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string()
                 ?: throw HttpException(response.code, "Empty response body")
@@ -216,7 +176,7 @@ class UserApiService {
     // Response: models.User
     suspend fun patch(user: User, token: String): User = withContext(Dispatchers.IO) {
         val endpoint = "users/${user.user_id}/"
-        val url = URL("$baseUrl/$endpoint")
+        val url = buildUrl(endpoint)
 
         Log.d(TAG, "PATCH: $url")
 
@@ -239,15 +199,7 @@ class UserApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string()
                 ?: throw HttpException(response.code, "Empty response body")
@@ -263,7 +215,7 @@ class UserApiService {
     // Response: Empty
     suspend fun delete(userId: String, token: String) = withContext(Dispatchers.IO) {
         val endpoint = "users/$userId/"
-        val url = URL("$baseUrl/$endpoint")
+        val url = buildUrl(endpoint)
 
         Log.d(TAG, "DELETE: $url")
 
@@ -274,15 +226,7 @@ class UserApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
+            handleResponseStatus(response)
         }
     }
 }

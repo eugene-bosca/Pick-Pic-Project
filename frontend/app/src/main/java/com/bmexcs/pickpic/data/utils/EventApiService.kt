@@ -5,6 +5,8 @@ import com.bmexcs.pickpic.data.models.CreateEvent
 import com.bmexcs.pickpic.data.models.EventDetailsResponse
 import com.bmexcs.pickpic.data.models.InviteLinkResponse
 import com.bmexcs.pickpic.data.models.ListUserEventsResponse
+import com.bmexcs.pickpic.data.utils.ApiService.buildUrl
+import com.bmexcs.pickpic.data.utils.ApiService.handleResponseStatus
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -17,8 +19,6 @@ import java.net.URL
 private const val TAG = "EventApiService"
 
 class EventApiService {
-    private val baseUrl = URL("https://pick-pic-service-627889116714.northamerica-northeast2.run.app")
-
     private val client = OkHttpClient()
     private val gson = Gson()
 
@@ -26,7 +26,7 @@ class EventApiService {
     // Response: ListUserEventsResponse
     suspend fun getListUsersEvents(userId: String, token: String): ListUserEventsResponse = withContext(Dispatchers.IO) {
         val endpoint = "list_users_events/$userId/"
-        val url = URL("$baseUrl/$endpoint")
+        val url = buildUrl(endpoint)
 
         Log.d(TAG, "GET: $url")
 
@@ -37,15 +37,7 @@ class EventApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string()
                 ?: throw HttpException(response.code, "Empty response body")
@@ -61,7 +53,7 @@ class EventApiService {
     // Response: models.CreateEvent
     suspend fun post(eventCreation: CreateEvent, token: String): CreateEvent = withContext(Dispatchers.IO) {
         val endpoint = "event/"
-        val url = URL("$baseUrl/$endpoint")
+        val url = buildUrl(endpoint)
 
         Log.d(TAG, "POST: $url")
 
@@ -76,15 +68,7 @@ class EventApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string()
                 ?: throw HttpException(response.code, "Empty response body")
@@ -100,7 +84,7 @@ class EventApiService {
     // Response: models.EventDetailsResponse
     suspend fun get(eventId: String, token: String): EventDetailsResponse = withContext(Dispatchers.IO) {
         val endpoint = "event/$eventId/"
-        val url = URL("$baseUrl/$endpoint")
+        val url = buildUrl(endpoint)
 
         Log.d(TAG, "GET: $url")
 
@@ -111,15 +95,7 @@ class EventApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string()
                 ?: throw HttpException(response.code, "Empty response body")
@@ -135,7 +111,7 @@ class EventApiService {
     // Response: models.InviteLinkResponse
     suspend fun getGenerateInviteLink(eventId: String, token: String): InviteLinkResponse = withContext(Dispatchers.IO) {
         val endpoint = "generate_invite_link/$eventId/"
-        val url = URL("$baseUrl/$endpoint")
+        val url = buildUrl(endpoint)
 
         Log.d(TAG, "GET: $url")
 
@@ -146,15 +122,7 @@ class EventApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
+            handleResponseStatus(response)
 
             val body = response.body?.string()
                 ?: throw HttpException(response.code, "Empty response body")
@@ -170,7 +138,7 @@ class EventApiService {
     // Response: Empty
     suspend fun putAcceptUser(eventId: String, userId: String, token: String) = withContext(Dispatchers.IO) {
         val endpoint = "events/$eventId/users/$userId/accept/"
-        val url = URL("$baseUrl/$endpoint")
+        val url = buildUrl(endpoint)
 
         Log.d(TAG, "PUT: $url")
 
@@ -181,15 +149,7 @@ class EventApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
+            handleResponseStatus(response)
         }
     }
 
@@ -197,7 +157,7 @@ class EventApiService {
     // Response: Empty
     suspend fun deleteRemoveUser(eventId: String, userId: String, token: String) = withContext(Dispatchers.IO) {
         val endpoint = "events/$eventId/users/$userId/remove/"
-        val url = URL("$baseUrl/$endpoint")
+        val url = buildUrl(endpoint)
 
         Log.d(TAG, "DELETE: $url")
 
@@ -208,15 +168,7 @@ class EventApiService {
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code != 200) {
-                Log.w(TAG, "Response code: ${response.code}")
-            } else {
-                Log.i(TAG, "Got response ${response.code}")
-            }
-
-            if (response.code == 404) {
-                throw NotFoundException("Endpoint does not exist")
-            }
+            handleResponseStatus(response)
         }
     }
 }
