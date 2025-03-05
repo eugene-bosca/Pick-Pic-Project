@@ -24,12 +24,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PickPic">
 
-        <!-- GoogleSignInActivity (exported, but not a launcher activity) -->
-        <activity android:name=".GoogleSignInActivity"
-            android:exported="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        </activity>
-
         <!-- MainActivity as the launcher activity -->
         <activity
             android:name=".presentation.MainActivity"
