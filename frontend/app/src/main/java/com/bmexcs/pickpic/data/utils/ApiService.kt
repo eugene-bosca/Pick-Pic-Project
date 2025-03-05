@@ -237,6 +237,7 @@ object ApiService {
     private fun buildUrl(path: String): String = "$BASE_URL/$path"
 
     private fun <T> parseResponseBody(body: String, modelClass: Class<T>): T {
+        Log.d("parseResponseBody", body)
         return try {
             gson.fromJson(body, modelClass)
         } catch (e: JsonSyntaxException) {

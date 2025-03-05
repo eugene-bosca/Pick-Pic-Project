@@ -57,7 +57,7 @@ fun EventScreenView(
             }
         }
             // Use the context and uri to convert the image to byte array
-//        viewModel.addImageByEvent(viewModel.uriToByteArray(context, uri))
+        viewModel.addImageByEvent(viewModel.uriToByteArray(context, uri))
     }
 
     Column (
