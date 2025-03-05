@@ -65,7 +65,8 @@ fun Navigation(navController: NavHostController) {
 
         // Event Create Invite Screen
         composable(Route.EventCreateInviteView.route) {
-            EventCreateInviteView(navController, eventId = "123")
+            EventCreateInviteView(navController)
+        }
 
         // Create Event Screen
         composable(Route.CreateEvent.route) {

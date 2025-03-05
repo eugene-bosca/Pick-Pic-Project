@@ -41,12 +41,13 @@ class EventDataSource @Inject constructor(
         ApiService.post("event/", newEvent, EmptyResponse::class.java, token)
         return newEvent
     }
-    
+
     suspend fun fetchObfuscatedEventId(eventId: String): Pair<String?, String?> =
         withContext(Dispatchers.IO) {
             val token = authDataSource.getIdToken() ?: throw Exception("No user token")
             try {
-                val response = ApiService.fetch(
+                // Assuming "generate_invite_link/$eventId/" is a GET request
+                val response = ApiService.get(
                     "generate_invite_link/$eventId/",
                     InviteLinkResponse::class.java,
                     token
@@ -65,7 +66,8 @@ class EventDataSource @Inject constructor(
     suspend fun fetchEventName(eventId: String): String? = withContext(Dispatchers.IO) {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
         try {
-            val response = ApiService.fetch("events/$eventId/", EventDetailsResponse::class.java, token)
+            // Assuming "events/$eventId/" is a GET request
+            val response = ApiService.get("events/$eventId/", EventDetailsResponse::class.java, token)
             return@withContext response.event_name
         } catch (e: Exception) {
             Log.e("EventDataSource", "Error fetching event name: ${e.message}")
