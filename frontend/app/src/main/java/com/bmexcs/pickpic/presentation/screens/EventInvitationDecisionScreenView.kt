@@ -18,7 +18,7 @@ import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.viewmodels.EventInvitationViewModel
 
 @Composable
-fun EventInvitationScreenView(
+fun EventInvitationDecisionScreenView(
     navController: NavHostController,
     viewModel: EventInvitationViewModel = hiltViewModel()
 ) {
