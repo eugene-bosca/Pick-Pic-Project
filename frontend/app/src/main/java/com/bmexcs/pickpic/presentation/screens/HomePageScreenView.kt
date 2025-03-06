@@ -18,7 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.R
 import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.data.models.ListUserEventsItem
+import com.bmexcs.pickpic.data.models.Event
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.viewmodels.HomePageViewModel
 
@@ -84,13 +84,14 @@ fun HomePageScreenView(
                         .weight(1f),
                     contentPadding = PaddingValues(horizontal = 16.dp)
                 ) {
-                    items(events) { eventItem: ListUserEventsItem ->
+                    items(events) { eventItem: Event ->
                         ListItem(
                             headlineContent = {
                                 Text(eventItem.event_name)
                             },
                             supportingContent = {
-                                Text("Event Owner: ${eventItem.owner.display_name}")
+                                // TODO: no longer have access to owner name (?)
+//                                Text("Event Owner: ${eventItem.owner.display_name}")
                             },
                             trailingContent = {
                                 IconButton(onClick = { /* doSomething() */ }) {

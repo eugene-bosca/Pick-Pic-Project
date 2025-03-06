@@ -3,8 +3,6 @@ package com.bmexcs.pickpic.data.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class EventUser (
-    val event: Event,
-    val user: User,
-    val accepted: Boolean
+data class UserEventInviteLink(
+    val invite_link: String
 )

@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,7 +27,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.data.models.ListUserEventsItem
+import com.bmexcs.pickpic.data.models.Event
+import com.bmexcs.pickpic.data.models.EventUser
 import com.bmexcs.pickpic.presentation.viewmodels.EventInvitationViewModel
 
 @Composable
@@ -64,23 +64,23 @@ fun EventInvitationScreenView(
                     .weight(1f),
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
-                items(events) { eventItem: ListUserEventsItem ->
+                items(events) { eventItem: EventUser ->
                     ListItem(
                         headlineContent = {
-                            Text(eventItem.event_name)
+                            Text(eventItem.event.event_name)
                         },
                         supportingContent = {
-                            Text("Event Owner: ${eventItem.owner.display_name}")
+                            Text("Event Owner: ${eventItem.user.display_name}")
                         },
                         trailingContent = {
-                            Row () {
-                                IconButton(onClick = { viewModel.acceptEvent(eventItem.event_id) }) {
+                            Row {
+                                IconButton(onClick = { viewModel.acceptEvent(eventItem.event.event_id) }) {
                                     Icon(Icons.Filled.Check,
                                         contentDescription = null,
                                         tint = Color.Green
                                     )
                                 }
-                                IconButton(onClick = { viewModel.declineEvent(eventItem.event_id) }) {
+                                IconButton(onClick = { viewModel.declineEvent(eventItem.event.event_id) }) {
                                     Icon(Icons.Filled.Close,
                                         contentDescription = null,
                                         tint = Color.Red

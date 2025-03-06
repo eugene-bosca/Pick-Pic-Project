@@ -3,10 +3,9 @@ package com.bmexcs.pickpic.presentation.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.ListUserEventsItem
+import com.bmexcs.pickpic.data.models.EventUser
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
-import com.bmexcs.pickpic.data.sources.EventDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,8 +20,8 @@ class EventInvitationViewModel @Inject constructor(
     private val userRepository: UserRepository,
 ) : ViewModel() {
 
-    private val _events = MutableStateFlow<List<ListUserEventsItem>>(emptyList())
-    val events: StateFlow<List<ListUserEventsItem>> = _events
+    private val _events = MutableStateFlow<List<EventUser>>(emptyList())
+    val events: StateFlow<List<EventUser>> = _events
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
