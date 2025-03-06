@@ -4,11 +4,10 @@ import android.util.Log
 import com.bmexcs.pickpic.data.models.EventDetailsResponse
 import com.bmexcs.pickpic.data.models.InviteLinkResponse
 import com.bmexcs.pickpic.data.models.CreateEvent
-import com.bmexcs.pickpic.data.models.EmptyResponse
 import com.bmexcs.pickpic.data.models.ListUserEventsItem
-import com.bmexcs.pickpic.data.models.ListUserEventsResponse
 import com.bmexcs.pickpic.data.utils.ApiService
 import com.bmexcs.pickpic.data.utils.EventApiService
+import com.bmexcs.pickpic.data.utils.apiServices.*
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -28,7 +27,7 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "getEvents for $userId")
 
-        val eventResponse = api.getListUsersEvents(userId, token)
+        val eventResponse = getListUsersEvents(userId, token)
         return eventResponse.owned_events + eventResponse.invited_events
     }
 
@@ -38,7 +37,7 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "getUserEventsPending for $userId")
 
-        val eventResponse = ApiService.getList("/users/$userId/pending_events_full", ListUserEventsItem::class.java, token)
+        val eventResponse = EventApiService().getListPendingUsersEvents(userId, token)
         return eventResponse
     }
 
@@ -60,11 +59,7 @@ class EventDataSource @Inject constructor(
             val token = authDataSource.getIdToken() ?: throw Exception("No user token")
             try {
                 // Assuming "generate_invite_link/$eventId/" is a GET request
-                val response = ApiService.get(
-                    "generate_invite_link/$eventId/",
-                    InviteLinkResponse::class.java,
-                    token
-                )
+                val response = EventApiService().getGenerateInviteLink(eventId, token)
 
                 val inviteLink = response.invite_link
                 val obfuscatedId = inviteLink.substringAfterLast("/")
@@ -80,7 +75,8 @@ class EventDataSource @Inject constructor(
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
         try {
             // Assuming "events/$eventId/" is a GET request
-            val response = ApiService.get("events/$eventId/", EventDetailsResponse::class.java, token)
+//            val response = ApiService.get("events/$eventId/", EventDetailsResponse::class.java, token)
+            val response = EventApiService().get(eventId, token)
             return@withContext response.event_name
         } catch (e: Exception) {
             Log.e("EventDataSource", "Error fetching event name: ${e.message}")

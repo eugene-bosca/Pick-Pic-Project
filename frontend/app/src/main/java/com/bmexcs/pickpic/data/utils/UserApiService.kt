@@ -4,8 +4,7 @@ import android.util.Log
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserCreation
 import com.bmexcs.pickpic.data.models.UserId
-import com.bmexcs.pickpic.data.utils.ApiService.buildUrl
-import com.bmexcs.pickpic.data.utils.ApiService.handleResponseStatus
+import com.bmexcs.pickpic.data.utils.apiServices.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +12,6 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.net.URL
 
 private const val TAG = "UserApiService"
 
