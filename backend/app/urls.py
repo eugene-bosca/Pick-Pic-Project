@@ -22,54 +22,42 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from . import views
 
 router = DefaultRouter()
-router.register(r'users', views.UserViewSet)
+router.register(r'user', views.UserViewSet)
 router.register(r'user_settings', views.UserSettingsViewSet)
-router.register(r'event', views.EventViewSet)
+# router.register(r'event', views.EventViewSet)
 router.register(r'event_users', views.EventUserViewSet)
 # router.register(r'images', views.ImageViewSet)
-router.register(r'event_contents', views.EventContentViewSet)
+router.register(r'event/content', views.EventContentViewSet)
 router.register(r'scored_by', views.ScoredByViewSet)
+
 urlpatterns = [
     # swagger
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path('swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 
-    # admin
-    path('admin/', admin.site.urls),
-
     # custom CRUD endpoints
     path('', include(router.urls)),
 
-    # custom endpoints
-    path('authenticate/', views.authenticate, name='authenticate'),
+    # image/picture endpoints
+    path('event/<str:event_id>/image/', views.upload_picture, name='Upload Image'),
+    path('event/<str:event_id>/image/<str:image_id>/', views.download_picture, name='Download Image'),
+    path('event/<str:event_id>/image/count/', views.event_image_count, name='event_image_count'),
+    path('event/<str:event_id>/image/highest_score/', views.get_highest_scored_image, name='get_highest_scored_image'),
 
-    path('picture/<str:event_id>/', views.upload_picture, name='Upload Image'),
-    path('picture/<str:event_id>/<str:image_id>/', views.download_picture, name='Download Image'),
-    path('event/image-count/<str:event_id>/', views.event_image_count, name='Event Image Count'),
-    path('event/<uuid:event_id>/highest_scored_image/', views.get_highest_scored_image, name='get_highest_scored_image'),
+    path('event/create/', views.create_new_event, name='Create New Event'),
+    path('event/<uuid:event_id>/invite/user/', views.invite_to_event, name='invite user(s) to event'),
+    path('event/invite/link/decode/<str:invite_link>/', views.resolve_invite_link, name='resolve_invite_link'),
 
+    # invite
+    path('event/<uuid:event_id>/invite/link/', views.generate_invite_link, name='generate_invite_link'),
 
-    path('event/image-count/<uuid:event_id>/', views.event_image_count, name='event_image_count'),
-    path('list-users-events/<uuid:user_id>/', views.list_users_events, name='list_users_events'),
+    # these two can combine into one /event/<event-Id>/invite/ and have the accept/decide
+    path('event/<str:event_id>/invite/<str:invite_link>/accept/', views.accept_event_user, name='add_event_user'),
+    path('event/<str:event_id>/invite/<str:invite_link>/decline/', views.remove_event_user, name='remove_event_user'),
 
-    # invite related
-    path('invite_to_event/', views.invite_to_event, name='invite user to event'),
-    path('generate_invite_link/<uuid:event_id>/', views.generate_invite_link, name='generate_invite_link'),
-    path('resolve_invite_link/<str:encoded_event_id>/', views.resolve_invite_link, name='resolve_invite_link'),
-    path('add_user_to_event/<uuid:event_id>/<uuid:user_id>/', views.add_user_to_event, name='add_user_to_event'),
+    path('user/<uuid:user_id>/pending_events_full/', views.get_pending_events, name='get_pending_events'),
+    path('user/<str:user_id>/events/', views.list_users_events, name='List Users Events'),
 
-    path('event/image-count/<str:event_id>/', views.event_image_count, name='event_image_count'),
-    path('list_users_events/<str:user_id>/', views.list_users_events, name='List Users Events'),
-    path('get_user_id_by_firebase_id/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='Exchange User ID For Firebase ID'),
-    path('create_new_event/', views.create_new_event, name='Create New Event'),
-    path('invite_to_event/', views.invite_to_event, name='Invite User to Event'),
-    path('get_user_id_by_firebase_id/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='exchange_user_id_for_firebase_id'),
-    path('create_new_event/', views.create_new_event, name='create new event'),
-    path('get_user_id_from_email/<str:email>/', views.get_user_id_from_email, name='get user id from email'),
-    path('event/<uuid:event_id>/highest_scored_image/', views.get_highest_scored_image, name='get_highest_scored_image'),
-
-    # pending invites
-    path('events/<uuid:event_id>/users/<uuid:user_id>/remove/', views.remove_event_user, name='remove_event_user'),
-    path('events/<uuid:event_id>/users/<uuid:user_id>/accept/', views.accept_event_user, name='accept_event_user'),
-    path('users/<uuid:user_id>/pending_events_full/', views.get_pending_events, name='get_pending_events'),
+    path('user/from_fire_base/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='Exchange User ID For Firebase ID'),
+    path('user/from_email/<str:email>/', views.get_user_id_from_email, name='get user id from email'),
 ]

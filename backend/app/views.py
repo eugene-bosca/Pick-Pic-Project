@@ -35,17 +35,36 @@ class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
 
-
 # EventUser ViewSet
 class EventUserViewSet(viewsets.ModelViewSet):
     queryset = EventUser.objects.all()
     serializer_class = EventUserSerializer
     lookup_field = "event_id"
+    def retrieve(self, request, *args, **kwargs):
+        event_id = kwargs.get(self.lookup_field)
+        queryset = self.queryset.filter(event_id=event_id)
+
+        if not queryset.exists():
+            return Response(data={[]}, status=status.HTTP_200_OK)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 # Image ViewSet
 class ImageViewSet(viewsets.ModelViewSet):
     queryset = Image.objects.all()
     serializer_class = ImageSerializer
+    lookup_field = "image_id"
+
+    def retrieve(self, request, *args, **kwargs):
+        image_id = kwargs.get(self.lookup_field)
+        queryset = self.queryset.filter(image_id=image_id)
+
+        if not queryset.exists():
+            return Response(data={[]}, status=status.HTTP_200_OK)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 # EventContent ViewSet
 class EventContentViewSet(viewsets.ModelViewSet):
@@ -67,9 +86,6 @@ class EventContentViewSet(viewsets.ModelViewSet):
 class ScoredByViewSet(viewsets.ModelViewSet):
     queryset = ScoredBy.objects.all()
     serializer_class = ScoredBySerializer
-
-class CreateNewEventViewSet(viewsets.ViewSet):
-    serializer = EventSerializer
 
 # Secret key for JWT
 SECRET_KEY = settings.SECRET_KEY  # Use Django's secret key
@@ -111,27 +127,30 @@ def authenticate(request: Request):
  
 @api_view(['GET'])
 def download_picture(request: Request, event_id=None, image_id=None):
-        
-    event_exists = Event.objects.filter(event_id=event_id).exists()
+    try:
+        event_exists = Event.objects.filter(event_id=event_id).exists()
 
-    if not event_exists:
-        return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event-image pair not found" })
+        if not event_exists:
+            return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event-image pair not found" })
 
-    filename = Image.objects.get(image_id=image_id).file_name
+        filename = Image.objects.get(image_id=image_id).file_name
 
-    file_bytes = download_from_gcs('pick-pic', filename)
+        file_bytes = download_from_gcs('pick-pic', filename)
 
-    file_stream = io.BytesIO(file_bytes)
+        file_stream = io.BytesIO(file_bytes)
 
-    content_type, _ = mimetypes.guess_type(filename)
-    if content_type is None:
-        content_type = "application/octet-stream"
+        content_type, _ = mimetypes.guess_type(filename)
+        if content_type is None:
+            content_type = "application/octet-stream"
 
-    return FileResponse(file_stream, filename=filename, content_type=content_type, status=status.HTTP_200_OK)
+        return FileResponse(file_stream, filename=filename, content_type=content_type, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['PUT'])
 def upload_picture(request: Request, event_id=None):
-        
+    try:
         if not Event.objects.filter(event_id=event_id).exists():
             return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event not found" }) 
 
@@ -150,74 +169,84 @@ def upload_picture(request: Request, event_id=None):
 
         new_image = Image.objects.create(file_name=unique_name)
         
-        try:
-            event_content = EventContent.objects.create(event_id=event_id, image_id=(new_image.image_id))
-        except Exception as e:
-            print(e)
+        event_content = EventContent.objects.create(event_id=event_id, image_id=(new_image.image_id))
 
         return Response(status=status.HTTP_201_CREATED, data=EventContentSerializer(event_content).data)
-    
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @api_view(['GET', 'PUT'])
 def user_pfp(request: Request):
+    try:
+        user_id = request.GET.get("user_id")
 
-    user_id = request.GET.get("user_id")
-
-    if not user_id:
-        return Response({"error": "User ID is required"}, status=400)
-    
-    user_id = uuid.UUID(user_id)
-
-    if request.method == 'GET':
+        if not user_id:
+            return Response({"error": "User ID is required"}, status=400)
         
-        file_name = User.objects.get(user_id=user_id).profile_picture
-        
-        file_bytes = download_from_gcs('pick-pic', file_name)
-        file_stream = io.BytesIO(file_bytes)
+        user_id = uuid.UUID(user_id)
 
-        content_type, _ = mimetypes.guess_type(file_name)
-        if content_type is None:
-            content_type = "application/octet-stream"
+        if request.method == 'GET':
+            
+            file_name = User.objects.get(user_id=user_id).profile_picture
+            
+            file_bytes = download_from_gcs('pick-pic', file_name)
+            file_stream = io.BytesIO(file_bytes)
 
-        return FileResponse(file_stream, content_type=content_type, status=status.HTTP_200_OK)
+            content_type, _ = mimetypes.guess_type(file_name)
+            if content_type is None:
+                content_type = "application/octet-stream"
 
-    elif request.method == 'PUT':
-        file_bytes = request.body
-        content_type = request.headers.get('Content-Type') 
-        unique_name = datetime.now().strftime("%Y%m%d%H%M%S%f")
+            return FileResponse(file_stream, content_type=content_type, status=status.HTTP_200_OK)
 
-        if content_type == 'image/jpeg':
-            unique_name += '.jpeg'
-        elif content_type == 'image/png':
-            unique_name += '.png'
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST, data={ "error": "no header - Content-Type" })
+        elif request.method == 'PUT':
+            file_bytes = request.body
+            content_type = request.headers.get('Content-Type') 
+            unique_name = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
-        upload_to_gcs('pick-pic', file_bytes, unique_name, content_type)
+            if content_type == 'image/jpeg':
+                unique_name += '.jpeg'
+            elif content_type == 'image/png':
+                unique_name += '.png'
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST, data={ "error": "no header - Content-Type" })
 
-        User.objects.get(user_id=user_id).profile_picture = unique_name
+            upload_to_gcs('pick-pic', file_bytes, unique_name, content_type)
 
-        return Response(status=status.HTTP_201_CREATED)
+            User.objects.get(user_id=user_id).profile_picture = unique_name
+
+            return Response(status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     
 @api_view(['GET'])
 def event_image_count(request: Request, event_id):
-
-    count = EventContent.objects.filter(event_id=event_id).count()
-
-    return Response(data={ "image_count": count }, status=status.HTTP_200_OK)
+    try:
+        count = EventContent.objects.filter(event_id=event_id).count()
+        return Response(data={ "image_count": count }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 def list_users_events(request: Request, user_id):
+    try:
+        owned_events = Event.objects.filter(owner_id=user_id)
 
-    owned_events = Event.objects.filter(owner_id=user_id)
+        invited_event_ids = EventUser.objects.filter(user_id=user_id, accepted = True).values_list('event_id', flat=True)
 
-    invited_event_ids = EventUser.objects.filter(user_id=user_id, accepted = True).values_list('event_id', flat=True)
-
-    invited_events = Event.objects.filter(event_id__in=invited_event_ids)
-    
-    return Response(status=status.HTTP_200_OK ,data={
-        "owned_events": EventSerializer(owned_events, many=True).data,
-        "invited_events": EventSerializer(invited_events, many=True).data
-    })
+        invited_events = Event.objects.filter(event_id__in=invited_event_ids)
+        
+        return Response(status=status.HTTP_200_OK ,data={
+            "owned_events": EventSerializer(owned_events, many=True).data,
+            "invited_events": EventSerializer(invited_events, many=True).data
+        })
+    except Event.DoesNotExist:
+        return Response({'error': 'Event could not be found.'}, status=status.HTTP_404_NOT_FOUND)
+    except EventUser.DoesNotExist:
+        return Response({'error': 'Event User could not be found.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
  
 @api_view(['POST'])
 def create_new_event(request: Request):
@@ -237,13 +266,15 @@ def create_new_event(request: Request):
 
 @api_view(['POST'])
 def invite_to_event(request: Request):
+    try:
+        user_id = request.data.get('user_id')
+        event_id = request.data.get('event_id') 
 
-    user_id = request.data.get('user_id')
-    event_id = request.data.get('event_id') 
+        eventUser = EventUser.objects.create(event_id=event_id, user_id=user_id)
 
-    eventUser = EventUser.objects.create(event_id=event_id, user_id=user_id)
-
-    return Response(status=status.HTTP_202_ACCEPTED, data=UserSerializer(eventUser).data)
+        return Response(status=status.HTTP_202_ACCEPTED, data=UserSerializer(eventUser).data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 def get_user_id_by_firebase_id(request: Request, firebase_id):
