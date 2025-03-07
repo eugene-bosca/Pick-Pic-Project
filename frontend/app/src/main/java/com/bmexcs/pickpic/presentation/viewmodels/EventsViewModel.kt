@@ -1,66 +1,113 @@
 package com.bmexcs.pickpic.presentation.viewmodels
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bmexcs.pickpic.data.models.Event
+import com.bmexcs.pickpic.data.models.EventContent
+import com.bmexcs.pickpic.data.models.Image
 import com.bmexcs.pickpic.data.repositories.EventRepository
+import com.bmexcs.pickpic.data.repositories.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.util.Arrays
 import javax.inject.Inject
+
 
 @HiltViewModel
 class EventsViewModel @Inject constructor(
-    private val eventRepository: EventRepository
+    private val eventRepository: EventRepository,
+    private val imageRepository: ImageRepository,
 ) : ViewModel() {
 
     // Backing property for the dog images list
-    private val _dogImages = MutableStateFlow<List<String>>(emptyList())
-    val dogImages: StateFlow<List<String>> = _dogImages
+    private val _images = MutableStateFlow<List<ByteArray?>>(emptyList())
+    val images: StateFlow<List<ByteArray?>> = _images
 
-    init {
-        if (_dogImages.value.isEmpty()){
-            fetchDogImages()
+    private val _event = MutableStateFlow<Event>(Event())
+    val event = _event
+
+    fun setEvent(event: Event) {
+        eventRepository.event.value = event
+    }
+
+    fun getEventFromRepository () {
+        _event.value = eventRepository.event.value
+    }
+
+    fun initializeEventsScreenView() {
+        getEventFromRepository()
+        getImageByEventId(event.value.event_id)
+    }
+
+    fun getImageByEventId(eventId: String) {
+        // Launch a coroutine on the IO dispatcher since this is a network request.
+        viewModelScope.launch(Dispatchers.IO) {
+            val images = eventRepository.getImageByEventId(eventId)
+            val imageBitmapList = mutableListOf<ByteArray?>()
+
+            for(image in images) {
+                val byteArray = imageRepository.getImageByImageId(image.event.event_id, image.image.image_id)
+                imageBitmapList.add(byteArray)
+            }
+
+
+            _images.value = imageBitmapList
         }
     }
 
-    private fun fetchDogImages() {
+    fun addImageByEvent(imageByte: ByteArray) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            val client = OkHttpClient()
-            // Dog CEO API endpoint to fetch 10 random images.
-            val request = Request.Builder()
-                .url("https://dog.ceo/api/breeds/image/random/10")
-                .build()
-
-            try {
-                client.newCall(request).execute().use { response ->
-                    if (!response.isSuccessful) {
-                        return@launch
-                    }
-                    val responseBody = response.body?.string()
-
-                    if (responseBody != null) {
-                        val jsonObject = JSONObject(responseBody)
-
-                        if (jsonObject.getString("status") == "success") {
-                            val images = mutableListOf<String>()
-                            val jsonArray = jsonObject.getJSONArray("message")
-
-                            for (i in 0 until jsonArray.length()) {
-                                images.add(jsonArray.getString(i))
-                            }
-                            _dogImages.value = images
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            imageRepository.addImageBinary(event.value.event_id, imageByte)
         }
+    }
+
+    fun deleteImageByEventId(imageId: String) {
+        // Launch a coroutine on the IO dispatcher since this is a network request.
+        viewModelScope.launch(Dispatchers.IO) {
+            eventRepository.deleteImageByEventId(imageId)
+        }
+    }
+
+    fun uriToByteArray(context: Context, uri: Uri?): ByteArray? {
+        var inputStream: InputStream? = null
+        var byteArray: ByteArray? = null
+
+        try {
+            if(uri == null) {
+                return null
+            }
+
+            // Open an InputStream from the URI
+            inputStream = context.contentResolver.openInputStream(uri)
+
+            // Read the InputStream into a Bitmap
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+
+            // Convert the Bitmap to ByteArray
+            if (bitmap != null) {
+                val byteArrayOutputStream = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
+
+                byteArray = byteArrayOutputStream.toByteArray()
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            inputStream?.close()
+        }
+
+        return byteArray
     }
 }

@@ -14,9 +14,11 @@ import com.bmexcs.pickpic.presentation.screens.EventCreateInviteView
 import com.bmexcs.pickpic.presentation.screens.CreateEventScreenView
 import com.bmexcs.pickpic.presentation.screens.EventInvitationScreenView
 import com.bmexcs.pickpic.presentation.shared.PickPicScaffold
+import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 
 @Composable
-fun Navigation(navController: NavHostController) {
+fun Navigation(
+    navController: NavHostController) {
     NavHost(navController = navController, startDestination = Route.Auth.route) {
         // Home Screen
         composable(Route.Home.route) {
