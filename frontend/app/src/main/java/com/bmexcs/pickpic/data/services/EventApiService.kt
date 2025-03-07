@@ -273,6 +273,66 @@ class EventApiService {
             }
         }
 
+
+    // TODO: unsure of equivalent
+//    suspend fun getEventContents(eventId: String, token: String): Array<EventPicture> {
+//
+//        val endpoint = "event_contents/$eventId/"
+//
+//        Log.d("${com.bmexcs.pickpic.data.utils.apiServices.TAG}/Event:getEventContents", "GET: $endpoint")
+//
+//        val request = Request.Builder()
+//            .url(buildUrl(endpoint))
+//            .addHeader("Authorization", "Bearer $token")
+//            .get()
+//            .build()
+//
+//        com.bmexcs.pickpic.data.utils.apiServices.client.newCall(request).execute().use { response ->
+//            val responseOK = handleResponseStatus(response)
+//
+//            val parsed =
+//                parseResponseBody(response.body?.string() ?: "", Array<EventPicture>::class.java)
+//
+//            return parsed
+//        }
+//    }
+//
+//    suspend fun deleteImage(imageID: String, token: String): String {
+//        val endpoint = "event_contents/$imageID/"
+//
+//        Log.d("$TAG/Event:getEventContents", "GET: $endpoint")
+//
+//        val request = Request.Builder()
+//            .url(buildUrl(endpoint))
+//            .addHeader("Authorization", "Bearer $token")
+//            .get()
+//            .build()
+//
+//        client.newCall(request).execute().use { response ->
+//
+//            val responseOK = handleResponseStatus(response)
+//            return response.body.toString()
+//        }
+//    }
+//
+//    suspend fun postImageByEvent(imageID: String, token: String): String {
+//        val endpoint = "event_contents/$imageID/"
+//
+//        Log.d("$TAG/Event:getEventContents", "GET: $endpoint")
+//
+//        val request = Request.Builder()
+//            .url(buildUrl(endpoint))
+//            .addHeader("Authorization", "Bearer $token")
+//            .get()
+//            .build()
+//
+//        client.newCall(request).execute().use { response ->
+//
+//            val responseOK = handleResponseStatus(response)
+//            return response.body.toString()
+//        }
+//    }
+
     // TODO: wtf is an EventDetailsResponse
     // GET /event/{event_id}/
     // Response: EventDetailsResponse

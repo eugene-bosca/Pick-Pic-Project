@@ -27,7 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.data.models.Event
 import com.bmexcs.pickpic.data.models.EventUser
 import com.bmexcs.pickpic.presentation.viewmodels.EventInvitationViewModel
 
