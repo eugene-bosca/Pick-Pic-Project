@@ -4,6 +4,7 @@ from .serializers import UserSerializer, UserSettingsSerializer, EventSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 import base64
 
 from .models import User
@@ -125,31 +126,46 @@ def authenticate(request: Request):
     except User.MultipleObjectsReturned:
         return Response({"exists": False, "comment": "Multiple users with the same username exist???"}, status=500)
  
-@api_view(['GET'])
-def download_picture(request: Request, event_id=None, image_id=None):
+@api_view(['GET', 'DELETE'])
+def get_delete_image(request: Request, event_id=None, image_id=None):
     try:
-        event_exists = Event.objects.filter(event_id=event_id).exists()
+        if request.method == 'GET':
+            event_exists = Event.objects.filter(event_id=event_id).exists()
 
-        if not event_exists:
-            return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event-image pair not found" })
+            if not event_exists:
+                return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event-image pair not found" })
 
-        filename = Image.objects.get(image_id=image_id).file_name
+            filename = Image.objects.get(image_id=image_id).file_name
 
-        file_bytes = download_from_gcs('pick-pic', filename)
+            file_bytes = download_from_gcs('pick-pic', filename)
 
-        file_stream = io.BytesIO(file_bytes)
+            file_stream = io.BytesIO(file_bytes)
 
-        content_type, _ = mimetypes.guess_type(filename)
-        if content_type is None:
-            content_type = "application/octet-stream"
+            content_type, _ = mimetypes.guess_type(filename)
+            if content_type is None:
+                content_type = "application/octet-stream"
 
-        return FileResponse(file_stream, filename=filename, content_type=content_type, status=status.HTTP_200_OK)
+            return FileResponse(file_stream, filename=filename, content_type=content_type, status=status.HTTP_200_OK)            
+        elif request.method == 'DELETE':
+                event_exists = Event.objects.filter(event_id=event_id).exists()
+
+                if not event_exists:
+                    return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event-image pair not found" })
+
+                filename = Image.objects.get(image_id=image_id).file_name
+
+                EventContent.objects.delete(event_id=event_id, image_id=image_id)
+
+                delete_from_gcs('pick-pic', filename)
+
+                return Response(status=status.HTTP_202_ACCEPTED, data={})
+        else:
+            return Response(data={ "error":"only support GET, PUT, and DELETE." }, status=status.HTTP_403_FORBIDDEN)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
 @api_view(['PUT'])
-def upload_picture(request: Request, event_id=None):
+def create_image(request: Request, event_id=None):
     try:
         if not Event.objects.filter(event_id=event_id).exists():
             return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event not found" }) 
@@ -174,7 +190,6 @@ def upload_picture(request: Request, event_id=None):
         return Response(status=status.HTTP_201_CREATED, data=EventContentSerializer(event_content).data)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 @api_view(['GET', 'PUT'])
 def user_pfp(request: Request):

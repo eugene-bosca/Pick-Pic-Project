@@ -37,3 +37,20 @@ def download_from_gcs(bucket_name, source_blob_name):
     file_bytes = blob.download_as_bytes()
 
     return file_bytes  # Returns the content as bytes
+
+def delete_from_gcs(bucket_name, source_blob_name):
+    """Delete a file from Google Cloud Storage"""
+    try:
+        client = storage.Client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(source_blob_name)
+
+        generation_match_precondition = None
+        blob.reload()
+        generation_match_precondition = blob.generation
+
+        blob.delete(if_generation_match=generation_match_precondition)
+        
+        return True
+    except:
+        return False

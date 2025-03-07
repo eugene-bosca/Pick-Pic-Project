@@ -39,8 +39,8 @@ urlpatterns = [
     path('', include(router.urls)),
 
     # image/picture endpoints
-    path('event/<str:event_id>/image/', views.upload_picture, name='Upload Image'),
-    path('event/<str:event_id>/image/<str:image_id>/', views.download_picture, name='Download Image'),
+    path('event/<str:event_id>/image/', views.create_image, name='PUT Image'),
+    path('event/<str:event_id>/image/<str:image_id>/', views.get_delete_image, name='GET/DELETE Image'),
     path('event/<str:event_id>/image/count/', views.event_image_count, name='event_image_count'),
     path('event/<str:event_id>/image/highest_score/', views.get_highest_scored_image, name='get_highest_scored_image'),
 
