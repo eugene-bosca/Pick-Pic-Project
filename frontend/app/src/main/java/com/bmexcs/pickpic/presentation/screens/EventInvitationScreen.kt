@@ -27,7 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.data.models.EventUser
+import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.presentation.viewmodels.EventInvitationViewModel
 
 @Composable
@@ -63,7 +63,7 @@ fun EventInvitationScreenView(
                     .weight(1f),
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
-                items(events) { eventItem: EventUser ->
+                items(events) { eventItem: EventMember ->
                     ListItem(
                         headlineContent = {
                             Text(eventItem.event.event_name)

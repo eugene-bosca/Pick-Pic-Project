@@ -3,7 +3,7 @@ package com.bmexcs.pickpic.data.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Event(
+data class EventInfo(
     val event_id: String = "",
     val event_name: String = "",
     val owner: String = ""

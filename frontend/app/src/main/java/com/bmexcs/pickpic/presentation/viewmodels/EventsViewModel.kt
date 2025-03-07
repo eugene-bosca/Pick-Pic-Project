@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.Event
+import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,15 +29,15 @@ class EventsViewModel @Inject constructor(
     private val _images = MutableStateFlow<List<ByteArray?>>(emptyList())
     val images: StateFlow<List<ByteArray?>> = _images
 
-    private val _event = MutableStateFlow<Event>(Event())
-    val event = _event
+    private val _eventInfo = MutableStateFlow<EventInfo>(EventInfo())
+    val event = _eventInfo
 
-    fun setEvent(event: Event) {
-        eventRepository.event.value = event
+    fun setEvent(eventInfo: EventInfo) {
+        eventRepository.event.value = eventInfo
     }
 
     fun getEventFromRepository () {
-        _event.value = eventRepository.event.value
+        _eventInfo.value = eventRepository.event.value
     }
 
     fun initializeEventsScreenView() {

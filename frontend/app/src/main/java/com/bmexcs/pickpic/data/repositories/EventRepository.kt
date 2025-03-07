@@ -1,7 +1,8 @@
 package com.bmexcs.pickpic.data.repositories
 
-import com.bmexcs.pickpic.data.models.Event
-import com.bmexcs.pickpic.data.models.EventUser
+import com.bmexcs.pickpic.data.models.EventInfo
+import com.bmexcs.pickpic.data.models.EventOwner
+import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.EventPicture
 import com.bmexcs.pickpic.data.sources.EventDataSource
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,14 +13,14 @@ import javax.inject.Singleton
 class EventRepository @Inject constructor(
     private val eventDataSource: EventDataSource,
 ) {
-    private val _event = MutableStateFlow(Event())
-    val event = _event
+    private val _eventInfo = MutableStateFlow(EventInfo())
+    val event = _eventInfo
 
-    suspend fun getEvents(): List<Event> {
+    suspend fun getEvents(): List<EventOwner> {
         return eventDataSource.getEvents()
     }
 
-    suspend fun createEvent(name: String): Event {
+    suspend fun createEvent(name: String): EventInfo {
         return eventDataSource.createEvent(name)
     }
 
@@ -27,7 +28,7 @@ class EventRepository @Inject constructor(
         // TODO: add user to event
     }
 
-    suspend fun getUserEventsPending(): List<EventUser> {
+    suspend fun getUserEventsPending(): List<EventMember> {
         return eventDataSource.getEventsPending()
     }
 

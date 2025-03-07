@@ -1,21 +1,21 @@
 package com.bmexcs.pickpic.data.services
 
 import android.util.Log
-import com.bmexcs.pickpic.data.models.Event
+import com.bmexcs.pickpic.data.models.EventInfo
+import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.models.EventCreation
-import com.bmexcs.pickpic.data.models.EventDetailsResponse
 import com.bmexcs.pickpic.data.models.EventId
-import com.bmexcs.pickpic.data.models.EventInvite
-import com.bmexcs.pickpic.data.models.EventUser
+import com.bmexcs.pickpic.data.models.EventTotalUpdate
 import com.bmexcs.pickpic.data.models.ImageCount
 import com.bmexcs.pickpic.data.models.UserEventInviteLink
+import com.bmexcs.pickpic.data.models.UserInfo
 import com.bmexcs.pickpic.data.utils.Api
-import com.bmexcs.pickpic.data.utils.HttpContentType
 import com.bmexcs.pickpic.data.utils.HttpException
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -26,43 +26,20 @@ class EventApiService {
     private val client = OkHttpClient()
     private val gson = Gson()
 
-    // POST event/create/
-    // Response: Event
-    suspend fun create(eventCreation: EventCreation, token: String): Event =
+    /**
+     * Retrieves metadata about the specified event.
+     *
+     * **Endpoint**: `GET /event/{event_id}/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: `models.EventInfo`
+     */
+    suspend fun getInfo(eventId: String, token: String): EventInfo =
         withContext(Dispatchers.IO) {
-        val endpoint = "event/create/"
-        val url = Api.url(endpoint)
-
-        Log.d(TAG, "POST: $url")
-
-        val requestBody = gson.toJson(eventCreation)
-            .toRequestBody(HttpContentType.JSON.toMediaType())
-
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "Bearer $token")
-            .addHeader("Content-Type", HttpContentType.JSON.toString())
-            .post(requestBody)
-            .build()
-
-        client.newCall(request).execute().use { response ->
-            Api.handleResponseStatus(response)
-
-            val body = response.body?.string()
-                ?: throw HttpException(response.code, "Empty response body")
-
-            val resultType = object : TypeToken<Event>() {}.type
-            val result: Event = gson.fromJson(body, resultType)
-
-            return@withContext result
-        }
-    }
-
-    // GET /event/{event_id}/highest_scored_image/
-    // Response: ByteArray
-    suspend fun highestScoredImage(eventId: String, token: String): ByteArray? =
-        withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/highest_scored_image/"
+            val endpoint = "event/$eventId/"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "GET: $url")
@@ -79,133 +56,96 @@ class EventApiService {
                 val body = response.body?.string()
                     ?: throw HttpException(response.code, "Empty response body")
 
-                return@withContext response.body?.bytes()
-            }
-        }
-
-    // POST /event/{event_id}/invite/
-    // Response: Empty
-    suspend fun invite(eventId: String, userId: String, token: String): EventUser =
-        withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/invite/"
-            val url = Api.url(endpoint)
-
-            Log.d(TAG, "POST: $url")
-
-            val eventInvite = EventInvite(
-                event_id = eventId,
-                user_id = userId
-            )
-
-            val requestBody = gson.toJson(eventInvite)
-                .toRequestBody(HttpContentType.JSON.toMediaType())
-
-            val request = Request.Builder()
-                .url(url)
-                .addHeader("Authorization", "Bearer $token")
-                .addHeader("Content-Type", HttpContentType.JSON.toString())
-                .post(requestBody)
-                .build()
-
-            client.newCall(request).execute().use { response ->
-                Api.handleResponseStatus(response)
-
-                val body = response.body?.string()
-                    ?: throw HttpException(response.code, "Empty response body")
-
-                val resultType = object : TypeToken<EventUser>() {}.type
-                val result: EventUser = gson.fromJson(body, resultType)
+                val resultType = object : TypeToken<EventInfo>() {}.type
+                val result: EventInfo = gson.fromJson(body, resultType)
 
                 return@withContext result
             }
         }
 
-    // GET /event/{event_id}/generate_invite_link/
-    // Response: InviteLinkResponse (returned as String)
-    suspend fun generateInviteLink(eventId: String, token: String): String =
-        withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/generate_invite_link/"
-            val url = Api.url(endpoint)
+    /**
+     * Uploads an image for the specified event.
+     *
+     * **Endpoint**: `PUT /event/{event_id}/image/`
+     *
+     * **Request Body**: `ByteArray`
+     *
+     * **Request Content-Type**: `PNG` or `JPEG`
+     *
+     * **Response**: Empty
+     */
+    suspend fun uploadImage(
+        eventId: String,
+        imageData: ByteArray,
+        token: String,
+        contentType: String = "image/png"
+    ) = withContext(Dispatchers.IO) {
+        val endpoint = "event/$eventId/image/"
+        val url = Api.url(endpoint)
 
-            Log.d(TAG, "GET: $url")
+        Log.d(TAG, "PUT $url")
 
-            val request = Request.Builder()
-                .url(url)
-                .addHeader("Authorization", "Bearer $token")
-                .get()
-                .build()
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .addHeader("Content-Type", contentType)
+            .put(imageData.toRequestBody())
+            .build()
 
-            client.newCall(request).execute().use { response ->
-                Api.handleResponseStatus(response)
-
-                val body = response.body?.string()
-                    ?: throw HttpException(response.code, "Empty response body")
-
-                val resultType = object : TypeToken<UserEventInviteLink>() {}.type
-                val result: UserEventInviteLink = gson.fromJson(body, resultType)
-
-                return@withContext result.invite_link
-            }
+        client.newCall(request).execute().use { response ->
+            Api.handleResponseStatus(response)
         }
+    }
 
-    // GET /event/resolve_invite_link/{event_id}/
-    // Response: EventId (returned as String)
-    suspend fun resolveInviteLink(eventId: String, token: String): String =
-        withContext(Dispatchers.IO) {
-            val endpoint = "event/resolve_invite_link/$eventId/"
-            val url = Api.url(endpoint)
+    /**
+     * Downloads the specified image from an event.
+     *
+     * **Endpoint**: `GET /event/{event_id}/image/{image_id}/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: `ByteArray`
+     */
+    suspend fun downloadImage(
+        eventId: String,
+        imageId: String,
+        token: String
+    ) : ByteArray? = withContext(Dispatchers.IO) {
+        val endpoint = "event/$eventId/image/$imageId/"
+        val url = Api.url(endpoint)
 
-            Log.d(TAG, "GET: $url")
+        Log.d(TAG, "GET $url")
 
-            val request = Request.Builder()
-                .url(url)
-                .addHeader("Authorization", "Bearer $token")
-                .get()
-                .build()
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .addHeader("Accept", "image/*, application/octet-stream")
+            .get()
+            .build()
 
-            client.newCall(request).execute().use { response ->
-                Api.handleResponseStatus(response)
+        client.newCall(request).execute().use { response ->
+            Api.handleResponseStatus(response)
 
-                val body = response.body?.string()
-                    ?: throw HttpException(response.code, "Empty response body")
-
-                val resultType = object : TypeToken<EventId>() {}.type
-                val result: EventId = gson.fromJson(body, resultType)
-
-                return@withContext result.event_id
-            }
+            return@withContext response.body?.bytes()
         }
+    }
 
-    // POST /event/{event_id}/add_user/{user_id}/
-    // Response: TODO: JSON with a message which is useless to us
-    suspend fun addUser(eventId: String, userId: String, token: String) =
+    /**
+     * Retrieves the number of images added to an event.
+     *
+     * **Endpoint**: `GET /event/{event_id}/image/count/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: `models.ImageCount` as `Long`
+     */
+    suspend fun getImageCount(eventId: String, token: String): Long =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/add_user/$userId/"
-            val url = Api.url(endpoint)
-
-            Log.d(TAG, "POST: $url")
-
-            // Empty request body.
-            val requestBody = gson.toJson("")
-                .toRequestBody(HttpContentType.JSON.toMediaType())
-
-            val request = Request.Builder()
-                .url(url)
-                .addHeader("Authorization", "Bearer $token")
-                .addHeader("Content-Type", HttpContentType.JSON.toString())
-                .post(requestBody)
-                .build()
-
-            client.newCall(request).execute().use { response ->
-                Api.handleResponseStatus(response)
-            }
-        }
-
-    // GET /event/{event_id}/image_count/
-    // Response: ImageCount (returned as Long)
-    suspend fun imageCount(eventId: String, token: String): Long =
-        withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/image_count/"
+            val endpoint = "event/$eventId/image/count/"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "GET: $url")
@@ -229,23 +169,63 @@ class EventApiService {
             }
         }
 
-    // PUT /event/{event_id}/user/{user_id}/accept/
-    // Response: TODO: JSON with a message which is useless to us
-    suspend fun acceptUser(eventId: String, userId: String, token: String) =
+    /**
+     * Retrieves the highest-scored image for the specified event.
+     *
+     * **Endpoint**: `GET /event/{event_id}/image/highest_score/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: `ByteArray`
+     */
+    suspend fun getHighestScoredImage(eventId: String, token: String): ByteArray =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/user/$userId/accept/"
+            val endpoint = "event/$eventId/image/highest_score/"
             val url = Api.url(endpoint)
 
-            Log.d(TAG, "PUT: $url")
-
-            // Empty request body.
-            val requestBody = gson.toJson("")
-                .toRequestBody(HttpContentType.JSON.toMediaType())
+            Log.d(TAG, "GET: $url")
 
             val request = Request.Builder()
                 .url(url)
                 .addHeader("Authorization", "Bearer $token")
-                .put(requestBody)
+                .addHeader("Accept", "image/*, application/octet-stream")
+                .get()
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                Api.handleResponseStatus(response)
+
+                val body = response.body
+                    ?: throw HttpException(response.code, "Empty response body")
+
+                return@withContext body.bytes()
+            }
+        }
+
+    /**
+     * Accepts the invitation link.
+     *
+     * **Endpoint**: `PUT /event/{event_id}/invite/{invite_link}/accept/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: Empty or Error
+     */
+    suspend fun acceptInvite(eventId: String, inviteLink: String, token: String) =
+        withContext(Dispatchers.IO) {
+            val endpoint = "event/$eventId/invite/$inviteLink/accept/"
+            val url = Api.url(endpoint)
+
+            Log.d(TAG, "PUT: $url")
+
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .put(Api.EMPTY_BODY)
                 .build()
 
             client.newCall(request).execute().use { response ->
@@ -253,11 +233,20 @@ class EventApiService {
             }
         }
 
-    // DELETE /event/{event_id}/user/{user_id}/remove/
-    // Response: Empty
-    suspend fun removeUser(eventId: String, userId: String, token: String) =
+    /**
+     * Declines the invitation link.
+     *
+     * **Endpoint**: `DELETE /event/{event_id}/invite/{invite_link}/decline/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: Empty
+     */
+    suspend fun declineInvite(eventId: String, inviteLink: String, token: String) =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/user/$userId/remove/"
+            val endpoint = "event/$eventId/invite/$inviteLink/decline/"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "DELETE: $url")
@@ -273,70 +262,88 @@ class EventApiService {
             }
         }
 
+    /**
+     * Generates an obfuscated invitation link for the specified event.
+     *
+     * **Endpoint**: `POST /event/{event_id}/invite/link/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: `models.UserEventInviteLink` as `String`
+     */
+    suspend fun generateInviteLink(eventId: String, token: String): String =
+        withContext(Dispatchers.IO) {
+            val endpoint = "event/$eventId/invite/link/"
+            val url = Api.url(endpoint)
 
-    // TODO: unsure of equivalent
-//    suspend fun getEventContents(eventId: String, token: String): Array<EventPicture> {
-//
-//        val endpoint = "event_contents/$eventId/"
-//
-//        Log.d("${com.bmexcs.pickpic.data.utils.apiServices.TAG}/Event:getEventContents", "GET: $endpoint")
-//
-//        val request = Request.Builder()
-//            .url(buildUrl(endpoint))
-//            .addHeader("Authorization", "Bearer $token")
-//            .get()
-//            .build()
-//
-//        com.bmexcs.pickpic.data.utils.apiServices.client.newCall(request).execute().use { response ->
-//            val responseOK = handleResponseStatus(response)
-//
-//            val parsed =
-//                parseResponseBody(response.body?.string() ?: "", Array<EventPicture>::class.java)
-//
-//            return parsed
-//        }
-//    }
-//
-//    suspend fun deleteImage(imageID: String, token: String): String {
-//        val endpoint = "event_contents/$imageID/"
-//
-//        Log.d("$TAG/Event:getEventContents", "GET: $endpoint")
-//
-//        val request = Request.Builder()
-//            .url(buildUrl(endpoint))
-//            .addHeader("Authorization", "Bearer $token")
-//            .get()
-//            .build()
-//
-//        client.newCall(request).execute().use { response ->
-//
-//            val responseOK = handleResponseStatus(response)
-//            return response.body.toString()
-//        }
-//    }
-//
-//    suspend fun postImageByEvent(imageID: String, token: String): String {
-//        val endpoint = "event_contents/$imageID/"
-//
-//        Log.d("$TAG/Event:getEventContents", "GET: $endpoint")
-//
-//        val request = Request.Builder()
-//            .url(buildUrl(endpoint))
-//            .addHeader("Authorization", "Bearer $token")
-//            .get()
-//            .build()
-//
-//        client.newCall(request).execute().use { response ->
-//
-//            val responseOK = handleResponseStatus(response)
-//            return response.body.toString()
-//        }
-//    }
+            Log.d(TAG, "GET: $url")
 
-    // TODO: wtf is an EventDetailsResponse
-    // GET /event/{event_id}/
-    // Response: EventDetailsResponse
-    suspend fun read(eventId: String, token: String): EventDetailsResponse =
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .get()
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                Api.handleResponseStatus(response)
+
+                val body = response.body?.string()
+                    ?: throw HttpException(response.code, "Empty response body")
+
+                val resultType = object : TypeToken<UserEventInviteLink>() {}.type
+                val result: UserEventInviteLink = gson.fromJson(body, resultType)
+
+                return@withContext result.invite_link
+            }
+        }
+
+    /**
+     * TODO: endpoint not working as intended
+     *
+     * Adds a user to the specified event.
+     *
+     * **Endpoint**: `POST /event/{event_id}/user`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: JSON
+     *
+     * **Response**: Empty
+     *
+     */
+    suspend fun addUser(eventId: String, token: String) =
+        withContext(Dispatchers.IO) {
+            val endpoint = "event/$eventId/user"
+            val url = Api.url(endpoint)
+
+            Log.d(TAG, "POST: $url")
+
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .addHeader("Content-Type", "application/json")
+                .post(Api.EMPTY_BODY)
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                Api.handleResponseStatus(response)
+            }
+        }
+
+    /**
+     * Retrieves metadata about the users in an event.
+     *
+     * **Endpoint**: `GET /event/{event_id}/users/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: `List<models.UserInfo>`
+     */
+    suspend fun getUsers(eventId: String, token: String): List<UserInfo> =
         withContext(Dispatchers.IO) {
             val endpoint = "event/$eventId/"
             val url = Api.url(endpoint)
@@ -355,10 +362,242 @@ class EventApiService {
                 val body = response.body?.string()
                     ?: throw HttpException(response.code, "Empty response body")
 
-                val resultType = object : TypeToken<EventDetailsResponse>() {}.type
-                val result: EventDetailsResponse = gson.fromJson(body, resultType)
+                val resultType = object : TypeToken<List<UserInfo>>() {}.type
+                val result: List<UserInfo> = gson.fromJson(body, resultType)
 
                 return@withContext result
+            }
+        }
+
+    /**
+     * Retrieves metadata for all images associated with the specified event.
+     *
+     * **Endpoint**: `GET /event/{event_id}/content/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response Body**: `List<models.ImageInfo>`
+     */
+    suspend fun getContent(eventId: String, token: String): List<ImageInfo> =
+        withContext(Dispatchers.IO) {
+            val endpoint = "event/content/$eventId/"
+            val url = Api.url(endpoint)
+
+            Log.d(TAG, "GET: $url")
+
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .get()
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                Api.handleResponseStatus(response)
+
+                val body = response.body?.string()
+                    ?: throw HttpException(response.code, "Empty response body")
+
+                val resultType = object : TypeToken<List<ImageInfo>>() {}.type
+                val result: List<ImageInfo> = gson.fromJson(body, resultType)
+
+                return@withContext result
+            }
+        }
+
+    /**
+     * Creates a metadata entry for an image associated with the specified event.
+     * Also used to change the name of the event and the owner ID.
+     *
+     * **Endpoint**: `PUT /event/{event_id}/content/`
+     *
+     * **Request Body**: EventTotalUpdate
+     *
+     * **Request Content-Type**: JSON
+     *
+     * **Response Body**: `models.EventContent`
+     */
+    suspend fun addContent(
+        eventId: String,
+        update: EventTotalUpdate,
+        token: String
+    ): ImageInfo = withContext(Dispatchers.IO) {
+        val endpoint = "event/$eventId/content/"
+        val url = Api.url(endpoint)
+
+        Log.d(TAG, "PUT: $url")
+
+        val requestBody = gson.toJson(update).toRequestBody("application/json".toMediaType())
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .addHeader("Content-Type", "application/json")
+            .put(requestBody)
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            Api.handleResponseStatus(response)
+
+            val body = response.body?.string()
+                ?: throw HttpException(response.code, "Empty response body")
+
+            val resultType = object : TypeToken<ImageInfo>() {}.type
+            val result: ImageInfo = gson.fromJson(body, resultType)
+
+            return@withContext result
+        }
+    }
+
+    /**
+     * Updates a metadata entry for an image associated with the specified event.
+     * Also used to change the name of the event and the owner ID.
+     *
+     * **Endpoint**: `PATCH /event/{event_id}/content/`
+     *
+     * **Request Body**: EventTotalUpdate
+     *
+     * **Request Content-Type**: JSON
+     *
+     * **Response Body**: `models.EventContent`
+     */
+    suspend fun updateContent(
+        eventId: String,
+        update: EventTotalUpdate,
+        token: String
+    ): ImageInfo = withContext(Dispatchers.IO) {
+        val endpoint = "event/$eventId/content/"
+        val url = Api.url(endpoint)
+
+        Log.d(TAG, "PATCH: $url")
+
+        val requestBody = gson.toJson(update)
+            .toRequestBody("application/json".toMediaType())
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .addHeader("Content-Type", "application/json")
+            .patch(requestBody)
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            Api.handleResponseStatus(response)
+
+            val body = response.body?.string()
+                ?: throw HttpException(response.code, "Empty response body")
+
+            val resultType = object : TypeToken<ImageInfo>() {}.type
+            val result: ImageInfo = gson.fromJson(body, resultType)
+
+            return@withContext result
+        }
+    }
+
+    /**
+     * Deletes all metadata entries for an image associated with the specified event.
+     *
+     * **Endpoint**: `DELETE /event/{event_id}/content/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response Body**: Empty
+     */
+    suspend fun deleteContent(eventId: String, token: String) = withContext(Dispatchers.IO) {
+        val endpoint = "event/$eventId/content/"
+        val url = Api.url(endpoint)
+
+        Log.d(TAG, "DELETE: $url")
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .delete()
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            Api.handleResponseStatus(response)
+        }
+    }
+
+    /**
+     * Creates a new event with the specified user as the owner.
+     *
+     * **Endpoint**: `POST /event/create/`
+     *
+     * **Request Body**: `models.EventCreation`
+     *
+     * **Request Content-Type**: JSON
+     *
+     * **Response**: `models.EventInfo`
+     */
+    suspend fun create(eventCreation: EventCreation, token: String): EventInfo =
+        withContext(Dispatchers.IO) {
+        val endpoint = "event/create/"
+        val url = Api.url(endpoint)
+
+        Log.d(TAG, "POST: $url")
+
+        val requestBody = gson.toJson(eventCreation)
+            .toRequestBody("application/json".toMediaType())
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .addHeader("Content-Type", "application/json")
+            .post(requestBody)
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            Api.handleResponseStatus(response)
+
+            val body = response.body?.string()
+                ?: throw HttpException(response.code, "Empty response body")
+
+            val resultType = object : TypeToken<EventInfo>() {}.type
+            val result: EventInfo = gson.fromJson(body, resultType)
+
+            return@withContext result
+        }
+    }
+
+    /**
+     * Resolves an obfuscated invite link to get the event ID.
+     *
+     * **Endpoint**: `GET /event/invite/link/decode/{invite_link}/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: `models.EventId` as String
+     */
+    suspend fun resolveInviteLink(inviteLink: String, token: String): String =
+        withContext(Dispatchers.IO) {
+            val endpoint = "/event/invite/link/decode/$inviteLink/"
+            val url = Api.url(endpoint)
+
+            Log.d(TAG, "GET: $url")
+
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .get()
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                Api.handleResponseStatus(response)
+
+                val body = response.body?.string()
+                    ?: throw HttpException(response.code, "Empty response body")
+
+                val resultType = object : TypeToken<EventId>() {}.type
+                val result: EventId = gson.fromJson(body, resultType)
+
+                return@withContext result.event_id
             }
         }
 }

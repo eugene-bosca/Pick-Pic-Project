@@ -30,9 +30,10 @@ class UserDataSource @Inject constructor(
 
         cachedUser = try {
             val userId = userApi.userIdFromFirebase(firebaseId, token)
-            val user = userApi.read(userId, token)
+            val user = userApi.get(userId, token)
             user
         } catch (e: NotFoundException) {
+            Log.d(TAG, "User not found, creating new user")
             createUser()
         }
     }
