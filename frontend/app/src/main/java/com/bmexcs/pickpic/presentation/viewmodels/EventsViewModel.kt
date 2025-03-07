@@ -10,7 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.Event
 import com.bmexcs.pickpic.data.models.EventContent
 import com.bmexcs.pickpic.data.models.Image
-import com.bmexcs.pickpic.data.repositories.EventsRepository
+import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +26,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EventsViewModel @Inject constructor(
-    private val eventsRepository: EventsRepository,
+    private val eventRepository: EventRepository,
     private val imageRepository: ImageRepository,
 ) : ViewModel() {
 
@@ -38,11 +38,11 @@ class EventsViewModel @Inject constructor(
     val event = _event
 
     fun setEvent(event: Event) {
-        eventsRepository.event.value = event
+        eventRepository.event.value = event
     }
 
     fun getEventFromRepository () {
-        _event.value = eventsRepository.event.value
+        _event.value = eventRepository.event.value
     }
 
     fun initializeEventsScreenView() {
@@ -53,7 +53,7 @@ class EventsViewModel @Inject constructor(
     fun getImageByEventId(eventId: String) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            val images = eventsRepository.getImageByEventId(eventId)
+            val images = eventRepository.getImageByEventId(eventId)
             val imageBitmapList = mutableListOf<ByteArray?>()
 
             for(image in images) {
@@ -76,7 +76,7 @@ class EventsViewModel @Inject constructor(
     fun deleteImageByEventId(imageId: String) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            eventsRepository.deleteImageByEventId(imageId)
+            eventRepository.deleteImageByEventId(imageId)
         }
     }
 
