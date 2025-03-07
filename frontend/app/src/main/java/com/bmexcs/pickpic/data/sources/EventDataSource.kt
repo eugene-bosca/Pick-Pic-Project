@@ -30,7 +30,7 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "getEvents for $userId")
 
-        val eventResponse = getListUsersEvents(userId, token)
+        val eventResponse = EventAPIService.getListUsersEvents(userId, token)
         return eventResponse.owned_events + eventResponse.invited_events
     }
 
@@ -111,7 +111,7 @@ class EventDataSource @Inject constructor(
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         val eventContentList = try {
-            val response = getEventContents(eventId, token)
+            val response = EventAPIService.getEventContents(eventId, token)
             response.toMutableList()
         } catch (e: NotFoundException) {
             emptyList()
@@ -123,7 +123,7 @@ class EventDataSource @Inject constructor(
     suspend fun addImageByEvent(eventContent: EventContent) {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 //        ApiService.post("event-contents/", eventContent, String::class.java, token)
-        postImageByEvent(eventContent.image.image_id, token)
+        EventAPIService.postImageByEvent(eventContent.image.image_id, token)
     }
 
     // TODO im sure this request doesn't actually work
@@ -131,6 +131,6 @@ class EventDataSource @Inject constructor(
     suspend fun deleteImageByEventId(imageId: String) {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
         // uses Eventcontent class?
-        deleteImage(imageId, token)
+        EventAPIService.deleteImage(imageId, token)
     }
 }

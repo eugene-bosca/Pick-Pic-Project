@@ -1,7 +1,6 @@
 package com.bmexcs.pickpic.data.sources
 
-import com.bmexcs.pickpic.data.utils.apiServices.downloadPicture
-import com.bmexcs.pickpic.data.utils.apiServices.uploadPicture
+import com.bmexcs.pickpic.data.utils.apiServices.PictureAPIService
 import javax.inject.Inject
 
 class ImageDataSource @Inject constructor(
@@ -10,13 +9,13 @@ class ImageDataSource @Inject constructor(
     suspend fun getImageBinary(eventId:String, imageId: String): ByteArray? {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
-        return downloadPicture(eventId, imageId, token)
+        return PictureAPIService.downloadPicture(eventId, imageId, token)
     }
 
     suspend fun addImageBinary(eventId: String, imageByte: ByteArray) {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
-        uploadPicture(eventId, imageByte, token)
+        PictureAPIService.uploadPicture(eventId, imageByte, token)
     }
 }
 

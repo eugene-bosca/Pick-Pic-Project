@@ -16,49 +16,52 @@ import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import okhttp3.Response
 
-suspend fun getListUsersEvents(userId: String, token: String):
-        ListUserEventsResponse = withContext(Dispatchers.IO) {
-    val endpoint = "list_users_events/$userId/"
+object EventAPIService {
+    suspend fun getListUsersEvents(userId: String, token: String):
+            ListUserEventsResponse = withContext(Dispatchers.IO) {
+        val endpoint = "list_users_events/$userId/"
 
-    Log.d("$TAG/Event:getListUsersEvents", "GET: $endpoint")
+        Log.d("$TAG/Event:getListUsersEvents", "GET: $endpoint")
 
-    val request = Request.Builder()
-        .url(buildUrl(endpoint))
-        .addHeader("Authorization", "Bearer $token")
-        .get()
-        .build()
+        val request = Request.Builder()
+            .url(buildUrl(endpoint))
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
 
-    client.newCall(request).execute().use { response ->
-        val responseOK = handleResponseStatus(response)
+        client.newCall(request).execute().use { response ->
+            val responseOK = handleResponseStatus(response)
 
-        val body = response.body?.string()
-        val resultType = object : TypeToken<ListUserEventsResponse>() {}.type
+            val body = response.body?.string()
+            val resultType = object : TypeToken<ListUserEventsResponse>() {}.type
 
-        val result: ListUserEventsResponse = gson.fromJson(body, resultType)
+            val result: ListUserEventsResponse = gson.fromJson(body, resultType)
 
-        return@withContext result
+            return@withContext result
+        }
     }
-}
-suspend fun getEventContents(eventId: String, token: String): Array<EventPicture> {
 
-    val endpoint = "event_contents/$eventId/"
+    suspend fun getEventContents(eventId: String, token: String): Array<EventPicture> {
 
-    Log.d("$TAG/Event:getEventContents", "GET: $endpoint")
+        val endpoint = "event_contents/$eventId/"
 
-    val request = Request.Builder()
-        .url(buildUrl(endpoint))
-        .addHeader("Authorization", "Bearer $token")
-        .get()
-        .build()
+        Log.d("$TAG/Event:getEventContents", "GET: $endpoint")
 
-    client.newCall(request).execute().use { response ->
-        val responseOK = handleResponseStatus(response)
+        val request = Request.Builder()
+            .url(buildUrl(endpoint))
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
 
-        val parsed = parseResponseBody(response.body?.string() ?: "", Array<EventPicture>::class.java)
+        client.newCall(request).execute().use { response ->
+            val responseOK = handleResponseStatus(response)
 
-        return parsed
+            val parsed =
+                parseResponseBody(response.body?.string() ?: "", Array<EventPicture>::class.java)
+
+            return parsed
+        }
     }
-}
 
 //suspend fun addImageByEvent(eventContent: EventContent) {
 //    val token = authDataSource.getIdToken() ?: throw Exception("No user token")
@@ -69,38 +72,39 @@ suspend fun getEventContents(eventId: String, token: String): Array<EventPicture
 //    ApiService.delete("event-contents", EventContent::class.java, token)
 //}
 
-suspend fun deleteImage(imageID: String, token: String): String {
-    val endpoint = "event_contents/$imageID/"
+    suspend fun deleteImage(imageID: String, token: String): String {
+        val endpoint = "event_contents/$imageID/"
 
-    Log.d("$TAG/Event:getEventContents", "GET: $endpoint")
+        Log.d("$TAG/Event:getEventContents", "GET: $endpoint")
 
-    val request = Request.Builder()
-        .url(buildUrl(endpoint))
-        .addHeader("Authorization", "Bearer $token")
-        .get()
-        .build()
+        val request = Request.Builder()
+            .url(buildUrl(endpoint))
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
 
-    client.newCall(request).execute().use { response ->
+        client.newCall(request).execute().use { response ->
 
-        val responseOK = handleResponseStatus(response)
-        return response.body.toString()
+            val responseOK = handleResponseStatus(response)
+            return response.body.toString()
+        }
     }
-}
 
-suspend fun postImageByEvent(imageID: String, token: String): String {
-    val endpoint = "event_contents/$imageID/"
+    suspend fun postImageByEvent(imageID: String, token: String): String {
+        val endpoint = "event_contents/$imageID/"
 
-    Log.d("$TAG/Event:getEventContents", "GET: $endpoint")
+        Log.d("$TAG/Event:getEventContents", "GET: $endpoint")
 
-    val request = Request.Builder()
-        .url(buildUrl(endpoint))
-        .addHeader("Authorization", "Bearer $token")
-        .get()
-        .build()
+        val request = Request.Builder()
+            .url(buildUrl(endpoint))
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
 
-    client.newCall(request).execute().use { response ->
+        client.newCall(request).execute().use { response ->
 
-        val responseOK = handleResponseStatus(response)
-        return response.body.toString()
+            val responseOK = handleResponseStatus(response)
+            return response.body.toString()
+        }
     }
 }
