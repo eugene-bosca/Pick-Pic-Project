@@ -22,7 +22,6 @@ import com.bmexcs.pickpic.R
 import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.data.models.Event
 import com.bmexcs.pickpic.data.models.ListUserEventsItem
-import com.bmexcs.pickpic.data.repositories.EventsRepository
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 import com.bmexcs.pickpic.presentation.viewmodels.HomePageViewModel

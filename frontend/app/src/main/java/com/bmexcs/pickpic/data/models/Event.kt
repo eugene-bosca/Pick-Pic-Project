@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 data class Event(
     val event_id: String = "",
     val event_name: String = "",
+    val owner: String = ""
 )
