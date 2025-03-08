@@ -530,5 +530,8 @@ def get_pending_events(request, user_id):
     
 @api_view(['GET'])
 def event_last_modified(request, event_id):
+    event = Event.objects.filter(event_id=event_id)
+    if not event.exists():
+        return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"user not found" })
     return Response(data={"last_modified": Event.objects.get(event_id=event_id).last_modified.strftime("%d/%m/%Y, %H:%M:%S") }, 
                     status=status.HTTP_200_OK)
