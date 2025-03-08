@@ -269,7 +269,7 @@ def list_users_events(request: Request, user_id):
  
 @extend_schema(
     request=EventSerializer,
-    responses={201: EventSerializer, 400: str, 404: str},
+    responses={201: EventSerializer, 404: {"error": "user not found"}},
     examples=[
         OpenApiExample(
             name="Create Event Example",
