@@ -26,6 +26,10 @@ import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.QrCode
+
 
 @Composable
 fun EventScreenView(
@@ -73,6 +77,15 @@ fun EventScreenView(
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text("Rank Photos")
+            }
+            // This is gonna look ugly. Style later.
+            ElevatedButton(onClick = { navController.navigate(Route.QrInviteView.route) }) {
+                Icon(
+                    imageVector = Icons.Filled.QrCode,
+                    contentDescription = "QR or Link Invite",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("QR or Link Invite")
             }
         }
 
