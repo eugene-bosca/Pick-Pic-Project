@@ -78,7 +78,7 @@ class EventContentViewSet(viewsets.ModelViewSet):
         queryset = self.queryset.filter(event_id=event_id)
 
         if not queryset.exists():
-            return Response(data={[]}, status=status.HTTP_200_OK)
+            return Response(data=[], status=status.HTTP_200_OK)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
@@ -514,3 +514,8 @@ def get_pending_events(request, user_id):
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+def event_last_modified(request, event_id):
+    return Response(data={"last_modified": Event.objects.get(event_id=event_id).last_modified.strftime("%d/%m/%Y, %H:%M:%S") }, 
+                    status=status.HTTP_200_OK)

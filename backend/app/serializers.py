@@ -49,12 +49,12 @@ class ImageSerializer(serializers.ModelSerializer):
 
 
 class EventContentSerializer(serializers.ModelSerializer):
-    event = EventSerializer()
+    #event = EventSerializer()
     image = ImageSerializer()
 
     class Meta:
         model = EventContent
-        fields = "__all__"
+        fields = ["id", "image"]
 
 
 class ScoredBySerializer(serializers.ModelSerializer):

@@ -19,6 +19,8 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from rest_framework_nested.routers import NestedDefaultRouter
+
 from . import views
 
 router = DefaultRouter()
@@ -27,8 +29,10 @@ router.register(r'user_settings', views.UserSettingsViewSet)
 # router.register(r'event', views.EventViewSet)
 router.register(r'event_users', views.EventUserViewSet)
 # router.register(r'images', views.ImageViewSet)
-router.register(r'event/content', views.EventContentViewSet)
+# router.register(r'event/content', views.EventContentViewSet)
 router.register(r'scored_by', views.ScoredByViewSet)
+
+
 
 urlpatterns = [
     # swagger
@@ -44,9 +48,12 @@ urlpatterns = [
     path('event/<str:event_id>/image/count/', views.event_image_count, name='event_image_count'),
     path('event/<str:event_id>/image/highest_score/', views.get_highest_scored_image, name='get_highest_scored_image'),
 
+    # event
     path('event/create/', views.create_new_event, name='Create New Event'),
-    path('event/<uuid:event_id>/invite/user/', views.invite_to_event, name='invite user(s) to event'),
+    path('event/<str:event_id>/content/', views.EventContentViewSet.as_view({'get': 'retrieve'}), name='Event Content'),
+    path('event/<str:event_id>/invite/user/', views.invite_to_event, name='invite user(s) to event'),
     path('event/invite/link/decode/<str:invite_link>/', views.resolve_invite_link, name='resolve_invite_link'),
+    path('event/<str:event_id>/last_modified/', views.event_last_modified, name='Event Last Modified Timestamp'),
 
     # invite
     path('event/<uuid:event_id>/invite/link/', views.generate_invite_link, name='generate_invite_link'),
