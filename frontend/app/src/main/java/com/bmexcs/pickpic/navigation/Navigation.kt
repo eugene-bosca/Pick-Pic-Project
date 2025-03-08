@@ -10,11 +10,10 @@ import com.bmexcs.pickpic.presentation.screens.ProfileScreenView
 import com.bmexcs.pickpic.presentation.screens.RankingScreenView
 import com.bmexcs.pickpic.presentation.screens.SupportScreenView
 import com.bmexcs.pickpic.presentation.screens.AuthScreenView
-import com.bmexcs.pickpic.presentation.screens.EventCreateInviteView
+import com.bmexcs.pickpic.presentation.screens.QrInviteView
 import com.bmexcs.pickpic.presentation.screens.CreateEventScreenView
 import com.bmexcs.pickpic.presentation.screens.EventInvitationScreenView
 import com.bmexcs.pickpic.presentation.shared.PickPicScaffold
-import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 
 @Composable
 fun Navigation(
@@ -68,8 +67,8 @@ fun Navigation(
         }
 
         // Event Create Invite Screen
-        composable(Route.EventCreateInviteView.route) {
-            EventCreateInviteView(navController)
+        composable(Route.QrInviteView.route) {
+            QrInviteView(navController)
         }
 
         // Create Event Screen
