@@ -4,7 +4,7 @@ from .serializers import UserSerializer, UserSettingsSerializer, EventSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 import base64
 
 from .models import User
@@ -267,6 +267,17 @@ def list_users_events(request: Request, user_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
  
+@extend_schema(
+    request=EventSerializer,
+    responses={201: EventSerializer, 400: str, 404: str},
+    examples=[
+        OpenApiExample(
+            name="Create Event Example",
+            value={"user_id": 1, "event_name": "Django Meetup"},
+            request_only=True,
+        ),
+    ],
+)
 @api_view(['POST'])
 def create_new_event(request: Request):
 
