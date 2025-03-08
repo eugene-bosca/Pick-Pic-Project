@@ -285,14 +285,12 @@ def create_new_event(request: Request):
     event_name = request.data.get('event_name')
 
     event_owner = User.objects.get(user_id=user_id)
-    try:
-        event = Event.objects.create(event_name=event_name, owner=event_owner)
+    
+    event = Event.objects.create(event_name=event_name, owner=event_owner)
 
-        EventUser.objects.create(event_id=event.event_id, user_id=user_id)
+    EventUser.objects.create(event_id=event.event_id, user_id=user_id)
 
-        return Response(status=status.HTTP_201_CREATED, data=EventSerializer(event).data)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(status=status.HTTP_201_CREATED, data=EventSerializer(event).data)
 
 @api_view(['POST'])
 def invite_to_event(request: Request):

@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-from rest_framework_nested.routers import NestedDefaultRouter
+from django.http import JsonResponse
 
 from . import views
 
@@ -70,3 +70,8 @@ urlpatterns = [
     path('user/from_fire_base/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='Exchange User ID For Firebase ID'),
     path('user/from_email/<str:email>/', views.get_user_id_from_email, name='get user id from email'),
 ]
+
+def custom_server_error(request):
+    return JsonResponse({"error": "A server error occurred"}, status=500)
+
+#handler500 = custom_server_error

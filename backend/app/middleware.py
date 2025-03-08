@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.http import JsonResponse
+from django.core.exceptions import ValidationError, PermissionDenied
+from django.db import IntegrityError
 
 from firebase_admin import auth
 import jwt
@@ -11,10 +13,10 @@ class ExceptionMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        try:
-            return self.get_response(request)
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+        return self.get_response(request)
+    
+    def process_exception(self, request, exception):
+        return JsonResponse({"error": "Internal server error", "details": str(exception)}, status=500)
 
 class AuthMiddleware:
     def __init__(self, get_response):
