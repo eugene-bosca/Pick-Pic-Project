@@ -18,7 +18,7 @@ class UserSettings(models.Model):
 
 class Event(models.Model):
     event_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    obfuscated_event_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, blank=True)
+    obfuscated_event_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, null=True)
     event_name = models.CharField(max_length=255)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
