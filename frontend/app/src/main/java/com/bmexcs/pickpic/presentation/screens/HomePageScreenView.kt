@@ -21,7 +21,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.R
 import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.data.models.EventInfo
-import com.bmexcs.pickpic.data.models.EventOwner
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 import com.bmexcs.pickpic.presentation.viewmodels.HomePageViewModel
@@ -76,7 +75,7 @@ fun HomePageScreenView(
                     .weight(1f),
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
-                items(events) { eventItem: EventOwner ->
+                items(events) { eventItem: EventInfo ->
                     EventListing(eventsViewModel, eventItem, navController)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -124,7 +123,7 @@ fun CreateEventButton(navController: NavHostController) {
 @Composable
 fun EventListing(
     eventsViewModel: EventsViewModel,
-    eventItem: EventOwner,
+    eventItem: EventInfo,
     navController: NavHostController
 ) {
     ElevatedButton(
@@ -139,7 +138,7 @@ fun EventListing(
                 Text(eventItem.event_name)
             },
             supportingContent = {
-                Text(eventItem.owner.display_name)
+                Text(eventItem.owner)
             },
             trailingContent = {
                 IconButton(onClick = { /* doSomething() */ }) {

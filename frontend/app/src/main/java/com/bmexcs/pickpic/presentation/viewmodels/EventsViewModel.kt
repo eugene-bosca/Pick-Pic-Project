@@ -48,11 +48,11 @@ class EventsViewModel @Inject constructor(
     fun getImageByEventId(eventId: String) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            val images = eventRepository.getImageByEventId(eventId)
+            val images = eventRepository.getImages(eventId)
             val imageBitmapList = mutableListOf<ByteArray?>()
 
             for(image in images) {
-                val byteArray = imageRepository.getImageByImageId(image.event.event_id, image.image.image_id)
+                val byteArray = imageRepository.getImageByImageId(eventId, image.image.image_id)
                 imageBitmapList.add(byteArray)
             }
 
@@ -61,17 +61,15 @@ class EventsViewModel @Inject constructor(
         }
     }
 
-    fun addImageByEvent(imageByte: ByteArray) {
-        // Launch a coroutine on the IO dispatcher since this is a network request.
+    fun addImage(imageByte: ByteArray) {
         viewModelScope.launch(Dispatchers.IO) {
             imageRepository.addImageBinary(event.value.event_id, imageByte)
         }
     }
 
-    fun deleteImageByEventId(imageId: String) {
-        // Launch a coroutine on the IO dispatcher since this is a network request.
+    fun deleteImage(eventId: String, imageId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            eventRepository.deleteImageByEventId(imageId)
+            eventRepository.deleteImage(eventId, imageId)
         }
     }
 

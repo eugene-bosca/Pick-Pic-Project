@@ -43,7 +43,7 @@ fun EventScreenView(
             // Use the context and uri to convert the image to byte array
             val byteArray = viewModel.uriToByteArray(context, uri)
             if(byteArray != null) {
-                viewModel.addImageByEvent(byteArray)
+                viewModel.addImage(byteArray)
             }
         }
     }

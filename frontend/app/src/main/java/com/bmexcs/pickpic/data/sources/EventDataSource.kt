@@ -4,10 +4,10 @@ import android.util.Log
 import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.models.EventCreation
 import com.bmexcs.pickpic.data.models.EventMember
+import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.services.EventApiService
 import com.bmexcs.pickpic.data.services.UserApiService
-import com.bmexcs.pickpic.data.models.EventOwner
-import com.bmexcs.pickpic.data.models.EventPicture
+import com.bmexcs.pickpic.data.utils.NotFoundException
 import javax.inject.Inject
 
 private const val TAG = "EventDataSource"
@@ -20,7 +20,7 @@ class EventDataSource @Inject constructor(
     private val eventApi = EventApiService()
     private val userApi = UserApiService()
 
-    suspend fun getEvents(): List<EventOwner> {
+    suspend fun getEvents(): List<EventInfo> {
         val userId = userDataSource.getUser().user_id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
@@ -95,31 +95,21 @@ class EventDataSource @Inject constructor(
         return eventResponse
     }
 
-    // TODO: help
-    suspend fun getImagesByEventId(eventId: String): List<EventPicture> {
-//        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-//
-//        val eventContentList = try {
-//            val response = eventApi.getEventContents(eventId, token)
-//            response.toMutableList()
-//        } catch (e: NotFoundException) {
-//            emptyList()
-//        }
-//
-//        return eventContentList
-        return listOf()
+    suspend fun getImageInfo(eventId: String): List<ImageInfo> {
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        val eventContentList = try {
+            val response = eventApi.getImageInfo(eventId, token)
+            response.toMutableList()
+        } catch (e: NotFoundException) {
+            emptyList()
+        }
+
+        return eventContentList
     }
-//
-//    suspend fun addImageByEvent(eventContent: EventContent) {
-//        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-//        eventApi.postImageByEvent(eventContent.image.image_id, token)
-//    }
-//
-//    // TODO im sure this request doesn't actually work
-//    // not sure how this actually works.
-    suspend fun deleteImageByEventId(imageId: String) {
-//        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-        // uses Eventcontent class?
-//        eventApi.deleteImage(imageId, token)
+
+    suspend fun deleteImage(eventId: String, imageId: String) {
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+        eventApi.deleteImage(eventId, imageId, token)
     }
 }
