@@ -4,12 +4,9 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.Event
-import com.bmexcs.pickpic.data.models.EventContent
-import com.bmexcs.pickpic.data.models.Image
+import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,9 +17,7 @@ import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.util.Arrays
 import javax.inject.Inject
-
 
 @HiltViewModel
 class EventsViewModel @Inject constructor(
@@ -34,15 +29,15 @@ class EventsViewModel @Inject constructor(
     private val _images = MutableStateFlow<List<ByteArray?>>(emptyList())
     val images: StateFlow<List<ByteArray?>> = _images
 
-    private val _event = MutableStateFlow<Event>(Event())
-    val event = _event
+    private val _eventInfo = MutableStateFlow<EventInfo>(EventInfo())
+    val event = _eventInfo
 
-    fun setEvent(event: Event) {
-        eventRepository.event.value = event
+    fun setEvent(eventInfo: EventInfo) {
+        eventRepository.event.value = eventInfo
     }
 
     fun getEventFromRepository () {
-        _event.value = eventRepository.event.value
+        _eventInfo.value = eventRepository.event.value
     }
 
     fun initializeEventsScreenView() {
@@ -53,11 +48,11 @@ class EventsViewModel @Inject constructor(
     fun getImageByEventId(eventId: String) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
-            val images = eventRepository.getImageByEventId(eventId)
+            val images = eventRepository.getImages(eventId)
             val imageBitmapList = mutableListOf<ByteArray?>()
 
             for(image in images) {
-                val byteArray = imageRepository.getImageByImageId(image.event.event_id, image.image.image_id)
+                val byteArray = imageRepository.getImageByImageId(eventId, image.image.image_id)
                 imageBitmapList.add(byteArray)
             }
 
@@ -66,17 +61,15 @@ class EventsViewModel @Inject constructor(
         }
     }
 
-    fun addImageByEvent(imageByte: ByteArray) {
-        // Launch a coroutine on the IO dispatcher since this is a network request.
+    fun addImage(imageByte: ByteArray) {
         viewModelScope.launch(Dispatchers.IO) {
             imageRepository.addImageBinary(event.value.event_id, imageByte)
         }
     }
 
-    fun deleteImageByEventId(imageId: String) {
-        // Launch a coroutine on the IO dispatcher since this is a network request.
+    fun deleteImage(eventId: String, imageId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            eventRepository.deleteImageByEventId(imageId)
+            eventRepository.deleteImage(eventId, imageId)
         }
     }
 

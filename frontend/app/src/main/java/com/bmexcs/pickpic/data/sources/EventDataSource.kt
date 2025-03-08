@@ -1,19 +1,14 @@
 package com.bmexcs.pickpic.data.sources
 
 import android.util.Log
-import com.bmexcs.pickpic.data.models.EventDetailsResponse
-import com.bmexcs.pickpic.data.models.InviteLinkResponse
-import com.bmexcs.pickpic.data.models.CreateEvent
-import com.bmexcs.pickpic.data.models.EventContent
-import com.bmexcs.pickpic.data.models.EventPicture
-import com.bmexcs.pickpic.data.models.ListUserEventsItem
-import com.bmexcs.pickpic.data.utils.ApiService
-import com.bmexcs.pickpic.data.utils.EventApiService
+import com.bmexcs.pickpic.data.models.EventInfo
+import com.bmexcs.pickpic.data.models.EventCreation
+import com.bmexcs.pickpic.data.models.EventMember
+import com.bmexcs.pickpic.data.models.ImageInfo
+import com.bmexcs.pickpic.data.services.EventApiService
+import com.bmexcs.pickpic.data.services.UserApiService
 import com.bmexcs.pickpic.data.utils.NotFoundException
-import com.bmexcs.pickpic.data.utils.apiServices.*
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 private const val TAG = "EventDataSource"
 
@@ -22,69 +17,62 @@ class EventDataSource @Inject constructor(
     private val userDataSource: UserDataSource
 ) {
 
-    private val api = EventApiService()
+    private val eventApi = EventApiService()
+    private val userApi = UserApiService()
 
-    suspend fun getEvents(): List<ListUserEventsItem> {
+    suspend fun getEvents(): List<EventInfo> {
         val userId = userDataSource.getUser().user_id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         Log.d(TAG, "getEvents for $userId")
 
-        val eventResponse = EventAPIService.getListUsersEvents(userId, token)
+        val eventResponse = userApi.getEvents(userId, token)
         return eventResponse.owned_events + eventResponse.invited_events
     }
 
-    suspend fun getUserEventsPending(): List<ListUserEventsItem> {
+    suspend fun getEventsPending(): List<EventMember> {
         val userId = userDataSource.getUser().user_id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         Log.d(TAG, "getUserEventsPending for $userId")
 
-        val eventResponse = api.getListPendingUsersEvents(userId, token)
+        val eventResponse = userApi.getPendingEvents(userId, token)
         return eventResponse
     }
 
-    suspend fun postEvent(name: String): CreateEvent {
-        val event = CreateEvent(
+    suspend fun createEvent(name: String): EventInfo {
+        val event = EventCreation(
             event_name = name,
             owner = userDataSource.getUser().user_id
         )
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
-        Log.d(TAG, "postEvent for ${userDataSource.getUser().user_id}")
+        Log.d(TAG, "createEvent for ${userDataSource.getUser().user_id}")
 
-        val newEvent = api.post(event, token)
+        val newEvent = eventApi.create(event, token)
         return newEvent
     }
 
-    suspend fun fetchObfuscatedEventId(eventId: String): Pair<String?, String?> =
-        withContext(Dispatchers.IO) {
-            val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-            try {
-                // Assuming "generate_invite_link/$eventId/" is a GET request
-                val response = api.getGenerateInviteLink(eventId, token)
-
-                val inviteLink = response.invite_link
-                val obfuscatedId = inviteLink.substringAfterLast("/")
-                val eventName = fetchEventName(eventId)
-                return@withContext Pair(obfuscatedId, eventName)
-            } catch (e: Exception) {
-                Log.e("EventDataSource", "Error fetching obfuscated ID: ${e.message}, eventId: $eventId")
-                return@withContext Pair(null, null)
-            }
-        }
-
-    suspend fun fetchEventName(eventId: String): String? = withContext(Dispatchers.IO) {
+    suspend fun fetchObfuscatedEventId(eventId: String): Pair<String?, String?>  {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-        try {
-            // Assuming "events/$eventId/" is a GET request
-//            val response = ApiService.get("events/$eventId/", EventDetailsResponse::class.java, token)
-            val response = api.get(eventId, token)
-            return@withContext response.event_name
+
+        return try {
+            val inviteLink = eventApi.generateInviteLink(eventId, token)
+            val obfuscatedId = inviteLink.substringAfterLast("/")
+            val eventName = getEventName(eventId)
+            Pair(obfuscatedId, eventName)
         } catch (e: Exception) {
-            Log.e("EventDataSource", "Error fetching event name: ${e.message}")
-            return@withContext null
+            Log.e(TAG, "Error fetching obfuscated ID: ${e.message}, eventId: $eventId")
+            Pair(null, null)
         }
+    }
+
+    private suspend fun getEventName(eventId: String): String {
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        Log.d(TAG, "getEvent for $eventId")
+
+        return eventApi.getInfo(eventId, token).event_name
     }
 
     suspend fun acceptEvent(eventId: String): Boolean {
@@ -93,7 +81,7 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "accept for $eventId")
 
-        val eventResponse = api.putAcceptUser(eventId, userId, token)
+        val eventResponse = eventApi.acceptInvite(eventId, userId, token)
         return eventResponse
     }
 
@@ -103,15 +91,15 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "declineEvent for $eventId")
 
-        val eventResponse = api.deleteRemoveUser(eventId, userId, token)
+        val eventResponse = eventApi.declineInvite(eventId, userId, token)
         return eventResponse
     }
 
-    suspend fun getImagesByEventId(eventId: String): List<EventPicture> {
+    suspend fun getImageInfo(eventId: String): List<ImageInfo> {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         val eventContentList = try {
-            val response = EventAPIService.getEventContents(eventId, token)
+            val response = eventApi.getImageInfo(eventId, token)
             response.toMutableList()
         } catch (e: NotFoundException) {
             emptyList()
@@ -120,17 +108,8 @@ class EventDataSource @Inject constructor(
         return eventContentList
     }
 
-    suspend fun addImageByEvent(eventContent: EventContent) {
+    suspend fun deleteImage(eventId: String, imageId: String) {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-//        ApiService.post("event-contents/", eventContent, String::class.java, token)
-        EventAPIService.postImageByEvent(eventContent.image.image_id, token)
-    }
-
-    // TODO im sure this request doesn't actually work
-    // not sure how this actually works.
-    suspend fun deleteImageByEventId(imageId: String) {
-        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-        // uses Eventcontent class?
-        EventAPIService.deleteImage(imageId, token)
+        eventApi.deleteImage(eventId, imageId, token)
     }
 }

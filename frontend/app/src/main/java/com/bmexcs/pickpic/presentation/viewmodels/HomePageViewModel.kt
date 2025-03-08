@@ -3,13 +3,9 @@ package com.bmexcs.pickpic.presentation.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.data.models.Event
-import com.bmexcs.pickpic.data.models.ListUserEventsItem
-import com.bmexcs.pickpic.data.repositories.AuthRepository
+import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
-import com.bmexcs.pickpic.navigation.Route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,11 +18,11 @@ import kotlinx.coroutines.withContext
 @HiltViewModel
 class HomePageViewModel @Inject constructor(
     private val eventRepository: EventRepository,
-    private val userRepository: UserRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
     // Now we use JsonElement instead of Profile.
-    private val _events = MutableStateFlow<List<ListUserEventsItem>>(emptyList())
-    val events: StateFlow<List<ListUserEventsItem>> = _events
+    private val _events = MutableStateFlow<List<EventInfo>>(emptyList())
+    val events: StateFlow<List<EventInfo>> = _events
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
