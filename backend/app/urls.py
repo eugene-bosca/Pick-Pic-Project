@@ -50,6 +50,8 @@ urlpatterns = [
 
     # event
     path('event/create/', views.create_new_event, name='Create New Event'),
+    path('event/<str:event_id>/', views.event_info, name='event info'),
+    path('event/<str:event_id>/users', views.EventUserViewSet.as_view({'get': 'retrieve'}), name='Event Users'),
     path('event/<str:event_id>/content/', views.EventContentViewSet.as_view({'get': 'retrieve'}), name='Event Content'),
     path('event/<str:event_id>/invite/user/', views.invite_to_event, name='invite user(s) to event'),
     path('event/invite/link/decode/<str:invite_link>/', views.resolve_invite_link, name='resolve_invite_link'),

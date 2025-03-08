@@ -91,6 +91,11 @@ class ScoredByViewSet(viewsets.ModelViewSet):
 # Secret key for JWT
 SECRET_KEY = settings.SECRET_KEY  # Use Django's secret key
 
+@api_view(['GET'])
+def event_info(request: Request, event_id):
+    event = Event.objects.get(event_id=event_id)
+    return Response(data=EventSerializer(event).data, status=status.HTTP_200_OK)
+
 @api_view(['POST'])
 def authenticate(request: Request):
     username = request.data.get('username')
@@ -234,7 +239,6 @@ def user_pfp(request: Request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    
 @api_view(['GET'])
 def event_image_count(request: Request, event_id):
     try:
