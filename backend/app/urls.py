@@ -51,18 +51,17 @@ urlpatterns = [
     path('user/from_fire_base/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='Exchange User ID For Firebase ID'),
     path('user/from_email/<str:email>/', views.get_user_id_from_email, name='get user id from email'),
 
-
     ### Invite-related endpoints
     # Direct user invitation (in-app method)
-    path('event/<uuid:event_id>/invite/user/', views.invite_to_event, name='invite user(s) to event'),
+    path('event/<str:event_id>/invite/user/', views.invite_to_event, name='invite user(s) to event'),
 
     # Link/QR invitation handling
-    path('event/invite/generate/<uuid:event_id>/', views.generate_invite_link, name='generate_invite_link'), # Generates a link with obfuscated event ID
-    path('join/<uuid:obfuscated_event_id>/', views.join_via_link, name='join_via_link'),
+    path('event/invite/generate/<str:event_id>/', views.generate_invite_link, name='generate_invite_link'), # Generates a link with obfuscated event ID
+    path('event/join/<str:obfuscated_event_id>/', views.join_via_link, name='join_via_link'),
 
     # Handle invitation acceptance/decline
-    path('event/invitation/<uuid:event_id>/<str:action>/', views.handle_invitation, name='handle_invitation'),
+    path('event/<str:event_id>/invitation/<str:action>/', views.handle_invitation, name='handle_invitation'),
 
     # View pending invitations for a user
-    path('user/<uuid:user_id>/pending_event_invitations/', views.get_pending_event_invitations, name='get_pending_event_invitations'),
+    path('user/<str:user_id>/pending_event_invitations/', views.get_pending_event_invitations, name='get_pending_event_invitations'),
 ]

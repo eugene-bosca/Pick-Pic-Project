@@ -293,9 +293,6 @@ def get_user_id_by_firebase_id(request: Request, firebase_id):
         Response: A JSON response containing the user_id or an error message.
     """
 
-    print(firebase_id)
-    print(User.objects.all())
-
     try:
         user = User.objects.get(firebase_id=firebase_id)
         return Response({'user_id': user.user_id}, status=status.HTTP_200_OK) # Convert UUID to string for JSON serialization
@@ -450,7 +447,7 @@ def invite_to_event(request, event_id):
     Invite one or more users to an event (in-app method).
     Expects a payload with:
     {
-        "user_ids": ["uuid1", "uuid2", ...] or "user_id": "uuid"
+        "user_id": ["uuid1", "uuid2", ...] or "user_id": "uuid"
     }
     """
     try:
@@ -458,31 +455,35 @@ def invite_to_event(request, event_id):
         event = Event.objects.get(event_id=event_id)
         
         # Check if the request has multiple user_ids or a single user_id
-        user_ids = request.data.get('user_ids', [])
-        if not user_ids:
-            # Try to get a single user_id
-            single_user_id = request.data.get('user_id')
-            if single_user_id:
-                user_ids = [single_user_id]
-        
+        user_ids = request.data.get('user_id', [])
+
+        if isinstance(user_ids, dict): 
+            user_ids = []
+        elif isinstance(user_ids, str): 
+            user_ids = [user_ids]
+        elif not isinstance(user_ids, list): 
+            user_ids = []
+
         if not user_ids:
             return Response({'error': 'No user_ids provided'}, status=status.HTTP_400_BAD_REQUEST)
         
         invited_users = []
+
         for user_id in user_ids:
-            # Create an EventUser with accepted=False
-            event_user, created = EventUser.objects.get_or_create(
-                event_id=event_id,
-                user_id=user_id,
-                defaults={'accepted': False}
-            )
+            if User.objects.filter(user_id=user_id).exists():
+                # Create an EventUser with accepted=False
+                _, created = EventUser.objects.get_or_create(
+                    event_id=event_id,
+                    user_id=user_id,
+                    defaults={'accepted': False}
+                )
             
             if created:
                 invited_users.append(user_id)
         
         return Response({
             'message': f'Successfully invited {len(invited_users)} users',
-            'invited_users': invited_users
+            'invited_users': UserSerializer(invited_users).data
         }, status=status.HTTP_201_CREATED)
         
     except Event.DoesNotExist:
@@ -518,7 +519,7 @@ def generate_invite_link(request, event_id):
 @api_view(['GET', 'POST'])
 def join_via_link(request, obfuscated_event_id):
     """
-    Handle user joining an event via an invite link with obfuscated event ID.
+    Handle user joining an event via an invite link with jibberish event ID.
     GET: Return event details
     POST: Join the event
     """
@@ -590,7 +591,7 @@ def handle_invitation(request, event_id, action):
             return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
             
     except EventUser.DoesNotExist:
-        return Response({'error': 'Invitation not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'User was not invited to event'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -605,7 +606,7 @@ def get_pending_event_invitations(request, user_id):
         pending_invitations = EventUser.objects.filter(
             user_id=user_id,
             accepted=False
-        ).select_related('event', 'event__owner')
+        )
         
         # Prepare the response data
         events_data = []
