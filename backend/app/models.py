@@ -18,8 +18,14 @@ class UserSettings(models.Model):
 
 class Event(models.Model):
     event_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    obfuscated_event_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     event_name = models.CharField(max_length=255)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        if not self.obfuscated_event_id:  # Only generate if it's a new event
+            self.obfuscated_event_id = uuid.uuid4()
+        super().save(*args, **kwargs)
 
 class Image(models.Model):
     image_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

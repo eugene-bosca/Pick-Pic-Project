@@ -45,19 +45,24 @@ urlpatterns = [
     path('event/<str:event_id>/image/highest_score/', views.get_highest_scored_image, name='get_highest_scored_image'),
 
     path('event/create/', views.create_new_event, name='Create New Event'),
-    path('event/<uuid:event_id>/invite/user/', views.invite_to_event, name='invite user(s) to event'),
-    path('event/invite/link/decode/<str:invite_link>/', views.resolve_invite_link, name='resolve_invite_link'),
 
-    # invite
-    path('event/<uuid:event_id>/invite/link/', views.generate_invite_link, name='generate_invite_link'),
-
-    # these two can combine into one /event/<event-Id>/invite/ and have the accept/decide
-    path('event/<str:event_id>/invite/<str:invite_link>/accept/', views.accept_event_user, name='add_event_user'),
-    path('event/<str:event_id>/invite/<str:invite_link>/decline/', views.remove_event_user, name='remove_event_user'),
-
-    path('user/<uuid:user_id>/pending_events_full/', views.get_pending_events, name='get_pending_events'),
     path('user/<str:user_id>/events/', views.list_users_events, name='List Users Events'),
 
     path('user/from_fire_base/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='Exchange User ID For Firebase ID'),
     path('user/from_email/<str:email>/', views.get_user_id_from_email, name='get user id from email'),
+
+
+    ### Invite-related endpoints
+    # Direct user invitation (in-app method)
+    path('event/<uuid:event_id>/invite/user/', views.invite_to_event, name='invite user(s) to event'),
+
+    # Link/QR invitation handling
+    path('event/invite/generate/<uuid:event_id>/', views.generate_invite_link, name='generate_invite_link'), # Generates a link with obfuscated event ID
+    path('join/<uuid:obfuscated_event_id>/', views.join_via_link, name='join_via_link'),
+
+    # Handle invitation acceptance/decline
+    path('event/invitation/<uuid:event_id>/<str:action>/', views.handle_invitation, name='handle_invitation'),
+
+    # View pending invitations for a user
+    path('user/<uuid:user_id>/pending_event_invitations/', views.get_pending_event_invitations, name='get_pending_event_invitations'),
 ]
