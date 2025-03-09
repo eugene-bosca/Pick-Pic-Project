@@ -535,3 +535,21 @@ def event_last_modified(request, event_id):
         return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"user not found" })
     return Response(data={"last_modified": Event.objects.get(event_id=event_id).last_modified.strftime("%d/%m/%Y, %H:%M:%S") }, 
                     status=status.HTTP_200_OK)
+
+@api_view(['DELETE'])
+def user_delete_event(request, user_id, event_id):
+    try:
+        event = Event.objects.get(event_id=event_id, user_id=user_id)
+        event.delete()
+        return Response(status=status.HTTP_202_ACCEPTED)
+    except Event.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"user does not own this event" })
+    
+@api_view(['DELETE'])
+def remove_user_from_event(request, event_id, user_id):
+    try:
+        event_user = EventUser.objects.get(event_id=event_id, user_id=user_id)
+        event_user.delete()
+        return Response(status=status.HTTP_202_ACCEPTED)
+    except EventUser.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event does not exist or user is not part of this event" })

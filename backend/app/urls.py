@@ -45,33 +45,32 @@ urlpatterns = [
     # image/picture endpoints
     path('event/<str:event_id>/image/', views.create_image, name='PUT Image'),
     path('event/<str:event_id>/image/<str:image_id>/', views.get_delete_image, name='GET/DELETE Image'),
-    path('event/<str:event_id>/image/count/', views.event_image_count, name='event_image_count'),
-    path('event/<str:event_id>/image/highest_score/', views.get_highest_scored_image, name='get_highest_scored_image'),
+    path('event/<str:event_id>/image/count/', views.event_image_count, name='Event Image Count'),
+    path('event/<str:event_id>/image/highest_score/', views.get_highest_scored_image, name='Get Highest Score Image'),
 
     # event
     path('event/create/', views.create_new_event, name='Create New Event'),
-    path('event/<str:event_id>/', views.event_info, name='event info'),
-    path('event/<str:event_id>/users', views.EventUserViewSet.as_view({'get': 'retrieve'}), name='Event Users'),
+    path('event/<str:event_id>/', views.event_info, name='Event Info'),
     path('event/<str:event_id>/content/', views.EventContentViewSet.as_view({'get': 'retrieve'}), name='Event Content'),
-    path('event/<str:event_id>/invite/user/', views.invite_to_event, name='invite user(s) to event'),
-    path('event/invite/link/decode/<str:invite_link>/', views.resolve_invite_link, name='resolve_invite_link'),
     path('event/<str:event_id>/last_modified/', views.event_last_modified, name='Event Last Modified Timestamp'),
 
-    # invite
+    # event users
+    path('event/<str:event_id>/users/', views.EventUserViewSet.as_view({'get': 'retrieve'}), name='Event Users'),
+    path('event/<str:event_id>/user/<str:user_id>/', views.remove_event_user, name='Remove Event User'),
+
+    # event invite
     path('event/<uuid:event_id>/invite/link/', views.generate_invite_link, name='generate_invite_link'),
+    path('event/<str:event_id>/invite/user/', views.invite_to_event, name='Invite User(s) to Event'),
+    path('event/invite/link/decode/<str:invite_link>/', views.resolve_invite_link, name='resolve_invite_link'),
 
     # these two can combine into one /event/<event-Id>/invite/ and have the accept/decide
-    path('event/<str:event_id>/invite/<str:invite_link>/accept/', views.accept_event_user, name='add_event_user'),
-    path('event/<str:event_id>/invite/<str:invite_link>/decline/', views.remove_event_user, name='remove_event_user'),
+    path('event/<str:event_id>/invite/<str:invite_link>/accept/', views.accept_event_user, name='User Accept Event Invite'),
+    path('event/<str:event_id>/invite/<str:invite_link>/decline/', views.remove_event_user, name='User Decline Event Invite'),
 
-    path('user/<uuid:user_id>/pending_events_full/', views.get_pending_events, name='get_pending_events'),
+    path('user/<str:user_id>/pending_events_full/', views.get_pending_events, name='get_pending_events'),
     path('user/<str:user_id>/events/', views.list_users_events, name='List Users Events'),
+    path('user/<str:user_id>/events/<event_id>/', views.user_delete_event, name='Delete User\'s own Album'),
 
     path('user/from_fire_base/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='Exchange User ID For Firebase ID'),
-    path('user/from_email/<str:email>/', views.get_user_id_from_email, name='get user id from email'),
+    path('user/from_email/<str:email>/', views.get_user_id_from_email, name='Get User ID From Email'),
 ]
-
-def custom_server_error(request):
-    return JsonResponse({"error": "A server error occurred"}, status=500)
-
-#handler500 = custom_server_error
