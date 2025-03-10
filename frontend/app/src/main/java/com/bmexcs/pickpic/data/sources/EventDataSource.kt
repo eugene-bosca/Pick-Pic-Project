@@ -42,8 +42,8 @@ class EventDataSource @Inject constructor(
 
     suspend fun createEvent(name: String): EventInfo {
         val event = EventCreation(
-            event_name = name,
-            owner = userDataSource.getUser().user_id
+            user_id = userDataSource.getUser().user_id,
+            event_name = name
         )
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 

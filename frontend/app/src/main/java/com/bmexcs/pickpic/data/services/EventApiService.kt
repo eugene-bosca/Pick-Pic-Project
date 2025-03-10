@@ -512,7 +512,6 @@ class EventApiService {
                 return@withContext result
             }
         } catch (e: Exception) {
-            Log.d(TAG, "RIHBRPGHBERUYGVB: $e")
             return@withContext EventInfo()
         }
     }
