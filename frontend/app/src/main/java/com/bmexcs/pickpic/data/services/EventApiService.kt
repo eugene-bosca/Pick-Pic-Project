@@ -75,7 +75,7 @@ class EventApiService {
      */
     suspend fun getImageInfo(eventId: String, token: String): List<ImageInfo> =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/content/$eventId/"
+            val endpoint = "event/$eventId/content/"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "GET: $url")
@@ -157,7 +157,6 @@ class EventApiService {
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
-            .addHeader("Accept", "image/*, application/octet-stream")
             .get()
             .build()
 
@@ -258,7 +257,6 @@ class EventApiService {
             val request = Request.Builder()
                 .url(url)
                 .addHeader("Authorization", "Bearer $token")
-                .addHeader("Accept", "image/*, application/octet-stream")
                 .get()
                 .build()
 
@@ -421,7 +419,6 @@ class EventApiService {
             val request = Request.Builder()
                 .url(url)
                 .addHeader("Authorization", "Bearer $token")
-                .addHeader("Accept", "image/*, application/octet-stream")
                 .get()
                 .build()
 
