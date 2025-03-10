@@ -51,23 +51,35 @@ fun EventScreenView(
         }
     }
 
-    Column (
-        modifier = Modifier.fillMaxSize(),
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.Top,
-    ){
-        Row {
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
             ElevatedButton(
-                modifier = Modifier.padding(horizontal = 20.dp),
-                onClick = {launcher.launch("image/*")},
+                onClick = { launcher.launch("image/*") },
+                modifier = Modifier.weight(1f)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.add_circle_24px),
-                    contentDescription = "Rank Photos Icon",
+                    contentDescription = "Add Photos Icon",
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text("Add Photos")
             }
-            ElevatedButton(onClick = {navController.navigate(Route.Ranking.route)}) {
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            ElevatedButton(
+                onClick = { navController.navigate(Route.Ranking.route) },
+                modifier = Modifier.weight(1f)
+            ) {
                 Icon(
                     painter = painterResource(R.drawable.podium),
                     contentDescription = "Rank Photos Icon",
@@ -77,10 +89,12 @@ fun EventScreenView(
             }
         }
 
-        Spacer(modifier = Modifier.height(33.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // This is gonna look ugly. Style later.
-        ElevatedButton(onClick = { navController.navigate(Route.QrInviteView.route) }) {
+        ElevatedButton(
+            onClick = { navController.navigate(Route.QrInviteView.route) },
+            modifier = Modifier.fillMaxWidth(0.6f)
+        ) {
             Icon(
                 imageVector = Icons.Filled.QrCode,
                 contentDescription = "QR or Link Invite",
@@ -88,6 +102,8 @@ fun EventScreenView(
             )
             Text("QR or Link Invite")
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         if (images.isEmpty()) {
             Box(
