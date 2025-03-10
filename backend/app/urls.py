@@ -56,10 +56,6 @@ urlpatterns = [
     path('event/<str:event_id>/users/', views.EventUserViewSet.as_view({'get': 'retrieve'}), name='Event Users'),
     path('event/<str:event_id>/user/<str:user_id>/', views.remove_event_user, name='Remove Event User'),
 
-    # event invite
-    path('event/<uuid:event_id>/invite/link/', views.generate_invite_link, name='generate_invite_link'),
-    path('event/<str:event_id>/invite/user/', views.invite_to_event, name='Invite User(s) to Event'),
-    path('event/invite/link/decode/<str:invite_link>/', views.resolve_invite_link, name='resolve_invite_link'),
 
     path('user/<str:user_id>/events/', views.list_users_events, name='List Users Events'),
     path('user/<str:user_id>/events/<event_id>/', views.user_delete_event, name='Delete User\'s own Album'),
