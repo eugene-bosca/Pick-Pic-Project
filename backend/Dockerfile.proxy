@@ -15,4 +15,4 @@ RUN chmod +x /app/cloud_sql_proxy
 # Expose port
 EXPOSE 3306
 
-CMD ["sh", "-c", "/app/cloud_sql_proxy", "--address=0.0.0.0", "--credentials-file=/app/$GOOGLE_APPLICATION_CREDENTIALS", "$DB_CONNECTION_NAME"]
+CMD ["sh", "-c", "/app/cloud_sql_proxy --address=0.0.0.0 --credentials-file=/app/$GOOGLE_APPLICATION_CREDENTIALS $DB_CONNECTION_NAME"]

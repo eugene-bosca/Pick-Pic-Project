@@ -4,7 +4,7 @@ from .serializers import UserSerializer, UserSettingsSerializer, EventSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 import base64
 
 from .models import User
@@ -78,7 +78,7 @@ class EventContentViewSet(viewsets.ModelViewSet):
         queryset = self.queryset.filter(event_id=event_id)
 
         if not queryset.exists():
-            return Response(data={[]}, status=status.HTTP_200_OK)
+            return Response(data=[], status=status.HTTP_200_OK)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
@@ -90,6 +90,11 @@ class ScoredByViewSet(viewsets.ModelViewSet):
 
 # Secret key for JWT
 SECRET_KEY = settings.SECRET_KEY  # Use Django's secret key
+
+@api_view(['GET'])
+def event_info(request: Request, event_id):
+    event = Event.objects.get(event_id=event_id)
+    return Response(data=EventSerializer(event).data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def authenticate(request: Request):
@@ -234,7 +239,6 @@ def user_pfp(request: Request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    
 @api_view(['GET'])
 def event_image_count(request: Request, event_id):
     try:
@@ -263,6 +267,17 @@ def list_users_events(request: Request, user_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
  
+@extend_schema(
+    request=EventSerializer,
+    responses={201: EventSerializer, 404: {"error": "user not found"}},
+    examples=[
+        OpenApiExample(
+            name="Create Event Example",
+            value={"user_id": 1, "event_name": "Django Meetup"},
+            request_only=True,
+        ),
+    ],
+)
 @api_view(['POST'])
 def create_new_event(request: Request):
 
@@ -270,14 +285,12 @@ def create_new_event(request: Request):
     event_name = request.data.get('event_name')
 
     event_owner = User.objects.get(user_id=user_id)
-    try:
-        event = Event.objects.create(event_name=event_name, owner=event_owner)
 
-        EventUser.objects.create(event_id=event.event_id, user_id=user_id)
+    event = Event.objects.create(event_name=event_name, owner=event_owner)
 
-        return Response(status=status.HTTP_201_CREATED, data=EventSerializer(event).data)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    EventUser.objects.create(event_id=event.event_id, user_id=user_id)
+
+    return Response(status=status.HTTP_201_CREATED, data=EventSerializer(event).data)
 
 
 @api_view(['GET'])
@@ -441,6 +454,33 @@ def get_pending_events(request, user_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['GET'])
+def event_last_modified(request, event_id):
+    event = Event.objects.filter(event_id=event_id)
+    if not event.exists():
+        return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"user not found" })
+    return Response(data={"last_modified": Event.objects.get(event_id=event_id).last_modified.strftime("%d/%m/%Y, %H:%M:%S") },
+                    status=status.HTTP_200_OK)
+
+@api_view(['DELETE'])
+def user_delete_event(request, user_id, event_id):
+    try:
+        event = Event.objects.get(event_id=event_id, user_id=user_id)
+        event.delete()
+        return Response(status=status.HTTP_202_ACCEPTED)
+    except Event.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"user does not own this event" })
+
+@api_view(['DELETE'])
+def remove_user_from_event(request, event_id, user_id):
+    try:
+        event_user = EventUser.objects.get(event_id=event_id, user_id=user_id)
+        event_user.delete()
+        return Response(status=status.HTTP_202_ACCEPTED)
+    except EventUser.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event does not exist or user is not part of this event" })
+
+
 @api_view(['POST'])
 def invite_to_event(request, event_id):
     """
@@ -453,20 +493,20 @@ def invite_to_event(request, event_id):
     try:
         # Get the event
         event = Event.objects.get(event_id=event_id)
-        
+
         # Check if the request has multiple user_ids or a single user_id
         user_ids = request.data.get('user_id', [])
 
-        if isinstance(user_ids, dict): 
+        if isinstance(user_ids, dict):
             user_ids = []
-        elif isinstance(user_ids, str): 
+        elif isinstance(user_ids, str):
             user_ids = [user_ids]
-        elif not isinstance(user_ids, list): 
+        elif not isinstance(user_ids, list):
             user_ids = []
 
         if not user_ids:
             return Response({'error': 'No user_ids provided'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         invited_users = []
 
         for user_id in user_ids:
@@ -477,15 +517,15 @@ def invite_to_event(request, event_id):
                     user_id=user_id,
                     defaults={'accepted': False}
                 )
-            
+
             if created:
                 invited_users.append(user_id)
-        
+
         return Response({
             'message': f'Successfully invited {len(invited_users)} users',
             'invited_users': UserSerializer(invited_users).data
         }, status=status.HTTP_201_CREATED)
-        
+
     except Event.DoesNotExist:
         return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
@@ -500,21 +540,21 @@ def generate_invite_link(request, event_id):
     try:
         # Get the event to make sure it exists and to get the obfuscated ID
         event = Event.objects.get(event_id=event_id)
-        
+
         # Create invite link using the obfuscated event ID
         base_url = settings.INVITE_BASE_URL if hasattr(settings, 'INVITE_BASE_URL') else request.build_absolute_uri('/join/')
         invite_link = f"{base_url.rstrip('/')}/{event.obfuscated_event_id}"
-        
+
         return Response({
             'invite_link': invite_link,
             'obfuscated_event_id': str(event.obfuscated_event_id)
         }, status=status.HTTP_200_OK)
-        
+
     except Event.DoesNotExist:
         return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
 # Join event via link/QR code
 @api_view(['GET', 'POST'])
 def join_via_link(request, obfuscated_event_id):
@@ -526,36 +566,36 @@ def join_via_link(request, obfuscated_event_id):
     try:
         # Find the event using the obfuscated ID
         event = Event.objects.get(obfuscated_event_id=obfuscated_event_id)
-        
+
         if request.method == 'GET':
             # Return event details
             serializer = EventSerializer(event)
             return Response(serializer.data, status=status.HTTP_200_OK)
-            
+
         elif request.method == 'POST':
             # Get the user from the request
             user_id = request.data.get('user_id')
             if not user_id:
                 return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             # Check if the user already has a relation with this event
             event_user, created = EventUser.objects.get_or_create(
                 event_id=event.event_id,
                 user_id=user_id,
                 defaults={'accepted': True}  # Auto-accept when joining via link
             )
-            
+
             if not created:
                 # Update the existing record to accepted if needed
                 if not event_user.accepted:
                     event_user.accepted = True
                     event_user.save()
-            
+
             return Response({
                 'message': 'Successfully joined the event',
                 'event': EventSerializer(event).data
             }, status=status.HTTP_200_OK)
-            
+
     except Event.DoesNotExist:
         return Response({'error': 'Invalid invite link'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
@@ -572,24 +612,24 @@ def handle_invitation(request, event_id, action):
         user_id = request.data.get('user_id')
         if not user_id:
             return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Get the event user record
         event_user = EventUser.objects.get(event_id=event_id, user_id=user_id)
-        
+
         if action == 'accept':
             # Accept the invitation
             event_user.accepted = True
             event_user.save()
             return Response({'message': 'Invitation accepted'}, status=status.HTTP_200_OK)
-            
+
         elif action == 'decline':
             # Decline by removing the record
             event_user.delete()
             return Response({'message': 'Invitation declined'}, status=status.HTTP_200_OK)
-            
+
         else:
             return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
     except EventUser.DoesNotExist:
         return Response({'error': 'User was not invited to event'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
@@ -607,7 +647,7 @@ def get_pending_event_invitations(request, user_id):
             user_id=user_id,
             accepted=False
         )
-        
+
         # Prepare the response data
         events_data = []
         for invitation in pending_invitations:
@@ -615,8 +655,8 @@ def get_pending_event_invitations(request, user_id):
             # Add owner - for something like "Luda has invited you to his event awesome cookies photos"
             event_data['owner_name'] = invitation.event.owner.display_name
             events_data.append(event_data)
-        
+
         return Response(events_data, status=status.HTTP_200_OK)
-        
+
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

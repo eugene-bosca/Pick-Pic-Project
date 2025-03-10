@@ -5,5 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Image(
     val image_id: String = "",
-    val file_name: String = ""
+    val file_name: String = "",
+    val score: Long = 0
 )

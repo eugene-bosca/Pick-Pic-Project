@@ -21,6 +21,7 @@ class Event(models.Model):
     obfuscated_event_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, null=True)
     event_name = models.CharField(max_length=255)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    last_modified = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         if not self.obfuscated_event_id:  # Only generate if it's a new event
