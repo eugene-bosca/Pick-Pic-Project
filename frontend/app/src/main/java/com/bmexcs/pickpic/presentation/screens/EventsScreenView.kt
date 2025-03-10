@@ -75,18 +75,19 @@ fun EventScreenView(
                 )
                 Text("Rank Photos")
             }
-            // This is gonna look ugly. Style later.
-            ElevatedButton(onClick = { navController.navigate(Route.QrInviteView.route) }) {
-                Icon(
-                    imageVector = Icons.Filled.QrCode,
-                    contentDescription = "QR or Link Invite",
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text("QR or Link Invite")
-            }
         }
 
         Spacer(modifier = Modifier.height(33.dp))
+
+        // This is gonna look ugly. Style later.
+        ElevatedButton(onClick = { navController.navigate(Route.QrInviteView.route) }) {
+            Icon(
+                imageVector = Icons.Filled.QrCode,
+                contentDescription = "QR or Link Invite",
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text("QR or Link Invite")
+        }
 
         if (images.isEmpty()) {
             Box(
