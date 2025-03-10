@@ -32,7 +32,6 @@ fun QrInviteView(
     viewModel: QrInviteViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val inviteState by viewModel.inviteState.collectAsState()
 
     val eventId = navController.currentBackStackEntry?.arguments?.getString("eventId") ?: ""

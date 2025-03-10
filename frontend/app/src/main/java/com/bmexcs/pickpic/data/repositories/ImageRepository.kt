@@ -1,7 +1,5 @@
 package com.bmexcs.pickpic.data.repositories
 
-import com.bmexcs.pickpic.data.models.EventContent
-import com.bmexcs.pickpic.data.models.EventPicture
 import com.bmexcs.pickpic.data.sources.ImageDataSource
 import javax.inject.Inject
 import javax.inject.Singleton

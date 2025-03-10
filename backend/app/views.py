@@ -4,7 +4,7 @@ from .serializers import UserSerializer, UserSettingsSerializer, EventSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 import base64
 
 from .models import User
@@ -78,7 +78,7 @@ class EventContentViewSet(viewsets.ModelViewSet):
         queryset = self.queryset.filter(event_id=event_id)
 
         if not queryset.exists():
-            return Response(data={[]}, status=status.HTTP_200_OK)
+            return Response(data=[], status=status.HTTP_200_OK)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
@@ -90,6 +90,11 @@ class ScoredByViewSet(viewsets.ModelViewSet):
 
 # Secret key for JWT
 SECRET_KEY = settings.SECRET_KEY  # Use Django's secret key
+
+@api_view(['GET'])
+def event_info(request: Request, event_id):
+    event = Event.objects.get(event_id=event_id)
+    return Response(data=EventSerializer(event).data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def authenticate(request: Request):
@@ -234,7 +239,6 @@ def user_pfp(request: Request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    
 @api_view(['GET'])
 def event_image_count(request: Request, event_id):
     try:
@@ -263,6 +267,17 @@ def list_users_events(request: Request, user_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
  
+@extend_schema(
+    request=EventSerializer,
+    responses={201: EventSerializer, 404: {"error": "user not found"}},
+    examples=[
+        OpenApiExample(
+            name="Create Event Example",
+            value={"user_id": 1, "event_name": "Django Meetup"},
+            request_only=True,
+        ),
+    ],
+)
 @api_view(['POST'])
 def create_new_event(request: Request):
 
@@ -270,14 +285,12 @@ def create_new_event(request: Request):
     event_name = request.data.get('event_name')
 
     event_owner = User.objects.get(user_id=user_id)
-    try:
-        event = Event.objects.create(event_name=event_name, owner=event_owner)
+    
+    event = Event.objects.create(event_name=event_name, owner=event_owner)
 
-        EventUser.objects.create(event_id=event.event_id, user_id=user_id)
+    EventUser.objects.create(event_id=event.event_id, user_id=user_id)
 
-        return Response(status=status.HTTP_201_CREATED, data=EventSerializer(event).data)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(status=status.HTTP_201_CREATED, data=EventSerializer(event).data)
 
 @api_view(['POST'])
 def invite_to_event(request: Request):
@@ -514,3 +527,29 @@ def get_pending_events(request, user_id):
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+def event_last_modified(request, event_id):
+    event = Event.objects.filter(event_id=event_id)
+    if not event.exists():
+        return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"user not found" })
+    return Response(data={"last_modified": Event.objects.get(event_id=event_id).last_modified.strftime("%d/%m/%Y, %H:%M:%S") }, 
+                    status=status.HTTP_200_OK)
+
+@api_view(['DELETE'])
+def user_delete_event(request, user_id, event_id):
+    try:
+        event = Event.objects.get(event_id=event_id, user_id=user_id)
+        event.delete()
+        return Response(status=status.HTTP_202_ACCEPTED)
+    except Event.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"user does not own this event" })
+    
+@api_view(['DELETE'])
+def remove_user_from_event(request, event_id, user_id):
+    try:
+        event_user = EventUser.objects.get(event_id=event_id, user_id=user_id)
+        event_user.delete()
+        return Response(status=status.HTTP_202_ACCEPTED)
+    except EventUser.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event does not exist or user is not part of this event" })

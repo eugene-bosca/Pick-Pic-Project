@@ -69,3 +69,6 @@ Both the database and the Django REST Service are containerized through Docker c
 ### Package management
 * python pip is used to manage all packages used, all packages that are required are detailed in requirements.txt
 * to install all packages through pip, run `pip install -r requirements`
+
+### Manually create explicit Swagger API Schema
+* `python manage.py spectacular --file schema.yml`

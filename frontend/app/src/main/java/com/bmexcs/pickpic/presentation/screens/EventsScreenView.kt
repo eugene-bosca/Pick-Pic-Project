@@ -36,8 +36,6 @@ fun EventScreenView(
     navController: NavHostController,
     viewModel: EventsViewModel = hiltViewModel(),
 ) {
-
-    viewModel.initializeEventsScreenView()
     val images by viewModel.images.collectAsState()
     val context = LocalContext.current
 
@@ -48,7 +46,7 @@ fun EventScreenView(
             // Use the context and uri to convert the image to byte array
             val byteArray = viewModel.uriToByteArray(context, uri)
             if(byteArray != null) {
-                viewModel.addImageByEvent(byteArray)
+                viewModel.addImage(byteArray)
             }
         }
     }
@@ -57,8 +55,7 @@ fun EventScreenView(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
     ){
-        Row(
-        ) {
+        Row {
             ElevatedButton(
                 modifier = Modifier.padding(horizontal = 20.dp),
                 onClick = {launcher.launch("image/*")},
@@ -90,48 +87,40 @@ fun EventScreenView(
         }
 
         Spacer(modifier = Modifier.height(33.dp))
-            if (images.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp), // Space between images
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(images) { stream ->
-                        Log.d("Stream", stream.contentToString())
-                        ElevatedCard (
-                            modifier = Modifier
-                                .size(width = 150.dp, height = 225.dp)
-                                .border(width = 1.dp, color = Color.Black)
-                        ) {
 
-                            if(stream != null) {
-                                val bitmap = BitmapFactory.decodeByteArray(stream, 0, stream.size)
+        if (images.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(images) { stream ->
+                    Log.d("Stream", stream.contentToString())
+                    ElevatedCard (
+                        modifier = Modifier
+                            .size(width = 150.dp, height = 225.dp)
+                            .border(width = 1.dp, color = Color.Black)
+                    ) {
 
-                                if(bitmap != null) {
-                                    Image(
-                                        bitmap = bitmap.asImageBitmap(),
-                                        contentDescription = "Event image",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(all = 15.dp)
-                                            .padding(bottom = 20.dp)
-                                            .border(width = 1.dp, color = Color.Black)
-                                    )
-                                }
-                            } else {
-                                Box(
+                        if(stream != null) {
+                            val bitmap = BitmapFactory.decodeByteArray(stream, 0, stream.size)
+
+                            if(bitmap != null) {
+                                Image(
+                                    bitmap = bitmap.asImageBitmap(),
+                                    contentDescription = "Event image",
+                                    contentScale = ContentScale.Crop,
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .padding(all = 15.dp)
@@ -139,10 +128,18 @@ fun EventScreenView(
                                         .border(width = 1.dp, color = Color.Black)
                                 )
                             }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(all = 15.dp)
+                                    .padding(bottom = 20.dp)
+                                    .border(width = 1.dp, color = Color.Black)
+                            )
                         }
                     }
                 }
             }
         }
     }
-
+}

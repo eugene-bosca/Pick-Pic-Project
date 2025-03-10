@@ -1,10 +1,22 @@
 from django.conf import settings
 from django.http import JsonResponse
+from django.core.exceptions import ValidationError, PermissionDenied
+from django.db import IntegrityError
 
 from firebase_admin import auth
 import jwt
 
 SECRET_KEY = settings.SECRET_KEY  # Use Django's secret key
+
+class ExceptionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
+    
+    def process_exception(self, request, exception):
+        return JsonResponse({"error": "Internal server error", "details": str(exception)}, status=500)
 
 class AuthMiddleware:
     def __init__(self, get_response):
