@@ -48,7 +48,6 @@ class EventsViewModel @Inject constructor(
                 imageBitmapList.add(byteArray)
             }
 
-
             _images.value = imageBitmapList
         }
     }
@@ -56,7 +55,9 @@ class EventsViewModel @Inject constructor(
     fun addImage(imageByte: ByteArray) {
         viewModelScope.launch(Dispatchers.IO) {
             imageRepository.addImageBinary(event.value.event_id, imageByte)
-        }
+        }.invokeOnCompletion({
+            getImagesByEventId(event.value.event_id)
+        })
     }
 
     fun deleteImage(eventId: String, imageId: String) {
