@@ -29,7 +29,6 @@ import com.bmexcs.pickpic.presentation.viewmodels.HomePageViewModel
 fun HomePageScreenView(
     navController: NavHostController,
     viewModel: HomePageViewModel = hiltViewModel(),
-    eventsViewModel: EventsViewModel = hiltViewModel(),
 ) {
     val events by viewModel.events.collectAsState()
 
@@ -76,7 +75,7 @@ fun HomePageScreenView(
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
                 items(events) { eventItem: EventInfo ->
-                    EventListing(eventsViewModel, eventItem, navController)
+                    EventListing(viewModel, eventItem, navController)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
@@ -122,13 +121,13 @@ fun CreateEventButton(navController: NavHostController) {
 
 @Composable
 fun EventListing(
-    eventsViewModel: EventsViewModel,
+    viewModel: HomePageViewModel,
     eventItem: EventInfo,
     navController: NavHostController
 ) {
     ElevatedButton(
         onClick = {
-            eventsViewModel.setEvent(EventInfo(event_id = eventItem.event_id, event_name = eventItem.event_name))
+            viewModel.setEvent(eventItem)
             navController.navigate(Route.Event.route)
         },
         shape = RoundedCornerShape(16.dp),

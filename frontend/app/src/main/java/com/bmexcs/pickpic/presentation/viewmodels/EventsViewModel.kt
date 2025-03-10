@@ -29,23 +29,15 @@ class EventsViewModel @Inject constructor(
     private val _images = MutableStateFlow<List<ByteArray?>>(emptyList())
     val images: StateFlow<List<ByteArray?>> = _images
 
-    private val _eventInfo = MutableStateFlow<EventInfo>(EventInfo())
+    private val _eventInfo = MutableStateFlow(EventInfo())
     val event = _eventInfo
 
-    fun setEvent(eventInfo: EventInfo) {
-        eventRepository.event.value = eventInfo
-    }
-
-    fun getEventFromRepository () {
+    init {
         _eventInfo.value = eventRepository.event.value
+        getImagesByEventId(event.value.event_id)
     }
 
-    fun initializeEventsScreenView() {
-        getEventFromRepository()
-        getImageByEventId(event.value.event_id)
-    }
-
-    fun getImageByEventId(eventId: String) {
+    fun getImagesByEventId(eventId: String) {
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
             val images = eventRepository.getImages(eventId)

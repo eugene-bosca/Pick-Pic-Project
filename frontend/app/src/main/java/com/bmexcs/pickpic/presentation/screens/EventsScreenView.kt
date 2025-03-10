@@ -32,7 +32,6 @@ fun EventScreenView(
     navController: NavHostController,
     viewModel: EventsViewModel = hiltViewModel(),
 ) {
-    viewModel.initializeEventsScreenView()
     val images by viewModel.images.collectAsState()
     val context = LocalContext.current
 

@@ -30,6 +30,10 @@ class HomePageViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
+    fun setEvent(eventInfo: EventInfo) {
+        eventRepository.event.value = eventInfo
+    }
+
     fun fetchEvents() {
         viewModelScope.launch {
             _isLoading.value = true
