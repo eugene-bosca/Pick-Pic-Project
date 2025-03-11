@@ -159,7 +159,9 @@ def get_delete_image(request: Request, event_id=None, image_id=None):
 
                 filename = Image.objects.get(image_id=image_id).file_name
 
-                EventContent.objects.delete(event_id=event_id, image_id=image_id)
+                event_content = EventContent.objects.get(event_id=event_id, image_id=image_id)
+
+                event_content.delete()
 
                 delete_from_gcs('pick-pic', filename)
 
