@@ -35,10 +35,6 @@ class EventRepository @Inject constructor(
         eventDataSource.declineEvent(eventId)
     }
 
-    suspend fun deleteImage(eventId: String, imageId: String) {
-        eventDataSource.deleteImage(eventId, imageId)
-    }
-
     suspend fun getImages(eventId: String): List<ImageInfo> {
         return eventDataSource.getImageInfo(eventId)
     }

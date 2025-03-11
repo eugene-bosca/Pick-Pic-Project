@@ -16,4 +16,8 @@ class ImageRepository @Inject constructor(
     suspend fun addImageBinary(eventId:String, imageByte: ByteArray) {
         return imageDataSource.addImageBinary(eventId, imageByte)
     }
+
+    suspend fun deleteImage(eventId: String, imageId: String) {
+        imageDataSource.deleteImage(eventId, imageId)
+    }
 }
