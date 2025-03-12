@@ -67,8 +67,9 @@ fun Navigation(
         }
 
         // Event Create Invite Screen
-        composable(Route.QrInviteView.route) {
-            QrInviteView(navController)
+        composable("qrInviteView/{eventId}") { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
+            QrInviteView(navController = navController)
         }
 
         // Create Event Screen

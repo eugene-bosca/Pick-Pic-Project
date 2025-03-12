@@ -91,8 +91,13 @@ fun EventScreenView(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        val eventInfo by viewModel.event.collectAsState()
+        val eventId = eventInfo.event_id // Retrieve the event_id
+
         ElevatedButton(
-            onClick = { navController.navigate(Route.QrInviteView.route) },
+            onClick = {
+                navController.navigate("qrInviteView/$eventId")
+            },
             modifier = Modifier.fillMaxWidth(0.6f)
         ) {
             Icon(
