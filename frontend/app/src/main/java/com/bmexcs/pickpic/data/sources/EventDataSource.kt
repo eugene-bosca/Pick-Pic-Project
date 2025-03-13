@@ -107,9 +107,4 @@ class EventDataSource @Inject constructor(
 
         return eventContentList
     }
-
-    suspend fun deleteImage(eventId: String, imageId: String) {
-        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-        eventApi.deleteImage(eventId, imageId, token)
-    }
 }
