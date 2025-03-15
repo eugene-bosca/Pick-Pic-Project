@@ -87,7 +87,7 @@ fun HomePageScreenView(
 fun JoinEventButton(navController: NavHostController) {
     Button(
         onClick = {
-            navController.navigate(Route.Event.route)
+            navController.navigate(Route.EventInvitation.route)
         }
     ) {
         Icon(
@@ -97,7 +97,7 @@ fun JoinEventButton(navController: NavHostController) {
                 .size(36.dp)
                 .padding(end = 8.dp)
         )
-        Text("Join Event")
+        Text("Invites")
     }
 }
 

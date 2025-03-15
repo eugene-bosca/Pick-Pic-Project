@@ -21,4 +21,8 @@ class UserRepository @Inject constructor(
     suspend fun signOut() {
         authRepository.signOut()
     }
+
+    suspend fun getUserWithEmail(email: String): String {
+        return userDataSource.getUserIdFromEmail(email)
+    }
 }
