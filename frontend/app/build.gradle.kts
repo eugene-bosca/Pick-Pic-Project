@@ -141,8 +141,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest) // Manifest file support for UI tests
 
     implementation("com.google.code.gson:gson:2.10.1") //parse requests
+    implementation("androidx.compose.material:material-icons-extended:1.5.4") // Use your Compose version}
 }
-
 kapt {
     correctErrorTypes = true
 }

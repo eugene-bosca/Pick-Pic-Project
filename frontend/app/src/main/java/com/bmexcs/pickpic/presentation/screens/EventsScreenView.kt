@@ -26,6 +26,10 @@ import coil.request.ImageRequest
 import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.QrCode
+
 
 @Composable
 fun EventScreenView(
@@ -65,7 +69,13 @@ fun EventScreenView(
                 )
                 Text("Add Photos")
             }
-            ElevatedButton(onClick = { navController.navigate(Route.Ranking.route) }) {
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            ElevatedButton(
+                onClick = { navController.navigate(Route.Ranking.route) },
+                modifier = Modifier.weight(1f)
+            ) {
                 Icon(
                     painter = painterResource(R.drawable.podium),
                     contentDescription = "Rank Photos Icon",
@@ -75,7 +85,26 @@ fun EventScreenView(
             }
         }
 
-        Spacer(modifier = Modifier.height(33.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val eventInfo by viewModel.event.collectAsState()
+        val eventId = eventInfo.event_id // Retrieve the event_id
+
+        ElevatedButton(
+            onClick = {
+                navController.navigate("qrInviteView/$eventId")
+            },
+            modifier = Modifier.fillMaxWidth(0.6f)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.QrCode,
+                contentDescription = "QR or Link Invite",
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text("QR or Link Invite")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         if (images.isEmpty()) {
             Box(
