@@ -56,7 +56,9 @@ class EventsViewModel @Inject constructor(
     fun deleteImage(eventId: String, imageId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             imageRepository.deleteImage(eventId, imageId)
-        }
+        }.invokeOnCompletion({
+            getImagesByEventId(event.value.event_id)
+        })
     }
 
     fun uriToByteArray(context: Context, uri: Uri?): ByteArray? {
