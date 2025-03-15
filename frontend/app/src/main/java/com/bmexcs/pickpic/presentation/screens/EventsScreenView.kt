@@ -73,26 +73,9 @@ fun EventScreenView(
                 navController.navigate("invite/$eventId")
             })
 
-            QRInviteButton(onClick = {
+            QRLinkInviteButton(onClick = {
                 navController.navigate("qrInviteView/$eventId")
             })
-        }
-
-        Spacer(modifier = Modifier.height(33.dp))
-
-        ElevatedButton(
-            onClick = {
-                // Navigate to the QR Invite screen with the eventId
-                navController.navigate("qrInviteView/$eventId")
-            },
-            modifier = Modifier.fillMaxWidth(0.6f)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.QrCode,
-                contentDescription = "QR or Link Invite",
-                modifier = Modifier.padding(end = 8.dp)
-            )
-            Text("QR or Link Invite")
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -165,7 +148,7 @@ fun AddPhotosButton(onClick: () -> Unit) {
     ) {
         Icon(
             painter = painterResource(R.drawable.add_circle_24px),
-            contentDescription = "Rank Photos Icon",
+            contentDescription = "Add Photos",
             modifier = Modifier.padding(end = 8.dp)
         )
         Text("Add Photos")
@@ -185,11 +168,11 @@ fun RankPhotosButton(onClick: () -> Unit) {
 }
 
 @Composable
-    fun InviteFriendsButton(onClick: () -> Unit) {
+fun InviteFriendsButton(onClick: () -> Unit) {
     Button(onClick) {
         Icon(
             painter = painterResource(R.drawable.podium),
-            contentDescription = "Rank Photos Icon",
+            contentDescription = "Invite Friends",
             modifier = Modifier.padding(end = 8.dp)
         )
         Text("Invite Friends")
@@ -197,7 +180,7 @@ fun RankPhotosButton(onClick: () -> Unit) {
 }
 
 @Composable
-fun QRInviteButton(onClick: () -> Unit) {
+fun QRLinkInviteButton(onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(0.6f)
@@ -207,7 +190,7 @@ fun QRInviteButton(onClick: () -> Unit) {
             contentDescription = "QR or Link Invite",
             modifier = Modifier.padding(end = 8.dp)
         )
-        Text("QR or Link Invite")
+        Text("QR or Link")
     }
 }
 
