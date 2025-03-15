@@ -68,9 +68,32 @@ fun EventScreenView(
         val eventInfo by viewModel.event.collectAsState()
         val eventId = eventInfo.event_id // Retrieve the event_id
 
-        InviteButton(onClick = {
-            navController.navigate("qrInviteView/$eventId")
-        })
+        Row {
+            InviteFriendsButton(onClick = {
+                navController.navigate("invite/$eventId")
+            })
+
+            QRInviteButton(onClick = {
+                navController.navigate("qrInviteView/$eventId")
+            })
+        }
+
+        Spacer(modifier = Modifier.height(33.dp))
+
+        ElevatedButton(
+            onClick = {
+                // Navigate to the QR Invite screen with the eventId
+                navController.navigate("qrInviteView/$eventId")
+            },
+            modifier = Modifier.fillMaxWidth(0.6f)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.QrCode,
+                contentDescription = "QR or Link Invite",
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text("QR or Link Invite")
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -162,7 +185,19 @@ fun RankPhotosButton(onClick: () -> Unit) {
 }
 
 @Composable
-fun InviteButton(onClick: () -> Unit) {
+    fun InviteFriendsButton(onClick: () -> Unit) {
+    Button(onClick) {
+        Icon(
+            painter = painterResource(R.drawable.podium),
+            contentDescription = "Rank Photos Icon",
+            modifier = Modifier.padding(end = 8.dp)
+        )
+        Text("Invite Friends")
+    }
+}
+
+@Composable
+fun QRInviteButton(onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(0.6f)

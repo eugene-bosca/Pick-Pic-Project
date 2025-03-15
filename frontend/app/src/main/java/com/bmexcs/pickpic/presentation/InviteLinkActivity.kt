@@ -1,14 +1,9 @@
-// InviteActivity.kt
-package pickpic.presentation
+package com.bmexcs.pickpic.presentation;
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.bmexcs.pickpic.presentation.MainActivity
-
-/// HELLO THIS IS INCOMPLETE
 
 class InviteLinkActivity : AppCompatActivity() {
 

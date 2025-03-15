@@ -26,8 +26,15 @@ import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import java.util.Hashtable
 import android.util.Log
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QrInviteView(
     navController: NavHostController,
@@ -42,84 +49,86 @@ fun QrInviteView(
         viewModel.fetchInviteDetails(eventId)
     }
 
-    when (inviteState) {
-        is QrInviteViewModel.InviteState.Loading -> {
-            Text("Loading...")
-        }
-        is QrInviteViewModel.InviteState.Success -> {
-            val successState = inviteState as QrInviteViewModel.InviteState.Success
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                successState.eventName?.let { name ->
-                    Text(
-                        text = "Invite your friends to join $name!",
-                        fontSize = 24.sp,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                }
-
-                successState.qrCodeBitmap?.let { bitmap ->
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = "QR Code",
-                        modifier = Modifier.size(256.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                successState.inviteLink?.let { link ->
-                    Text(
-                        text = link,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        textAlign = TextAlign.Center,
-                        fontSize = 16.sp
-                    )
-                }
-
-                Button(onClick = {
-                    successState.inviteLink?.let { link ->
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("Invite Link", link)
-                        clipboard.setPrimaryClip(clip)
-                        android.widget.Toast.makeText(context, "Link copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Invite Friends") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
                     }
-                }) {
-                    Text("Copy Link")
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            when (inviteState) {
+                is QrInviteViewModel.InviteState.Loading -> {
+                    Text("Loading...")
+                }
+                is QrInviteViewModel.InviteState.Success -> {
+                    val successState = inviteState as QrInviteViewModel.InviteState.Success
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        successState.eventName?.let { name ->
+                            Text(
+                                text = "Invite your friends to join $name!",
+                                fontSize = 24.sp,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+                        }
+
+                        successState.qrCodeBitmap?.let { bitmap ->
+                            Image(
+                                bitmap = bitmap.asImageBitmap(),
+                                contentDescription = "QR Code",
+                                modifier = Modifier.size(256.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        successState.inviteLink?.let { link ->
+                            Text(
+                                text = link,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 16.dp),
+                                textAlign = TextAlign.Center,
+                                fontSize = 16.sp
+                            )
+                        }
+
+                        Button(onClick = {
+                            successState.inviteLink?.let { link ->
+                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                val clip = ClipData.newPlainText("Invite Link", link)
+                                clipboard.setPrimaryClip(clip)
+                                android.widget.Toast.makeText(context, "Link copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }) {
+                            Text("Copy Link")
+                        }
+                    }
+                }
+                is QrInviteViewModel.InviteState.Error -> {
+                    val errorState = inviteState as QrInviteViewModel.InviteState.Error
+                    Text("Error: ${errorState.errorMessage}")
                 }
             }
         }
-        is QrInviteViewModel.InviteState.Error -> {
-            val errorState = inviteState as QrInviteViewModel.InviteState.Error
-            Text("Error: ${errorState.errorMessage}")
-        }
-    }
-}
-
-fun generateQRCode(data: String, width: Int, height: Int): Bitmap? {
-    return try {
-        val hints = Hashtable<EncodeHintType, Any>()
-        hints[EncodeHintType.CHARACTER_SET] = "UTF-8"
-        hints[EncodeHintType.ERROR_CORRECTION] = ErrorCorrectionLevel.H
-
-        val bitMatrix = QRCodeWriter().encode(data, BarcodeFormat.QR_CODE, width, height, hints)
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
-
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
-            }
-        }
-        bitmap
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
     }
 }
