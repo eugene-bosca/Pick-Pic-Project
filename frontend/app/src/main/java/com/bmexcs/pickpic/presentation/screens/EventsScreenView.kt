@@ -75,6 +75,17 @@ fun EventScreenView(
             }
         }
 
+        Row{
+            ElevatedButton(onClick = { navController.navigate(Route.Invite.route) }) {
+                Icon(
+                    painter = painterResource(R.drawable.podium),
+                    contentDescription = "Rank Photos Icon",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("Invite Friends")
+            }
+        }
+
         Spacer(modifier = Modifier.height(33.dp))
 
         if (images.isEmpty()) {
