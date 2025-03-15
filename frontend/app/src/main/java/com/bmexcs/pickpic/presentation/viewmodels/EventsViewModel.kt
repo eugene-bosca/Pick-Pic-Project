@@ -15,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -69,6 +70,9 @@ class EventsViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             imageRepository.deleteImage(eventId, imageId)
         }
+
+        val updatedImages = images.value.filterNot { it.key == imageId }
+        _images.value = updatedImages;
     }
 
     fun uriToByteArray(context: Context, uri: Uri?): ByteArray? {

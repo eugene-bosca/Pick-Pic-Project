@@ -36,6 +36,21 @@ fun EventScreenView(
     val context = LocalContext.current
 
     val expandedState = remember { mutableStateOf(mutableMapOf<Int, Boolean>()) }
+    val expandFilter = remember { mutableStateOf( false ) }
+
+    // Pagination state
+    val pageSize = 10
+    var currentPage by remember { mutableStateOf(0) }
+
+    val totalPages = if (images.size % pageSize == 0) {
+        images.size / pageSize
+    } else {
+        images.size / pageSize + 1
+    }
+
+    val imagesToDisplay = images
+        .drop(currentPage * pageSize) // Skip images for previous pages
+        .take(pageSize) // Take only `pageSize` images for the current page
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -53,7 +68,13 @@ fun EventScreenView(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
     ) {
-        Row {
+        // Row for buttons (Add Photos, Rank Photos)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             ElevatedButton(
                 modifier = Modifier.padding(horizontal = 20.dp),
                 onClick = { launcher.launch("image/*") },
@@ -75,7 +96,48 @@ fun EventScreenView(
             }
         }
 
-        Spacer(modifier = Modifier.height(33.dp))
+        Box(
+            modifier = Modifier
+                .padding(start = 300.dp)
+        ) {
+            IconButton(
+                onClick = {
+                    expandFilter.value = !expandFilter.value
+                },
+                modifier = Modifier
+                    .width(100.dp)
+            ) {
+                Text("Filter")
+                Icon(
+                    painterResource(id = R.drawable.filter),
+                    contentDescription = "More options",
+                    modifier = Modifier
+                        .padding(start=65.dp)
+                        .size(20.dp)
+                )
+            }
+            DropdownMenu(
+                expanded = expandFilter.value,
+                onDismissRequest = {
+                    expandFilter.value = !expandFilter.value
+                }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Date") },
+                    onClick = {
+                        viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                        expandFilter.value = !expandFilter.value
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Score") },
+                    onClick = {
+                        viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                        expandFilter.value = !expandFilter.value
+                    }
+                )
+            }
+        }
 
         if (images.isEmpty()) {
             Box(
@@ -87,20 +149,22 @@ fun EventScreenView(
                 CircularProgressIndicator()
             }
         } else {
+            // LazyVerticalGrid that takes all available space above the pagination controls
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f), // This ensures the grid takes up available space
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                itemsIndexed(images) { index, (image_id, stream) ->
+                itemsIndexed(imagesToDisplay) { index, (image_id, stream) ->
                     ElevatedCard(
                         modifier = Modifier
                             .size(width = 150.dp, height = 225.dp)
                             .border(width = 1.dp, color = Color.Black)
                     ) {
-
                         if (stream != null) {
                             val imageRequest = ImageRequest.Builder(context)
                                 .data(stream)  // For loading from a ByteArray or other data source
@@ -174,6 +238,36 @@ fun EventScreenView(
                         }
                     }
                 }
+            }
+        }
+
+        // Pagination controls directly below the grid
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            ElevatedButton(
+                onClick = {
+                    if (currentPage > 0) {
+                        currentPage -= 1
+                    }
+                },
+                enabled = currentPage > 0
+            ) {
+                Text("Previous")
+            }
+
+            ElevatedButton(
+                onClick = {
+                    if (currentPage < totalPages - 1) {
+                        currentPage += 1
+                    }
+                },
+                enabled = currentPage < totalPages - 1
+            ) {
+                Text("Next")
             }
         }
     }
