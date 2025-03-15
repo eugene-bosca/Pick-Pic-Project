@@ -36,6 +36,7 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "getUserEventsPending for $userId")
 
+        // Make sure this matches the Django endpoint: 'user/<str:user_id>/pending_events_full/'
         val eventResponse = userApi.getPendingEvents(userId, token)
         return eventResponse
     }
@@ -49,16 +50,21 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "createEvent for ${userDataSource.getUser().user_id}")
 
+        // This should call 'event/create/' endpoint
         val newEvent = eventApi.create(event, token)
         return newEvent
     }
 
-    suspend fun fetchObfuscatedEventId(eventId: String): Pair<String?, String?>  {
+    suspend fun fetchObfuscatedEventId(eventId: String): Pair<String?, String?> {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         return try {
+            // This should call 'event/<uuid:event_id>/invite/link/' endpoint
             val inviteLink = eventApi.generateInviteLink(eventId, token)
-            val obfuscatedId = inviteLink.substringAfterLast("/")
+
+            // Extract the obfuscated ID more carefully based on the format from your backend
+            // Assuming the response contains the full invite link
+            val obfuscatedId = inviteLink.split("/").lastOrNull()
             val eventName = getEventName(eventId)
             Pair(obfuscatedId, eventName)
         } catch (e: Exception) {
@@ -72,6 +78,7 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "getEvent for $eventId")
 
+        // This should call 'event/<str:event_id>/' endpoint
         return eventApi.getInfo(eventId, token).event_name
     }
 
@@ -81,6 +88,8 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "accept for $eventId")
 
+        // This should map to 'event/<str:event_id>/invite/<str:invite_link>/accept/' endpoint
+        // You might need to modify this to include the invite link parameter
         val eventResponse = eventApi.acceptInvite(eventId, userId, token)
         return eventResponse
     }
@@ -91,6 +100,8 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "declineEvent for $eventId")
 
+        // This should map to 'event/<str:event_id>/invite/<str:invite_link>/decline/' endpoint
+        // You might need to modify this to include the invite link parameter
         val eventResponse = eventApi.declineInvite(eventId, userId, token)
         return eventResponse
     }
@@ -98,6 +109,7 @@ class EventDataSource @Inject constructor(
     suspend fun getImageInfo(eventId: String): List<ImageInfo> {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
+        // This should call 'event/<str:event_id>/content/' endpoint
         val eventContentList = try {
             val response = eventApi.getImageInfo(eventId, token)
             response.toMutableList()
@@ -110,6 +122,8 @@ class EventDataSource @Inject constructor(
 
     suspend fun deleteImage(eventId: String, imageId: String) {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        // This should call 'event/<str:event_id>/image/<str:image_id>/' with DELETE method
         eventApi.deleteImage(eventId, imageId, token)
     }
 }

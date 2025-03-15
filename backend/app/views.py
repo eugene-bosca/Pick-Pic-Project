@@ -538,18 +538,23 @@ def generate_invite_link(request, event_id):
     Generate a shareable invite link using the event's obfuscated ID.
     """
     try:
-        # Get the event to make sure it exists and to get the obfuscated ID
+        # Get the event to make sure it exists
         event = Event.objects.get(event_id=event_id)
-
+        
+        # Ensure obfuscated_event_id exists
+        if not event.obfuscated_event_id:
+            # Generate a new UUID for the obfuscated ID
+            event.obfuscated_event_id = uuid.uuid4()
+            event.save()
+        
         # Create invite link using the obfuscated event ID
         base_url = settings.INVITE_BASE_URL if hasattr(settings, 'INVITE_BASE_URL') else request.build_absolute_uri('/join/')
         invite_link = f"{base_url.rstrip('/')}/{event.obfuscated_event_id}"
-
+        
         return Response({
             'invite_link': invite_link,
             'obfuscated_event_id': str(event.obfuscated_event_id)
         }, status=status.HTTP_200_OK)
-
     except Event.DoesNotExist:
         return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:

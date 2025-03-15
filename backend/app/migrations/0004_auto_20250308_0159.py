@@ -12,7 +12,7 @@ def gen_uuid(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('app', '0003_event_obfuscated_event_id copy 2'),
+        ('app', '0003_event_last_modified'),
     ]
 
     operations = [
