@@ -285,24 +285,13 @@ def create_new_event(request: Request):
     event_name = request.data.get('event_name')
 
     event_owner = User.objects.get(user_id=user_id)
-    
+
     event = Event.objects.create(event_name=event_name, owner=event_owner)
 
     EventUser.objects.create(event_id=event.event_id, user_id=user_id)
 
     return Response(status=status.HTTP_201_CREATED, data=EventSerializer(event).data)
 
-@api_view(['POST'])
-def invite_to_event(request: Request):
-    try:
-        user_id = request.data.get('user_id')
-        event_id = request.data.get('event_id') 
-
-        eventUser = EventUser.objects.create(event_id=event_id, user_id=user_id)
-
-        return Response(status=status.HTTP_202_ACCEPTED, data=UserSerializer(eventUser).data)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 def get_user_id_by_firebase_id(request: Request, firebase_id):
@@ -317,74 +306,11 @@ def get_user_id_by_firebase_id(request: Request, firebase_id):
         Response: A JSON response containing the user_id or an error message.
     """
 
-    print(firebase_id)
-    print(User.objects.all())
-
     try:
         user = User.objects.get(firebase_id=firebase_id)
         return Response({'user_id': user.user_id}, status=status.HTTP_200_OK) # Convert UUID to string for JSON serialization
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-@api_view(['GET'])
-def generate_invite_link(request, event_id):
-    """
-    Generates an obfuscated invite link for an event.
-
-    Args:
-        request: The HTTP request object.
-        event_id: The ID of the event to generate the link for.
-
-    Returns:
-        Response: A JSON response containing the obfuscated invite link or an error message.
-    """
-    try:
-        # Check if the event exists, to go to except statements
-        event = Event.objects.get(event_id=event_id)
-
-        # Basic obfuscation: base64 encode the event ID
-        encoded_event_id = base64.urlsafe_b64encode(str(event_id).encode()).decode().rstrip('=')
-
-        # Construct the invite link using the base URL and encoded event ID
-        base_url = settings.INVITE_BASE_URL  # Define this in your settings
-        invite_link = f"{base_url}/{encoded_event_id}"
-
-        return Response({'invite_link': invite_link}, status=status.HTTP_200_OK)
-
-    except Event.DoesNotExist:
-        return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@api_view(['GET'])
-def resolve_invite_link(request, encoded_event_id):
-    """
-    Resolves an obfuscated invite link to get the event ID.
-
-    Args:
-        request: The HTTP request object.
-        encoded_event_id: The obfuscated event ID from the invite link.
-
-    Returns:
-        Response: A JSON response containing the event ID or an error message.
-    """
-    try:
-        # Decode the obfuscated event ID
-        padded_encoded_id = encoded_event_id + '=' * (4 - len(encoded_event_id) % 4)
-        decoded_event_id_bytes = base64.urlsafe_b64decode(padded_encoded_id)
-        decoded_event_id = uuid.UUID(decoded_event_id_bytes.decode())
-
-        # Check if the event exists, to go to except statements
-        event = Event.objects.get(event_id=decoded_event_id)
-
-        return Response({'event_id': str(decoded_event_id)}, status=status.HTTP_200_OK)
-
-    except (base64.binascii.Error, ValueError):
-        return Response({'error': 'Invalid invite link'}, status=status.HTTP_400_BAD_REQUEST)
-    except Event.DoesNotExist:
-        return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -527,13 +453,13 @@ def get_pending_events(request, user_id):
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
 @api_view(['GET'])
 def event_last_modified(request, event_id):
     event = Event.objects.filter(event_id=event_id)
     if not event.exists():
         return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"user not found" })
-    return Response(data={"last_modified": Event.objects.get(event_id=event_id).last_modified.strftime("%d/%m/%Y, %H:%M:%S") }, 
+    return Response(data={"last_modified": Event.objects.get(event_id=event_id).last_modified.strftime("%d/%m/%Y, %H:%M:%S") },
                     status=status.HTTP_200_OK)
 
 @api_view(['DELETE'])
@@ -544,7 +470,7 @@ def user_delete_event(request, user_id, event_id):
         return Response(status=status.HTTP_202_ACCEPTED)
     except Event.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"user does not own this event" })
-    
+
 @api_view(['DELETE'])
 def remove_user_from_event(request, event_id, user_id):
     try:
@@ -553,3 +479,189 @@ def remove_user_from_event(request, event_id, user_id):
         return Response(status=status.HTTP_202_ACCEPTED)
     except EventUser.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event does not exist or user is not part of this event" })
+
+
+@api_view(['POST'])
+def invite_to_event(request, event_id):
+    """
+    Invite one or more users to an event (in-app method).
+    Expects a payload with:
+    {
+        "user_id": ["uuid1", "uuid2", ...] or "user_id": "uuid"
+    }
+    """
+    try:
+        # Get the event
+        event = Event.objects.get(event_id=event_id)
+
+        # Check if the request has multiple user_ids or a single user_id
+        user_ids = request.data.get('user_id', [])
+
+        if isinstance(user_ids, dict):
+            user_ids = []
+        elif isinstance(user_ids, str):
+            user_ids = [user_ids]
+        elif not isinstance(user_ids, list):
+            user_ids = []
+
+        if not user_ids:
+            return Response({'error': 'No user_ids provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        invited_users = []
+
+        for user_id in user_ids:
+            if User.objects.filter(user_id=user_id).exists():
+                # Create an EventUser with accepted=False
+                _, created = EventUser.objects.get_or_create(
+                    event_id=event_id,
+                    user_id=user_id,
+                    defaults={'accepted': False}
+                )
+
+            if created:
+                invited_users.append(user_id)
+
+        return Response({
+            'message': f'Successfully invited {len(invited_users)} users',
+            'invited_users': UserSerializer(invited_users).data
+        }, status=status.HTTP_201_CREATED)
+
+    except Event.DoesNotExist:
+        return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# Generate invite link with obfuscated event ID
+@api_view(['GET'])
+def generate_invite_link(request, event_id):
+    """
+    Generate a shareable invite link using the event's obfuscated ID.
+    """
+    try:
+        # Get the event to make sure it exists
+        event = Event.objects.get(event_id=event_id)
+        
+        # Ensure obfuscated_event_id exists
+        if not event.obfuscated_event_id:
+            # Generate a new UUID for the obfuscated ID
+            event.obfuscated_event_id = uuid.uuid4()
+            event.save()
+        
+        # Create invite link using the obfuscated event ID
+        base_url = settings.INVITE_BASE_URL if hasattr(settings, 'INVITE_BASE_URL') else request.build_absolute_uri('/join/')
+        invite_link = f"{base_url.rstrip('/')}/{event.obfuscated_event_id}"
+        
+        return Response({
+            'invite_link': invite_link,
+            'obfuscated_event_id': str(event.obfuscated_event_id)
+        }, status=status.HTTP_200_OK)
+    except Event.DoesNotExist:
+        return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# Join event via link/QR code
+@api_view(['GET', 'POST'])
+def join_via_link(request, obfuscated_event_id):
+    """
+    Handle user joining an event via an invite link with jibberish event ID.
+    GET: Return event details
+    POST: Join the event
+    """
+    try:
+        # Find the event using the obfuscated ID
+        event = Event.objects.get(obfuscated_event_id=obfuscated_event_id)
+
+        if request.method == 'GET':
+            # Return event details
+            serializer = EventSerializer(event)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        elif request.method == 'POST':
+            # Get the user from the request
+            user_id = request.data.get('user_id')
+            if not user_id:
+                return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if the user already has a relation with this event
+            event_user, created = EventUser.objects.get_or_create(
+                event_id=event.event_id,
+                user_id=user_id,
+                defaults={'accepted': True}  # Auto-accept when joining via link
+            )
+
+            if not created:
+                # Update the existing record to accepted if needed
+                if not event_user.accepted:
+                    event_user.accepted = True
+                    event_user.save()
+
+            return Response({
+                'message': 'Successfully joined the event',
+                'event': EventSerializer(event).data
+            }, status=status.HTTP_200_OK)
+
+    except Event.DoesNotExist:
+        return Response({'error': 'Invalid invite link'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# Handle invitation response (accept/decline)
+@api_view(['POST'])
+def handle_invitation(request, event_id, action):
+    """
+    Handle a user accepting or declining an invitation.
+    action can be 'accept' or 'decline'
+    """
+    try:
+        user_id = request.data.get('user_id')
+        if not user_id:
+            return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get the event user record
+        event_user = EventUser.objects.get(event_id=event_id, user_id=user_id)
+
+        if action == 'accept':
+            # Accept the invitation
+            event_user.accepted = True
+            event_user.save()
+            return Response({'message': 'Invitation accepted'}, status=status.HTTP_200_OK)
+
+        elif action == 'decline':
+            # Decline by removing the record
+            event_user.delete()
+            return Response({'message': 'Invitation declined'}, status=status.HTTP_200_OK)
+
+        else:
+            return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
+
+    except EventUser.DoesNotExist:
+        return Response({'error': 'User was not invited to event'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# Get pending event invitations for a user
+@api_view(['GET'])
+def get_pending_event_invitations(request, user_id):
+    """
+    Get all pending event invitations for a user.
+    """
+    try:
+        # Find all events where the user has been invited but not accepted
+        pending_invitations = EventUser.objects.filter(
+            user_id=user_id,
+            accepted=False
+        )
+
+        # Prepare the response data
+        events_data = []
+        for invitation in pending_invitations:
+            event_data = EventSerializer(invitation.event).data
+            # Add owner - for something like "Luda has invited you to his event awesome cookies photos"
+            event_data['owner_name'] = invitation.event.owner.display_name
+            events_data.append(event_data)
+
+        return Response(events_data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

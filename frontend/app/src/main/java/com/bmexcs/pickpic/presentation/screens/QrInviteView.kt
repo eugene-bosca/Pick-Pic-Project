@@ -25,9 +25,11 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import java.util.Hashtable
+import android.util.Log
+
 
 @Composable
-fun EventCreateInviteView(
+fun QrInviteView(
     navController: NavHostController,
     viewModel: QrInviteViewModel = hiltViewModel(),
 ) {
@@ -35,6 +37,7 @@ fun EventCreateInviteView(
     val inviteState by viewModel.inviteState.collectAsState()
 
     val eventId = navController.currentBackStackEntry?.arguments?.getString("eventId") ?: ""
+    Log.d("QrInviteView", "eventId: $eventId")
     LaunchedEffect(eventId) {
         viewModel.fetchInviteDetails(eventId)
     }

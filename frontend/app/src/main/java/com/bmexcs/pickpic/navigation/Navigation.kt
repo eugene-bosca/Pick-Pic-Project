@@ -10,7 +10,7 @@ import com.bmexcs.pickpic.presentation.screens.ProfileScreenView
 import com.bmexcs.pickpic.presentation.screens.RankingScreenView
 import com.bmexcs.pickpic.presentation.screens.SupportScreenView
 import com.bmexcs.pickpic.presentation.screens.AuthScreenView
-import com.bmexcs.pickpic.presentation.screens.EventCreateInviteView
+import com.bmexcs.pickpic.presentation.screens.QrInviteView
 import com.bmexcs.pickpic.presentation.screens.CreateEventScreenView
 import com.bmexcs.pickpic.presentation.screens.EventInvitationScreenView
 import com.bmexcs.pickpic.presentation.screens.InviteScreenView
@@ -68,8 +68,9 @@ fun Navigation(
         }
 
         // Event Create Invite Screen
-        composable(Route.EventCreateInviteView.route) {
-            EventCreateInviteView(navController)
+        composable("qrInviteView/{eventId}") { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
+            QrInviteView(navController = navController)
         }
 
         // Create Event Screen
