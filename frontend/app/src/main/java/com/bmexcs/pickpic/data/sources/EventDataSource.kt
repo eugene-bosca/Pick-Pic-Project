@@ -36,7 +36,6 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "getUserEventsPending for $userId")
 
-        // Make sure this matches the Django endpoint: 'user/<str:user_id>/pending_events_full/'
         val eventResponse = userApi.getPendingEvents(userId, token)
         return eventResponse
     }
@@ -50,7 +49,6 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "createEvent for ${userDataSource.getUser().user_id}")
 
-        // This should call 'event/create/' endpoint
         val newEvent = eventApi.create(event, token)
         return newEvent
     }
@@ -118,12 +116,5 @@ class EventDataSource @Inject constructor(
         }
 
         return eventContentList
-    }
-
-    suspend fun deleteImage(eventId: String, imageId: String) {
-        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
-
-        // This should call 'event/<str:event_id>/image/<str:image_id>/' with DELETE method
-        eventApi.deleteImage(eventId, imageId, token)
     }
 }
