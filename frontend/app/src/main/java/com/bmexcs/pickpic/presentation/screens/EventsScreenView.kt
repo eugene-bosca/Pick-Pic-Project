@@ -85,7 +85,18 @@ fun EventScreenView(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Row{
+            ElevatedButton(onClick = { navController.navigate(Route.Invite.route) }) {
+                Icon(
+                    painter = painterResource(R.drawable.podium),
+                    contentDescription = "Rank Photos Icon",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("Invite Friends")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(33.dp))
 
         val eventInfo by viewModel.event.collectAsState()
         val eventId = eventInfo.event_id // Retrieve the event_id
