@@ -18,6 +18,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 
 private const val TAG = "EventApiService"
 
@@ -281,18 +282,35 @@ class EventApiService {
      *
      * **Response**: Empty or Error
      */
-    suspend fun acceptInvite(eventId: String, inviteLink: String, token: String): Boolean =
+    /**
+     * Accepts the invitation for the specified event.
+     *
+     * **Endpoint**: `POST /event/{event_id}/invitation/accept/`
+     *
+     * **Request Body**: JSON with `user_id`
+     *
+     * **Request Content-Type**: JSON
+     *
+     * **Response**: Empty or Error
+     */
+    suspend fun acceptInvite(eventId: String, token: String, userId: String): Boolean =
         withContext(Dispatchers.IO) {
-            val userId = getUserIdFromToken(token) // You'll need to implement this method
-            val endpoint = "event/$eventId/invite/$inviteLink/accept/"
+            val endpoint = "event/$eventId/invitation/accept/"
             val url = Api.url(endpoint)
 
-            Log.d(TAG, "PUT: $url")
+            Log.d(TAG, "POST: $url")
+
+            // Create a JSON body with the user_id
+            val jsonBody = JSONObject().apply {
+                put("user_id", userId)
+            }.toString()
+
+            val requestBody = jsonBody.toRequestBody("application/json".toMediaType())
 
             val request = Request.Builder()
                 .url(url)
                 .addHeader("Authorization", "Bearer $token")
-                .put(Api.EMPTY_BODY)
+                .post(requestBody)  // Use POST with the request body
                 .build()
 
             try {
@@ -307,27 +325,34 @@ class EventApiService {
         }
 
     /**
-     * Declines the invitation link.
+     * Declines the invitation for the specified event.
      *
-     * **Endpoint**: `DELETE /event/{event_id}/invite/{invite_link}/decline/`
+     * **Endpoint**: `POST /event/{event_id}/invitation/decline/`
      *
-     * **Request Body**: Empty
+     * **Request Body**: JSON with `user_id`
      *
-     * **Request Content-Type**: None
+     * **Request Content-Type**: JSON
      *
-     * **Response**: Empty
+     * **Response**: Empty or Error
      */
-    suspend fun declineInvite(eventId: String, inviteLink: String, token: String): Boolean =
+    suspend fun declineInvite(eventId: String, token: String, userId: String): Boolean =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/invite/$inviteLink/decline/"
+            val endpoint = "event/$eventId/invitation/decline/"
             val url = Api.url(endpoint)
 
-            Log.d(TAG, "DELETE: $url")
+            Log.d(TAG, "POST: $url")
+
+            // Create a JSON body with the user_id
+            val jsonBody = JSONObject().apply {
+                put("user_id", userId)
+            }.toString()
+
+            val requestBody = jsonBody.toRequestBody("application/json".toMediaType())
 
             val request = Request.Builder()
                 .url(url)
                 .addHeader("Authorization", "Bearer $token")
-                .delete()
+                .post(requestBody)  // Use POST with the request body
                 .build()
 
             try {
@@ -340,7 +365,6 @@ class EventApiService {
                 return@withContext false
             }
         }
-
     /**
      * Generates an obfuscated invitation link for the specified event.
      *
@@ -567,15 +591,4 @@ class EventApiService {
                 return@withContext result.event_id
             }
         }
-
-    /**
-     * Helper method to extract user ID from token.
-     * This is a placeholder - you need to implement this based on your token structure.
-     */
-    private fun getUserIdFromToken(token: String): String {
-        // TODO: Implement this method to extract the user ID from the token
-        // This might involve decoding a JWT token or using another mechanism
-        // depending on your authentication implementation
-        return ""
-    }
 }

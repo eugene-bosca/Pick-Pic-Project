@@ -86,10 +86,7 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "accept for $eventId")
 
-        // This should map to 'event/<str:event_id>/invite/<str:invite_link>/accept/' endpoint
-        // You might need to modify this to include the invite link parameter
-        val eventResponse = eventApi.acceptInvite(eventId, userId, token)
-        return eventResponse
+        return eventApi.acceptInvite(eventId, token, userId)
     }
 
     suspend fun declineEvent(eventId: String): Boolean {
@@ -98,10 +95,7 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "declineEvent for $eventId")
 
-        // This should map to 'event/<str:event_id>/invite/<str:invite_link>/decline/' endpoint
-        // You might need to modify this to include the invite link parameter
-        val eventResponse = eventApi.declineInvite(eventId, userId, token)
-        return eventResponse
+        return eventApi.declineInvite(eventId, token, userId)
     }
 
     suspend fun getImageInfo(eventId: String): List<ImageInfo> {
