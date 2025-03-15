@@ -67,12 +67,6 @@ fun Navigation(
             }
         }
 
-        // Event Create Invite Screen
-        composable("qrInviteView/{eventId}") { backStackEntry ->
-            val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
-            QrInviteView(navController = navController)
-        }
-
         // Create Event Screen
         composable(Route.CreateEvent.route) {
             PickPicScaffold("Create Event", navController) {
@@ -80,10 +74,18 @@ fun Navigation(
             }
         }
 
-        composable(Route.Invite.route) {
+        // Invite Screen
+        composable("invite/{eventId}") { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
             PickPicScaffold("Invite Friends", navController) {
-                InviteScreenView(navController)
+                InviteScreenView(navController, eventId) // Pass eventId to InviteScreenView
             }
+        }
+
+        // QR Invite Screen
+        composable("qrInviteView/{eventId}") { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
+            QrInviteView(navController = navController)
         }
     }
 }

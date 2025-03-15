@@ -85,8 +85,17 @@ fun EventScreenView(
             }
         }
 
-        Row{
-            ElevatedButton(onClick = { navController.navigate(Route.Invite.route) }) {
+        // Retrieve the eventId from the ViewModel
+        val eventInfo by viewModel.event.collectAsState()
+        val eventId = eventInfo.event_id
+
+        Row {
+            ElevatedButton(
+                onClick = {
+                    // Navigate to the InviteScreenView with the eventId
+                    navController.navigate("invite/$eventId")
+                }
+            ) {
                 Icon(
                     painter = painterResource(R.drawable.podium),
                     contentDescription = "Rank Photos Icon",
@@ -98,11 +107,9 @@ fun EventScreenView(
 
         Spacer(modifier = Modifier.height(33.dp))
 
-        val eventInfo by viewModel.event.collectAsState()
-        val eventId = eventInfo.event_id // Retrieve the event_id
-
         ElevatedButton(
             onClick = {
+                // Navigate to the QR Invite screen with the eventId
                 navController.navigate("qrInviteView/$eventId")
             },
             modifier = Modifier.fillMaxWidth(0.6f)
@@ -140,7 +147,6 @@ fun EventScreenView(
                             .size(width = 150.dp, height = 225.dp)
                             .border(width = 1.dp, color = Color.Black)
                     ) {
-
                         if (stream != null) {
                             val imageRequest = ImageRequest.Builder(context)
                                 .data(stream)  // For loading from a ByteArray or other data source

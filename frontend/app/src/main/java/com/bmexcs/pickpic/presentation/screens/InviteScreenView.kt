@@ -18,8 +18,24 @@ import com.bmexcs.pickpic.presentation.viewmodels.InviteViewModel
 @Composable
 fun InviteScreenView(
     navController: NavHostController,
+    eventId: String, // Pass the eventId from the parent screen
 ) {
-    EditableEmailField()
+    Column(modifier = Modifier.padding(16.dp)) {
+        // Existing email input and list UI
+        EditableEmailField()
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Add a button to navigate to the QR screen
+        Button(
+            onClick = {
+                navController.navigate("qrInviteView/$eventId") // Corrected route name
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Generate QR Code")
+        }
+    }
 }
 
 fun isValidEmail(email: String): Boolean {

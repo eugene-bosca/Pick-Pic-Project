@@ -368,7 +368,7 @@ class EventApiService {
     /**
      * Generates an obfuscated invitation link for the specified event.
      *
-     * **Endpoint**: `GET /event/{event_id}/invite/link/`
+     * **Endpoint**: `GET /event/invite/generate/{event_id}/`
      *
      * **Request Body**: Empty
      *
@@ -378,15 +378,15 @@ class EventApiService {
      */
     suspend fun generateInviteLink(eventId: String, token: String): String =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/invite/link/"
+            val endpoint = "event/invite/generate/$eventId/"
             val url = Api.url(endpoint)
 
-            Log.d(TAG, "GET: $url") // Changed to GET
+            Log.d(TAG, "GET: $url")
 
             val request = Request.Builder()
                 .url(url)
                 .addHeader("Authorization", "Bearer $token")
-                .get() // Changed to GET
+                .get()
                 .build()
 
             Log.d(TAG, "Request: $request")
