@@ -30,6 +30,9 @@ import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.shared.ImageFull
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.QrCode
 
 @Composable
 fun EventScreenView(
@@ -60,7 +63,16 @@ fun EventScreenView(
             RankPhotosButton(onClick = { navController.navigate(Route.Ranking.route) })
         }
 
-        Spacer(modifier = Modifier.height(33.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val eventInfo by viewModel.event.collectAsState()
+        val eventId = eventInfo.event_id // Retrieve the event_id
+
+        InviteButton(onClick = {
+            navController.navigate("qrInviteView/$eventId")
+        })
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         when {
             isLoading -> {
@@ -146,6 +158,21 @@ fun RankPhotosButton(onClick: () -> Unit) {
             modifier = Modifier.padding(end = 8.dp)
         )
         Text("Rank Photos")
+    }
+}
+
+@Composable
+fun InviteButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(0.6f)
+    ) {
+        Icon(
+            imageVector = Icons.Filled.QrCode,
+            contentDescription = "QR or Link Invite",
+            modifier = Modifier.padding(end = 8.dp)
+        )
+        Text("QR or Link Invite")
     }
 }
 
