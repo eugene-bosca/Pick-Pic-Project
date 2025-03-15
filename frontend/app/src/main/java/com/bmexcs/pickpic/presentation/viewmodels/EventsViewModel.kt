@@ -45,23 +45,6 @@ class EventsViewModel @Inject constructor(
         getImagesByEventId(event.value.event_id)
     }
 
-    fun getImagesByEventId(eventId: String) {
-        _isLoading.value = true
-
-        // Launch a coroutine on the IO dispatcher since this is a network request.
-        viewModelScope.launch(Dispatchers.IO) {
-            val images = eventRepository.getImages(eventId)
-            val imageBitmapList = mutableMapOf<String, ByteArray?>()
-
-            for (image in images) {
-                val byteArray = imageRepository.getImageByImageId(eventId, image.image.image_id)
-                imageBitmapList.put(image.image.image_id, byteArray)
-            }
-
-            _images.value = imageBitmapList
-        }.invokeOnCompletion { _isLoading.value = false }
-    }
-
     fun addImage(imageByte: ByteArray) {
         viewModelScope.launch(Dispatchers.IO) {
             imageRepository.addImageBinary(event.value.event_id, imageByte)
@@ -133,4 +116,20 @@ class EventsViewModel @Inject constructor(
         }
     }
 
+    private fun getImagesByEventId(eventId: String) {
+        _isLoading.value = true
+
+        // Launch a coroutine on the IO dispatcher since this is a network request.
+        viewModelScope.launch(Dispatchers.IO) {
+            val images = eventRepository.getImages(eventId)
+            val imageBitmapList = mutableMapOf<String, ByteArray?>()
+
+            for (image in images) {
+                val byteArray = imageRepository.getImageByImageId(eventId, image.image.image_id)
+                imageBitmapList.put(image.image.image_id, byteArray)
+            }
+
+            _images.value = imageBitmapList
+        }.invokeOnCompletion { _isLoading.value = false }
+    }
 }

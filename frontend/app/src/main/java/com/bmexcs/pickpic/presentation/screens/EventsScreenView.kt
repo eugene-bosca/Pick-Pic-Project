@@ -31,8 +31,6 @@ import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.shared.ImageFull
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 
-private const val TAG = "EventScreenView"
-
 @Composable
 fun EventScreenView(
     navController: NavHostController,

@@ -8,7 +8,6 @@ import javax.inject.Singleton
 class ImageRepository @Inject constructor(
     private val imageDataSource: ImageDataSource
 ) {
-
     suspend fun getImageByImageId(eventId: String, imageId: String): ByteArray? {
         return imageDataSource.getImageBinary(eventId, imageId);
     }
