@@ -31,6 +31,9 @@ class EventsViewModel @Inject constructor(
     private val _images = MutableStateFlow<Map<String, ByteArray?>>(emptyMap())
     val images: StateFlow<Map<String, ByteArray?>> = _images
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading
+
     private val _saved = MutableStateFlow(false)
     val saved = _saved
 
@@ -43,18 +46,20 @@ class EventsViewModel @Inject constructor(
     }
 
     fun getImagesByEventId(eventId: String) {
+        _isLoading.value = true
+
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
             val images = eventRepository.getImages(eventId)
             val imageBitmapList = mutableMapOf<String, ByteArray?>()
 
-            for(image in images) {
+            for (image in images) {
                 val byteArray = imageRepository.getImageByImageId(eventId, image.image.image_id)
                 imageBitmapList.put(image.image.image_id, byteArray)
             }
 
             _images.value = imageBitmapList
-        }
+        }.invokeOnCompletion { _isLoading.value = false }
     }
 
     fun addImage(imageByte: ByteArray) {
