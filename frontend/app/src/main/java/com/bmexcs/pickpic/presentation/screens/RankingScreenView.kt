@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -22,7 +22,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.presentation.viewmodels.RankingViewModel
 import androidx.navigation.NavHostController
@@ -48,17 +47,11 @@ fun RankingScreenView(
 fun SwipeView(
     viewModel: RankingViewModel = hiltViewModel()
 ) {
-    val dir = LocalContext.current
-
-    LaunchedEffect(key1 = Unit) {
-        viewModel.initializeBitmaps(dir)
-    }
-
     var totalOffsetX by remember { mutableFloatStateOf(0f) }
     var currentOffsetX by remember { mutableFloatStateOf(0f) }
     var swipeStartedKey by remember { mutableIntStateOf(0) }
 
-    val currentBitmap by viewModel.currentBitmap.observeAsState(initial = null)
+    val currentBitmap by viewModel.currentImage.collectAsState()
 
     Box(
         modifier = Modifier
@@ -100,9 +93,10 @@ fun SwipeView(
                 totalOffsetX = 0f // Reset total offset
             }
         }
-        currentBitmap?.let { bitmap ->
+
+        currentBitmap?.let { image ->
             Image(
-                bitmap = bitmap.asImageBitmap(), // Display the Bitmap
+                bitmap = image.bitmap.asImageBitmap(), // Display the Bitmap
                 contentDescription = "Current Image", // Important for accessibility
                 modifier = Modifier.fillMaxSize() // Or your preferred size
             )

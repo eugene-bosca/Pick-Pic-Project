@@ -1,64 +1,51 @@
 package com.bmexcs.pickpic.presentation.viewmodels
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bmexcs.pickpic.data.models.BitmapRanked
 import com.bmexcs.pickpic.data.repositories.EventRepository
-import com.bmexcs.pickpic.data.repositories.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
+private const val TAG = "RankingViewModel"
 
 @HiltViewModel
 class RankingViewModel @Inject constructor(
     private val eventRepository: EventRepository,
-    private val imageRepository: ImageRepository
 ) : ViewModel() {
-    private val _currentBitmap = MutableLiveData<Bitmap?>()
-    val currentBitmap: LiveData<Bitmap?> = _currentBitmap
 
-    private val _swipeDirection = MutableLiveData<SwipeDirection>()
+    private val _currentImage = MutableStateFlow<BitmapRanked?>(null)
+    val currentImage: StateFlow<BitmapRanked?> = _currentImage
 
-    private var bitmaps: List<Bitmap> = emptyList()
-    private var currentImageIndex = 0
+    enum class SwipeDirection { LEFT, RIGHT }
 
-    fun initializeBitmaps(context: Context) {
-        viewModelScope.launch {
-            bitmaps = withContext(Dispatchers.IO) {
-                loadBitmaps(context)
-            }
-            _currentBitmap.value = bitmaps.firstOrNull()
-        }
+    init {
+        loadNextImage()
     }
 
-    private suspend fun loadBitmaps(context: Context): List<Bitmap> =
-        withContext(Dispatchers.IO) {
-            val eventId = eventRepository.event.value.event_id
-            val imageInfos = eventRepository.getImages(eventId)
-            imageInfos.mapNotNull { imageInfo ->
-                val bytes = imageRepository.getImageByImageId(eventId, imageInfo.image.image_id)
-                bytes?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
-            }
+    private fun loadNextImage() {
+        viewModelScope.launch {
+            Log.d(TAG, "Loading next image...")
+            val image = eventRepository.getUnrankedImage()
+            Log.d(TAG, "Received image ${image.info.image.image_id}")
+            _currentImage.value = image
         }
+    }
 
     fun onSwipe(direction: SwipeDirection) {
-        _swipeDirection.value = direction
-        currentImageIndex = when (direction) {
-            SwipeDirection.LEFT -> {
-                (currentImageIndex - 1 + bitmaps.size) % bitmaps.size
-            }
-
-            SwipeDirection.RIGHT -> {
-                (currentImageIndex + 1) % bitmaps.size
-            }
-        }
-        _currentBitmap.value = bitmaps.getOrNull(currentImageIndex)
+        val score = swipeDirectionToScore(direction)
+        loadNextImage()
     }
-    enum class SwipeDirection { LEFT, RIGHT }
+
+    private fun swipeDirectionToScore(direction: SwipeDirection): Long {
+        return if (direction == SwipeDirection.LEFT) {
+            -1
+        } else {
+            1
+        }
+    }
 }

@@ -1,19 +1,43 @@
 package com.bmexcs.pickpic.data.repositories
 
+import android.graphics.BitmapFactory
+import android.util.Log
 import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.ImageInfo
+import com.bmexcs.pickpic.data.models.BitmapRanked
 import com.bmexcs.pickpic.data.sources.EventDataSource
+import com.bmexcs.pickpic.data.sources.ImageDataSource
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val TAG = "EventRepository"
 
 @Singleton
 class EventRepository @Inject constructor(
     private val eventDataSource: EventDataSource,
+    private val imageDataSource: ImageDataSource,
 ) {
     private val _eventInfo = MutableStateFlow(EventInfo())
     val event = _eventInfo
+
+    private val repositoryScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    private val mutex = Mutex()
+    private var unrankedImageCount: Long = 0
+    private val unrankedImageChannel = Channel<BitmapRanked>(capacity = QUEUE_SIZE)
+
+    companion object {
+        private const val QUEUE_SIZE = 5
+    }
 
     suspend fun getEvents(): List<EventInfo> {
         return eventDataSource.getEvents()
@@ -35,7 +59,48 @@ class EventRepository @Inject constructor(
         eventDataSource.declineEvent(eventId)
     }
 
+    fun setCurrentEvent(eventInfo: EventInfo) {
+        event.value = eventInfo
+        repositoryScope.launch {
+            fillUnrankedQueue()
+        }
+    }
+
     suspend fun getImages(eventId: String): List<ImageInfo> {
         return eventDataSource.getImageInfo(eventId)
+    }
+
+    suspend fun getUnrankedImage(): BitmapRanked {
+        val image = unrankedImageChannel.receive()
+        Log.d(TAG, "getUnrankedImage: received image ${image.info.image.image_id}")
+
+        mutex.withLock { unrankedImageCount-- }
+
+        repositoryScope.launch { fillUnrankedQueue() }
+        return image
+    }
+
+    private suspend fun fillUnrankedQueue() {
+        mutex.withLock {
+            val countNeeded = QUEUE_SIZE - unrankedImageCount
+            if (countNeeded <= 0) return
+
+            Log.d(TAG, "Filling queue with $countNeeded images")
+
+            // TODO: val info = eventDataSource.getUnrankedImages(eventId, countNeeded)
+            val imageInfos = eventDataSource.getImageInfo(event.value.event_id).take(countNeeded.toInt())
+
+            for (imageInfo in imageInfos) {
+                val bitmapRanked =
+                    imageDataSource.getImageBinary(event.value.event_id, imageInfo.image.image_id)
+                        ?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
+                        ?.let { BitmapRanked(imageInfo, it) }
+
+                if (bitmapRanked != null) {
+                    unrankedImageChannel.send(bitmapRanked)
+                    unrankedImageCount++
+                }
+            }
+        }
     }
 }

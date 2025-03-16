@@ -31,7 +31,7 @@ class HomePageViewModel @Inject constructor(
     val errorMessage: StateFlow<String?> = _errorMessage
 
     fun setEvent(eventInfo: EventInfo) {
-        eventRepository.event.value = eventInfo
+        eventRepository.setCurrentEvent(eventInfo)
     }
 
     fun fetchEvents() {
