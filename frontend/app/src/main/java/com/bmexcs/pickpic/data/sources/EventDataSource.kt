@@ -111,4 +111,11 @@ class EventDataSource @Inject constructor(
 
         return eventContentList
     }
+
+    suspend fun getUnrankedImages(eventId: String, count: Long): List<ImageInfo> {
+        val userId = userDataSource.getUser().user_id
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        return eventApi.getUnrankedImages(eventId, userId, count, token)
+    }
 }

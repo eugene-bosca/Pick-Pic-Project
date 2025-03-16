@@ -6,6 +6,7 @@ import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.models.EventCreation
 import com.bmexcs.pickpic.data.models.EventId
 import com.bmexcs.pickpic.data.models.ImageCount
+import com.bmexcs.pickpic.data.models.UnrankedCount
 import com.bmexcs.pickpic.data.models.UserEventInviteLink
 import com.bmexcs.pickpic.data.models.UserInfo
 import com.bmexcs.pickpic.data.utils.Api
@@ -199,6 +200,64 @@ class EventApiService {
             Api.handleResponseStatus(response)
         }
     }
+
+    /**
+     * Decreases the ranking of the specified image by 1.
+     *
+     * **Endpoint**: `POST /event/{event_id}/image/{image_id}/downvote/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: Empty
+     */
+    suspend fun downvote(eventId: String, imageId: String, token: String) =
+        withContext(Dispatchers.IO) {
+            val endpoint = "event/$eventId/image/$imageId/downvote/"
+            val url = Api.url(endpoint)
+
+            Log.d(TAG, "POST: $url")
+
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .post(Api.EMPTY_BODY)
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                Api.handleResponseStatus(response)
+            }
+        }
+
+    /**
+     * Increases the ranking of the specified image by 1.
+     *
+     * **Endpoint**: `POST /event/{event_id}/image/{image_id}/upvote/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: Empty
+     */
+    suspend fun upvote(eventId: String, imageId: String, token: String) =
+        withContext(Dispatchers.IO) {
+            val endpoint = "event/$eventId/image/$imageId/upvote/"
+            val url = Api.url(endpoint)
+
+            Log.d(TAG, "POST: $url")
+
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .post(Api.EMPTY_BODY)
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                Api.handleResponseStatus(response)
+            }
+        }
 
     /**
      * Retrieves the number of images added to an event.
@@ -436,6 +495,48 @@ class EventApiService {
 
             client.newCall(request).execute().use { response ->
                 Api.handleResponseStatus(response)
+            }
+        }
+
+    /**
+     * Retrieves all ImageInfos that the specified user has not yet ranked.
+     *
+     * **Endpoint**: `GET /event/{event_id}/user/{user_id}/unranked/`
+     *
+     * **Request Body**: models.UnrankedCount (passed as Long)
+     *
+     * **Request Content-Type**: JSON
+     *
+     * **Response**: List<models.ImageInfo>
+     *
+     */
+    suspend fun getUnrankedImages(eventId: String, userId: String, count: Long, token: String)
+        : List<ImageInfo> = withContext(Dispatchers.IO) {
+            val endpoint = "event/$eventId/user/$userId/unranked/"
+            val url = Api.url(endpoint)
+
+            Log.d(TAG, "GET: $url")
+
+            val requestBody = gson.toJson(UnrankedCount(count))
+                .toRequestBody("application/json".toMediaType())
+
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .addHeader("Content-Type", "application/json")
+                .post(requestBody)
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                Api.handleResponseStatus(response)
+
+                val body = response.body?.string()
+                    ?: throw HttpException(response.code, "Empty response body")
+
+                val resultType = object : TypeToken<List<ImageInfo>>() {}.type
+                val result: List<ImageInfo> = gson.fromJson(body, resultType)
+
+                return@withContext result
             }
         }
 

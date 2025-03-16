@@ -31,6 +31,9 @@ class EventsViewModel @Inject constructor(
     private val _images = MutableStateFlow<Map<String, ByteArray?>>(emptyMap())
     val images: StateFlow<Map<String, ByteArray?>> = _images
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading
+
     private val _saved = MutableStateFlow(false)
     val saved = _saved
 
@@ -40,21 +43,6 @@ class EventsViewModel @Inject constructor(
     init {
         _eventInfo.value = eventRepository.event.value
         getImagesByEventId(event.value.event_id)
-    }
-
-    fun getImagesByEventId(eventId: String) {
-        // Launch a coroutine on the IO dispatcher since this is a network request.
-        viewModelScope.launch(Dispatchers.IO) {
-            val images = eventRepository.getImages(eventId)
-            val imageBitmapList = mutableMapOf<String, ByteArray?>()
-
-            for(image in images) {
-                val byteArray = imageRepository.getImageByImageId(eventId, image.image.image_id)
-                imageBitmapList.put(image.image.image_id, byteArray)
-            }
-
-            _images.value = imageBitmapList
-        }
     }
 
     fun addImage(imageByte: ByteArray) {
@@ -68,7 +56,9 @@ class EventsViewModel @Inject constructor(
     fun deleteImage(eventId: String, imageId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             imageRepository.deleteImage(eventId, imageId)
-        }
+        }.invokeOnCompletion({
+            getImagesByEventId(event.value.event_id)
+        })
     }
 
     fun uriToByteArray(context: Context, uri: Uri?): ByteArray? {
@@ -128,4 +118,20 @@ class EventsViewModel @Inject constructor(
         }
     }
 
+    private fun getImagesByEventId(eventId: String) {
+        _isLoading.value = true
+
+        // Launch a coroutine on the IO dispatcher since this is a network request.
+        viewModelScope.launch(Dispatchers.IO) {
+            val images = eventRepository.getImages(eventId)
+            val imageBitmapList = mutableMapOf<String, ByteArray?>()
+
+            for (image in images) {
+                val byteArray = imageRepository.getImageByImageId(eventId, image.image.image_id)
+                imageBitmapList.put(image.image.image_id, byteArray)
+            }
+
+            _images.value = imageBitmapList
+        }.invokeOnCompletion { _isLoading.value = false }
+    }
 }
