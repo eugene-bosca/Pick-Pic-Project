@@ -33,16 +33,22 @@ import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun EventScreenView(
     navController: NavHostController,
     viewModel: EventsViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
+
     val images = viewModel.images.collectAsState().value.toList()
     val isLoading by viewModel.isLoading.collectAsState()
-    val context = LocalContext.current
+
     var fullScreenImage by remember { mutableStateOf<ImageRequest?>(null) }
+
+    val eventInfo by viewModel.event.collectAsState()
+    val eventId = eventInfo.event_id
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -54,76 +60,98 @@ fun EventScreenView(
         }
     }
 
+    data class ButtonInfo (
+        val label: String,
+        val icon: Int,
+        val onClick: () -> Unit
+    )
+
+    val buttons = listOf(
+        ButtonInfo(
+            "Invite",
+            R.drawable.group_add_24px,
+            onClick = { navController.navigate("invite/$eventId") }
+        ),
+        ButtonInfo(
+            "QR Code",
+            R.drawable.qrcode_plus,
+            onClick = { navController.navigate("qrInviteView/$eventId") }
+        ),
+        ButtonInfo(
+            "Upload",
+            R.drawable.image,
+            onClick = { launcher.launch("image/*") }
+        ),
+        ButtonInfo(
+            "Rank",
+            R.drawable.podium,
+            onClick = { navController.navigate(Route.Ranking.route) }
+        )
+    )
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
     ) {
-        Row {
-            AddPhotosButton(onClick = { launcher.launch("image/*") })
-            RankPhotosButton(onClick = { navController.navigate(Route.Ranking.route) })
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        val eventInfo by viewModel.event.collectAsState()
-        val eventId = eventInfo.event_id // Retrieve the event_id
-
-        Row {
-            InviteFriendsButton(onClick = {
-                navController.navigate("invite/$eventId")
-            })
-
-            QRLinkInviteButton(onClick = {
-                navController.navigate("qrInviteView/$eventId")
-            })
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        when {
-            isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+        Box( // Wrap the image content inside a Box with weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            when {
+                isLoading -> {
                     CircularProgressIndicator()
                 }
-            }
-            images.isEmpty() -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+
+                images.isEmpty() -> {
                     Text("Empty event. Click Add Photos to get started!")
                 }
-            }
-            else -> {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    itemsIndexed(images) { _, (imageId, stream) ->
-                        stream?.let {
-                            val imageRequest = ImageRequest.Builder(context)
-                                .data(it)
-                                .memoryCachePolicy(CachePolicy.ENABLED)
-                                .diskCachePolicy(CachePolicy.ENABLED)
-                                .crossfade(true)
-                                .build()
 
-                            ImageTile(
-                                imageData = it,
-                                imageRequest = imageRequest,
-                                imageId = imageId,
-                                onClick = { fullScreenImage = imageRequest },
-                                viewModel = viewModel
-                            )
+                else -> {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        itemsIndexed(images) { _, (imageId, stream) ->
+                            stream?.let {
+                                val imageRequest = ImageRequest.Builder(context)
+                                    .data(it)
+                                    .memoryCachePolicy(CachePolicy.ENABLED)
+                                    .diskCachePolicy(CachePolicy.ENABLED)
+                                    .crossfade(true)
+                                    .build()
+
+                                ImageTile(
+                                    imageData = it,
+                                    imageRequest = imageRequest,
+                                    imageId = imageId,
+                                    onClick = { fullScreenImage = imageRequest },
+                                    viewModel = viewModel
+                                )
+                            }
                         }
                     }
                 }
+            }
+        }
+
+        NavigationBar {
+            buttons.forEach { info ->
+                NavigationBarItem(
+                    icon = {
+                        Icon(
+                            painter = painterResource(info.icon),
+                            contentDescription = info.label
+                        )
+                    },
+                    label = { Text(info.label, fontSize = 16.sp) },
+                    selected = false,
+                    onClick = info.onClick,
+                )
             }
         }
 
