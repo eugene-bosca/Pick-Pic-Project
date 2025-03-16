@@ -42,6 +42,23 @@ fun EventScreenView(
     val images = viewModel.images.collectAsState().value.toList()
     val isLoading by viewModel.isLoading.collectAsState()
     val context = LocalContext.current
+
+    val expandFilter = remember { mutableStateOf( false ) }
+
+    // Pagination state
+    val pageSize = 10
+    var currentPage by remember { mutableStateOf(0) }
+
+    val totalPages = if (images.size % pageSize == 0) {
+        images.size / pageSize
+    } else {
+        images.size / pageSize + 1
+    }
+
+    val imagesToDisplay = images
+        .drop(currentPage * pageSize) // Skip images for previous pages
+        .take(pageSize) // Take only `pageSize` images for the current page
+
     var fullScreenImage by remember { mutableStateOf<ImageRequest?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
@@ -80,6 +97,48 @@ fun EventScreenView(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        Box(
+            modifier = Modifier
+                .padding(start = 300.dp)
+        ) {
+            ElevatedButton(
+                onClick = {
+                    expandFilter.value = !expandFilter.value
+                },
+                modifier = Modifier
+                    .width(100.dp)
+
+            ) {
+                Text("Filter")
+                Icon(
+                    painterResource(id = R.drawable.filter),
+                    contentDescription = "More options",
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            DropdownMenu(
+                expanded = expandFilter.value,
+                onDismissRequest = {
+                    expandFilter.value = !expandFilter.value
+                }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Date") },
+                    onClick = {
+                        viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                        expandFilter.value = !expandFilter.value
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Score") },
+                    onClick = {
+                        viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                        expandFilter.value = !expandFilter.value
+                    }
+                )
+            }
+        }
+
         when {
             isLoading -> {
                 Box(
@@ -100,33 +159,66 @@ fun EventScreenView(
             else -> {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f), // This ensures the grid takes up available space
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    itemsIndexed(images) { _, (imageId, stream) ->
-                        stream?.let {
-                            val imageRequest = ImageRequest.Builder(context)
-                                .data(it)
-                                .memoryCachePolicy(CachePolicy.ENABLED)
-                                .diskCachePolicy(CachePolicy.ENABLED)
-                                .crossfade(true)
-                                .build()
+                    itemsIndexed(imagesToDisplay) { _, (imageId, stream) ->
+                            stream?.let {
+                                val imageRequest = ImageRequest.Builder(context)
+                                    .data(it)
+                                    .memoryCachePolicy(CachePolicy.ENABLED)
+                                    .diskCachePolicy(CachePolicy.ENABLED)
+                                    .crossfade(true)
+                                    .build()
 
-                            ImageTile(
-                                imageData = it,
-                                imageRequest = imageRequest,
-                                imageId = imageId,
-                                onClick = { fullScreenImage = imageRequest },
-                                viewModel = viewModel
-                            )
-                        }
+                                ImageTile(
+                                    imageData = it,
+                                    imageRequest = imageRequest,
+                                    imageId = imageId,
+                                    onClick = { fullScreenImage = imageRequest },
+                                    viewModel = viewModel
+                                )
+                            }
                     }
                 }
+
             }
         }
 
+        // Pagination controls directly below the grid
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            ElevatedButton(
+                onClick = {
+                    if (currentPage > 0) {
+                        currentPage -= 1
+                    }
+                },
+                enabled = currentPage > 0
+            ) {
+                Text("Previous")
+            }
+
+            ElevatedButton(
+                onClick = {
+                    if (currentPage < totalPages - 1) {
+                        currentPage += 1
+                    }
+                },
+                enabled = currentPage < totalPages - 1
+            ) {
+                Text("Next")
+            }
+        }
+        
         fullScreenImage?.let { request ->
             Dialog(
                 onDismissRequest = { fullScreenImage = null }
@@ -169,7 +261,10 @@ fun RankPhotosButton(onClick: () -> Unit) {
 
 @Composable
 fun InviteFriendsButton(onClick: () -> Unit) {
-    Button(onClick) {
+    Button(
+        modifier = Modifier.padding(horizontal = 20.dp),
+        onClick = onClick,
+    ) {
         Icon(
             painter = painterResource(R.drawable.podium),
             contentDescription = "Invite Friends",
@@ -183,7 +278,6 @@ fun InviteFriendsButton(onClick: () -> Unit) {
 fun QRLinkInviteButton(onClick: () -> Unit) {
     Button(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(0.6f)
     ) {
         Icon(
             imageVector = Icons.Filled.QrCode,
