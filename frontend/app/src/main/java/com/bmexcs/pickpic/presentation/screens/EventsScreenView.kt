@@ -249,60 +249,6 @@ fun EventScreenView(
 }
 
 @Composable
-fun AddPhotosButton(onClick: () -> Unit) {
-    Button(
-        modifier = Modifier.padding(horizontal = 20.dp),
-        onClick = onClick,
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.add_circle_24px),
-            contentDescription = "Add Photos",
-            modifier = Modifier.padding(end = 8.dp)
-        )
-        Text("Add Photos")
-    }
-}
-
-@Composable
-fun RankPhotosButton(onClick: () -> Unit) {
-    Button(onClick) {
-        Icon(
-            painter = painterResource(R.drawable.podium),
-            contentDescription = "Rank Photos Icon",
-            modifier = Modifier.padding(end = 8.dp)
-        )
-        Text("Rank Photos")
-    }
-}
-
-@Composable
-fun InviteFriendsButton(onClick: () -> Unit) {
-    Button(onClick) {
-        Icon(
-            painter = painterResource(R.drawable.podium),
-            contentDescription = "Invite Friends",
-            modifier = Modifier.padding(end = 8.dp)
-        )
-        Text("Invite Friends")
-    }
-}
-
-@Composable
-fun QRLinkInviteButton(onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(0.6f)
-    ) {
-        Icon(
-            imageVector = Icons.Filled.QrCode,
-            contentDescription = "QR or Link Invite",
-            modifier = Modifier.padding(end = 8.dp)
-        )
-        Text("QR or Link")
-    }
-}
-
-@Composable
 fun ImageTile(
     imageData: ByteArray,
     imageRequest: ImageRequest,
