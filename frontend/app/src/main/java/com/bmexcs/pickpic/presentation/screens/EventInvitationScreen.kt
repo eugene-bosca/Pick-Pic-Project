@@ -10,13 +10,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -30,6 +33,7 @@ import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.presentation.viewmodels.EventInvitationViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventInvitationScreenView(
     navController: NavHostController,
@@ -40,6 +44,17 @@ fun EventInvitationScreenView(
     LaunchedEffect(Unit) {
         viewModel.fetchEvents()
     }
+    TopAppBar(
+        title = { Text("Invites") },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back"
+                )
+            }
+        }
+    )
 
     Column(
         modifier = Modifier
