@@ -9,13 +9,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 
 @Composable
 fun ImageFull(
-    imageUrl: String?,
+    image: ImageRequest?,
     onDismiss: () -> Unit
 ) {
-    if (imageUrl != null) {
+    if (image != null) {
         Dialog(
             onDismissRequest = onDismiss,
             properties = DialogProperties(
@@ -31,7 +32,7 @@ fun ImageFull(
             ) {
                 // Full-screen image
                 AsyncImage(
-                    model = imageUrl,
+                    model = image,
                     contentDescription = "Full Screen Image",
                     contentScale = ContentScale.Fit,
                     modifier = Modifier.fillMaxSize()

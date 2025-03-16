@@ -63,4 +63,11 @@ class UserDataSource @Inject constructor(
             User()
         }
     }
+
+    suspend fun getUserIdFromEmail(email: String): String {
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        Log.d(TAG, "Getting user from $email")
+        return userApi.userIdFromEmail(email, token)
+    }
 }

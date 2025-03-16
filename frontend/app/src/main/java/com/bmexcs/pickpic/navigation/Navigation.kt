@@ -10,9 +10,10 @@ import com.bmexcs.pickpic.presentation.screens.ProfileScreenView
 import com.bmexcs.pickpic.presentation.screens.RankingScreenView
 import com.bmexcs.pickpic.presentation.screens.SupportScreenView
 import com.bmexcs.pickpic.presentation.screens.AuthScreenView
-import com.bmexcs.pickpic.presentation.screens.EventCreateInviteView
+import com.bmexcs.pickpic.presentation.screens.QrInviteView
 import com.bmexcs.pickpic.presentation.screens.CreateEventScreenView
 import com.bmexcs.pickpic.presentation.screens.EventInvitationScreenView
+import com.bmexcs.pickpic.presentation.screens.InviteScreenView
 import com.bmexcs.pickpic.presentation.shared.PickPicScaffold
 
 @Composable
@@ -66,16 +67,25 @@ fun Navigation(
             }
         }
 
-        // Event Create Invite Screen
-        composable(Route.EventCreateInviteView.route) {
-            EventCreateInviteView(navController)
-        }
-
         // Create Event Screen
         composable(Route.CreateEvent.route) {
             PickPicScaffold("Create Event", navController) {
                 CreateEventScreenView(navController)
             }
+        }
+
+        // Invite Screen
+        composable("invite/{eventId}") { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
+            PickPicScaffold("Invite Friends", navController) {
+                InviteScreenView(navController, eventId) // Pass eventId to InviteScreenView
+            }
+        }
+
+        // QR Invite Screen
+        composable("qrInviteView/{eventId}") { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
+            QrInviteView(navController = navController)
         }
     }
 }
