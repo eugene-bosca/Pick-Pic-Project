@@ -33,6 +33,9 @@ import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.sp
 
 @Composable
@@ -49,6 +52,22 @@ fun EventScreenView(
 
     val eventInfo by viewModel.event.collectAsState()
     val eventId = eventInfo.event_id
+
+    val expandFilter = remember { mutableStateOf( false ) }
+
+    // Pagination state
+    val pageSize = 10
+    var currentPage by remember { mutableIntStateOf(0) }
+
+    val totalPages = if (images.size % pageSize == 0) {
+        images.size / pageSize
+    } else {
+        images.size / pageSize + 1
+    }
+
+    val imagesToDisplay = images
+        .drop(currentPage * pageSize) // Skip images for previous pages
+        .take(pageSize) // Take only `pageSize` images for the current page
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -73,9 +92,9 @@ fun EventScreenView(
             onClick = { navController.navigate("invite/$eventId") }
         ),
         ButtonInfo(
-            "QR Code",
-            R.drawable.qrcode_plus,
-            onClick = { navController.navigate("qrInviteView/$eventId") }
+            "Filter",
+            R.drawable.filter,
+            onClick = { expandFilter.value = !expandFilter.value }
         ),
         ButtonInfo(
             "Upload",
@@ -93,6 +112,36 @@ fun EventScreenView(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
     ) {
+        // Pagination controls directly below the grid
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            ElevatedButton(
+                onClick = {
+                    if (currentPage > 0) {
+                        currentPage -= 1
+                    }
+                },
+                enabled = currentPage > 0
+            ) {
+                Text("Previous")
+            }
+
+            ElevatedButton(
+                onClick = {
+                    if (currentPage < totalPages - 1) {
+                        currentPage += 1
+                    }
+                },
+                enabled = currentPage < totalPages - 1
+            ) {
+                Text("Next")
+            }
+        }
+
         Box( // Wrap the image content inside a Box with weight(1f)
             modifier = Modifier
                 .weight(1f)
@@ -151,6 +200,37 @@ fun EventScreenView(
                     label = { Text(info.label, fontSize = 16.sp) },
                     selected = false,
                     onClick = info.onClick,
+                )
+            }
+        }
+
+        val filterButtonBox = remember { mutableStateOf(Offset.Zero) }
+
+        Box(
+            modifier = Modifier.onGloballyPositioned { coordinates ->
+                filterButtonBox.value = coordinates.localToWindow(Offset.Zero)
+            }
+        ) {
+            DropdownMenu(
+                expanded = expandFilter.value,
+                onDismissRequest = {
+                    expandFilter.value = !expandFilter.value
+                },
+                offset = DpOffset(100.dp, 0.dp)
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Date") },
+                    onClick = {
+                        viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                        expandFilter.value = !expandFilter.value
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Score") },
+                    onClick = {
+                        viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                        expandFilter.value = !expandFilter.value
+                    }
                 )
             }
         }
