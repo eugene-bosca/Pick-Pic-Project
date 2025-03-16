@@ -77,6 +77,18 @@ class EventContentViewSet(viewsets.ModelViewSet):
         event_id = kwargs.get(self.lookup_field)
         queryset = self.queryset.filter(event_id=event_id)
 
+        sort_param = request.query_params.get("sort")
+        if sort_param:
+            try:
+                field, direction = sort_param.split()
+                ordering = f"{'-' if direction.lower() == 'desc' else ''}{field}"
+                queryset = queryset.order_by(ordering)
+            except ValueError:
+                return Response(
+                    data={"error": "Invalid sort format. Use 'field asc' or 'field desc'."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
         if not queryset.exists():
             return Response(data=[], status=status.HTTP_200_OK)
 
@@ -357,7 +369,7 @@ def add_user_to_event(request: Request, event_id, user_id):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
-def get_user_id_from_email(request: Request, email):
+def get_user_id_from_email(request: Request):
     """
     Retrieves the user_id associated with a given email address.
 
@@ -368,13 +380,17 @@ def get_user_id_from_email(request: Request, email):
     Returns:
         Response: A JSON response containing the user_id or an error message.
     """
-    try:
-        user = User.objects.get(email=email)
-        return Response({'user_id': str(user.user_id)}, status=status.HTTP_200_OK) # Convert UUID to string for JSON serialization
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    emails = request.query_params.getlist("emails")
+    users = []
+
+    existing_users = User.objects.filter(email__in=emails)
+
+    user_dict = {user.email: str(user.user_id) for user in existing_users}
+
+    for email in emails:
+        users.append(user_dict.get(email, 'email does not exist'))
+
+    return Response(data={'users': users}, status=status.HTTP_200_OK)
     
 @api_view(['GET'])
 def get_highest_scored_image(request: Request, event_id):
@@ -467,7 +483,7 @@ def event_last_modified(request, event_id):
 @api_view(['DELETE'])
 def user_delete_event(request, user_id, event_id):
     try:
-        event = Event.objects.get(event_id=event_id, user_id=user_id)
+        event = Event.objects.get(event_id=event_id, owner_id=user_id)
         event.delete()
         return Response(status=status.HTTP_202_ACCEPTED)
     except Event.DoesNotExist:
@@ -667,3 +683,20 @@ def get_pending_event_invitations(request, user_id):
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['PUT'])
+def vote_image(request: Request, event_id, image_id):
+    user_id = request.query_params.get("user_id")
+    vote = request.query_params.get("vote")
+
+    scoreBy, created = ScoredBy.objects.get_or_create(user_id=user_id, image_id=image_id)
+
+    if created:
+        scoreBy.score = 0
+
+    if vote == 'upvote' and scoreBy.score < 1:
+        scoreBy.score += 1
+    elif vote == 'downvote' and scoreBy > -1:
+        scoreBy.score -= 1
+
+    return Response(data={}, status=status.HTTP_202_ACCEPTED)

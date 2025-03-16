@@ -45,6 +45,9 @@ urlpatterns = [
     path('event/<str:event_id>/image/<str:image_id>/', views.get_delete_image, name='GET/DELETE Image'),
     path('event/<str:event_id>/image/count/', views.event_image_count, name='Event Image Count'),
     path('event/<str:event_id>/image/highest_score/', views.get_highest_scored_image, name='Get Highest Score Image'),
+    
+    # upvote/downvote
+    path('/event/<str:event_id>/image/<str:image_id>/vote/', views.vote_image, name='Upvote/Downvote Image'),
 
     # event
     path('event/create/', views.create_new_event, name='Create New Event'),
@@ -61,7 +64,7 @@ urlpatterns = [
     path('user/<str:user_id>/events/<event_id>/', views.user_delete_event, name='Delete User\'s own Album'),
 
     path('user/from_fire_base/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='Exchange User ID For Firebase ID'),
-    path('user/from_email/<str:email>/', views.get_user_id_from_email, name='get user id from email'),
+    path('user/from_email/', views.get_user_id_from_email, name='get user id from email'),
 
     ### Invite-related endpoints
     # Direct user invitation (in-app method)

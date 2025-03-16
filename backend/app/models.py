@@ -48,6 +48,7 @@ class EventUser(models.Model):
 class ScoredBy(models.Model):
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    score = models.SmallIntegerField(default=0)
 
     class Meta:
         unique_together = ('image', 'user')
