@@ -6,6 +6,7 @@ import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.models.EventCreation
 import com.bmexcs.pickpic.data.models.EventId
 import com.bmexcs.pickpic.data.models.ImageCount
+import com.bmexcs.pickpic.data.models.ImageVote
 import com.bmexcs.pickpic.data.models.UnrankedCount
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserEventInviteLink
@@ -236,56 +237,30 @@ class EventApiService {
     }
 
     /**
-     * Decreases the ranking of the specified image by 1.
+     * Changes the ranking of the specified image by the specified vote value.
      *
-     * **Endpoint**: `POST /event/{event_id}/image/{image_id}/downvote/`
+     * **Endpoint**: `PUT /event/{event_id}/image/{image_id}/vote/`
      *
-     * **Request Body**: Empty
+     * **Request Body**: models.ImageVote
      *
-     * **Request Content-Type**: None
+     * **Request Content-Type**: JSON
      *
      * **Response**: Empty
      */
-    suspend fun downvote(eventId: String, imageId: String, token: String) =
+    suspend fun vote(eventId: String, imageId: String, vote: ImageVote, token: String) =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/image/$imageId/downvote/"
+            val endpoint = "event/$eventId/image/$imageId/vote/"
             val url = Api.url(endpoint)
 
-            Log.d(TAG, "POST: $url")
+            Log.d(TAG, "PUT: $url")
+
+            val requestBody = gson.toJson(vote)
+                .toRequestBody("application/json".toMediaType())
 
             val request = Request.Builder()
                 .url(url)
                 .addHeader("Authorization", "Bearer $token")
-                .post(Api.EMPTY_BODY)
-                .build()
-
-            client.newCall(request).execute().use { response ->
-                Api.handleResponseStatus(response)
-            }
-        }
-
-    /**
-     * Increases the ranking of the specified image by 1.
-     *
-     * **Endpoint**: `POST /event/{event_id}/image/{image_id}/upvote/`
-     *
-     * **Request Body**: Empty
-     *
-     * **Request Content-Type**: None
-     *
-     * **Response**: Empty
-     */
-    suspend fun upvote(eventId: String, imageId: String, token: String) =
-        withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/image/$imageId/upvote/"
-            val url = Api.url(endpoint)
-
-            Log.d(TAG, "POST: $url")
-
-            val request = Request.Builder()
-                .url(url)
-                .addHeader("Authorization", "Bearer $token")
-                .post(Api.EMPTY_BODY)
+                .put(requestBody)
                 .build()
 
             client.newCall(request).execute().use { response ->
@@ -364,17 +339,6 @@ class EventApiService {
             }
         }
 
-    /**
-     * Accepts the invitation link.
-     *
-     * **Endpoint**: `PUT /event/{event_id}/invite/{invite_link}/accept/`
-     *
-     * **Request Body**: Empty
-     *
-     * **Request Content-Type**: None
-     *
-     * **Response**: Empty or Error
-     */
     /**
      * Accepts the invitation for the specified event.
      *
