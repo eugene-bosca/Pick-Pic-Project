@@ -5,6 +5,7 @@ import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.models.EventCreation
 import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.ImageInfo
+import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.services.EventApiService
 import com.bmexcs.pickpic.data.services.UserApiService
 import com.bmexcs.pickpic.data.utils.NotFoundException
@@ -28,6 +29,24 @@ class EventDataSource @Inject constructor(
 
         val eventResponse = userApi.getEvents(userId, token)
         return eventResponse.owned_events + eventResponse.invited_events
+    }
+
+    suspend fun getEventInfo(eventId: String): EventInfo {
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        Log.d(TAG, "getting event with id $eventId")
+
+        val eventResponse = eventApi.getInfo(eventId, token)
+        return eventResponse
+    }
+
+    suspend fun getEventOwnerInfo(ownerId: String): User {
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        Log.d(TAG, "getting user with id $ownerId")
+
+        val user = eventApi.getEventOwner(ownerId, token)
+        return user
     }
 
     suspend fun getEventsPending(): List<EventMember> {

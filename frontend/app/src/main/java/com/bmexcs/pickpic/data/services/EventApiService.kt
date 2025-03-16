@@ -7,6 +7,7 @@ import com.bmexcs.pickpic.data.models.EventCreation
 import com.bmexcs.pickpic.data.models.EventId
 import com.bmexcs.pickpic.data.models.ImageCount
 import com.bmexcs.pickpic.data.models.UnrankedCount
+import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserEventInviteLink
 import com.bmexcs.pickpic.data.models.UserInfo
 import com.bmexcs.pickpic.data.utils.Api
@@ -63,7 +64,40 @@ class EventApiService {
                 return@withContext result
             }
         }
+    /**
+     * Retrieves a user data.
+     *
+     * **Endpoint**: `GET /user/{userId}/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: `models.User
+     */
+    suspend fun getEventOwner(userId: String, token: String): User =
+        withContext(Dispatchers.IO) {
+            val endpoint = "user/$userId/"
+            val url = Api.url(endpoint)
 
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .get()
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                Api.handleResponseStatus(response)
+
+                val body = response.body?.string()
+                    ?: throw HttpException(response.code, "Empty response body")
+
+                val resultType = object : TypeToken<User>() {}.type
+                val result: User = gson.fromJson(body, resultType)
+
+                return@withContext result
+            }
+        }
     /**
      * Retrieves metadata for all images associated with the specified event.
      *

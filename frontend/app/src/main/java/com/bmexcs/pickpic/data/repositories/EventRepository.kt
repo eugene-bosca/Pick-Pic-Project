@@ -6,6 +6,7 @@ import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.models.BitmapRanked
+import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.sources.EventDataSource
 import com.bmexcs.pickpic.data.sources.ImageDataSource
 import kotlinx.coroutines.CoroutineScope
@@ -41,6 +42,14 @@ class EventRepository @Inject constructor(
 
     suspend fun getEvents(): List<EventInfo> {
         return eventDataSource.getEvents()
+    }
+
+    suspend fun getEventInfo(eventId: String): EventInfo {
+        return eventDataSource.getEventInfo(eventId)
+    }
+
+    suspend fun getEventOwnerInfo(ownerId: String): User {
+        return eventDataSource.getEventOwnerInfo(ownerId)
     }
 
     suspend fun createEvent(name: String): EventInfo {
