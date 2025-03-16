@@ -21,31 +21,29 @@ class RankingViewModel @Inject constructor(
     private val _currentImage = MutableStateFlow<BitmapRanked?>(null)
     val currentImage: StateFlow<BitmapRanked?> = _currentImage
 
-    enum class SwipeDirection { LEFT, RIGHT }
+    enum class SwipeDirection(private val score: Long) {
+        LEFT(1),
+        RIGHT(-1);
+
+        fun toScore(): Long = score
+    }
 
     init {
         loadNextImage()
     }
 
-    private fun loadNextImage() {
+    fun onSwipe(direction: SwipeDirection) {
+        if (currentImage.value != null) {
+            Log.d(TAG, "imageId = ${currentImage.value!!.info.image.image_id}, score = ${direction.toScore()}")
+        }
+    }
+
+    fun loadNextImage() {
         viewModelScope.launch {
             Log.d(TAG, "Loading next image...")
             val image = eventRepository.getUnrankedImage()
             Log.d(TAG, "Received image ${image.info.image.image_id}")
             _currentImage.value = image
-        }
-    }
-
-    fun onSwipe(direction: SwipeDirection) {
-        val score = swipeDirectionToScore(direction)
-        loadNextImage()
-    }
-
-    private fun swipeDirectionToScore(direction: SwipeDirection): Long {
-        return if (direction == SwipeDirection.LEFT) {
-            -1
-        } else {
-            1
         }
     }
 }
