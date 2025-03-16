@@ -30,19 +30,42 @@ import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.shared.ImageFull
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
-import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun EventScreenView(
     navController: NavHostController,
     viewModel: EventsViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
+
     val images = viewModel.images.collectAsState().value.toList()
     val isLoading by viewModel.isLoading.collectAsState()
-    val context = LocalContext.current
+
     var fullScreenImage by remember { mutableStateOf<ImageRequest?>(null) }
+
+    val eventInfo by viewModel.event.collectAsState()
+    val eventId = eventInfo.event_id
+
+    val expandFilter = remember { mutableStateOf( false ) }
+
+    // Pagination state
+    val pageSize = 10
+    var currentPage by remember { mutableIntStateOf(0) }
+
+    val totalPages = if (images.size % pageSize == 0) {
+        images.size / pageSize
+    } else {
+        images.size / pageSize + 1
+    }
+
+    val imagesToDisplay = images
+        .drop(currentPage * pageSize) // Skip images for previous pages
+        .take(pageSize) // Take only `pageSize` images for the current page
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -54,76 +77,159 @@ fun EventScreenView(
         }
     }
 
+    data class ButtonInfo (
+        val label: String,
+        val icon: Int,
+        val onClick: () -> Unit
+    )
+
+    val buttons = listOf(
+        ButtonInfo(
+            "Invite",
+            R.drawable.group_add_24px,
+            onClick = { navController.navigate("invite/$eventId") }
+        ),
+        ButtonInfo(
+            "Filter",
+            R.drawable.filter,
+            onClick = { expandFilter.value = !expandFilter.value }
+        ),
+        ButtonInfo(
+            "Upload",
+            R.drawable.image,
+            onClick = { launcher.launch("image/*") }
+        ),
+        ButtonInfo(
+            "Rank",
+            R.drawable.podium,
+            onClick = { navController.navigate(Route.Ranking.route) }
+        )
+    )
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
     ) {
-        Row {
-            AddPhotosButton(onClick = { launcher.launch("image/*") })
-            RankPhotosButton(onClick = { navController.navigate(Route.Ranking.route) })
+        // Pagination controls directly below the grid
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            ElevatedButton(
+                onClick = {
+                    if (currentPage > 0) {
+                        currentPage -= 1
+                    }
+                },
+                enabled = currentPage > 0
+            ) {
+                Text("Previous")
+            }
+
+            ElevatedButton(
+                onClick = {
+                    if (currentPage < totalPages - 1) {
+                        currentPage += 1
+                    }
+                },
+                enabled = currentPage < totalPages - 1
+            ) {
+                Text("Next")
+            }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        val eventInfo by viewModel.event.collectAsState()
-        val eventId = eventInfo.event_id // Retrieve the event_id
-
-        Row {
-            InviteFriendsButton(onClick = {
-                navController.navigate("invite/$eventId")
-            })
-
-            QRLinkInviteButton(onClick = {
-                navController.navigate("qrInviteView/$eventId")
-            })
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        when {
-            isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+        Box( // Wrap the image content inside a Box with weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            when {
+                isLoading -> {
                     CircularProgressIndicator()
                 }
-            }
-            images.isEmpty() -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+
+                images.isEmpty() -> {
                     Text("Empty event. Click Add Photos to get started!")
                 }
-            }
-            else -> {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    itemsIndexed(images) { _, (imageId, stream) ->
-                        stream?.let {
-                            val imageRequest = ImageRequest.Builder(context)
-                                .data(it)
-                                .memoryCachePolicy(CachePolicy.ENABLED)
-                                .diskCachePolicy(CachePolicy.ENABLED)
-                                .crossfade(true)
-                                .build()
 
-                            ImageTile(
-                                imageData = it,
-                                imageRequest = imageRequest,
-                                imageId = imageId,
-                                onClick = { fullScreenImage = imageRequest },
-                                viewModel = viewModel
-                            )
+                else -> {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        itemsIndexed(images) { _, (imageId, stream) ->
+                            stream?.let {
+                                val imageRequest = ImageRequest.Builder(context)
+                                    .data(it)
+                                    .memoryCachePolicy(CachePolicy.ENABLED)
+                                    .diskCachePolicy(CachePolicy.ENABLED)
+                                    .crossfade(true)
+                                    .build()
+
+                                ImageTile(
+                                    imageData = it,
+                                    imageRequest = imageRequest,
+                                    imageId = imageId,
+                                    onClick = { fullScreenImage = imageRequest },
+                                    viewModel = viewModel
+                                )
+                            }
                         }
                     }
                 }
+            }
+        }
+
+        NavigationBar {
+            buttons.forEach { info ->
+                NavigationBarItem(
+                    icon = {
+                        Icon(
+                            painter = painterResource(info.icon),
+                            contentDescription = info.label
+                        )
+                    },
+                    label = { Text(info.label, fontSize = 16.sp) },
+                    selected = false,
+                    onClick = info.onClick,
+                )
+            }
+        }
+
+        val filterButtonBox = remember { mutableStateOf(Offset.Zero) }
+
+        Box(
+            modifier = Modifier.onGloballyPositioned { coordinates ->
+                filterButtonBox.value = coordinates.localToWindow(Offset.Zero)
+            }
+        ) {
+            DropdownMenu(
+                expanded = expandFilter.value,
+                onDismissRequest = {
+                    expandFilter.value = !expandFilter.value
+                },
+                offset = DpOffset(100.dp, 0.dp)
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Date") },
+                    onClick = {
+                        viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                        expandFilter.value = !expandFilter.value
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Score") },
+                    onClick = {
+                        viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                        expandFilter.value = !expandFilter.value
+                    }
+                )
             }
         }
 
@@ -137,60 +243,6 @@ fun EventScreenView(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun AddPhotosButton(onClick: () -> Unit) {
-    Button(
-        modifier = Modifier.padding(horizontal = 20.dp),
-        onClick = onClick,
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.add_circle_24px),
-            contentDescription = "Add Photos",
-            modifier = Modifier.padding(end = 8.dp)
-        )
-        Text("Add Photos")
-    }
-}
-
-@Composable
-fun RankPhotosButton(onClick: () -> Unit) {
-    Button(onClick) {
-        Icon(
-            painter = painterResource(R.drawable.podium),
-            contentDescription = "Rank Photos Icon",
-            modifier = Modifier.padding(end = 8.dp)
-        )
-        Text("Rank Photos")
-    }
-}
-
-@Composable
-fun InviteFriendsButton(onClick: () -> Unit) {
-    Button(onClick) {
-        Icon(
-            painter = painterResource(R.drawable.podium),
-            contentDescription = "Invite Friends",
-            modifier = Modifier.padding(end = 8.dp)
-        )
-        Text("Invite Friends")
-    }
-}
-
-@Composable
-fun QRLinkInviteButton(onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(0.6f)
-    ) {
-        Icon(
-            imageVector = Icons.Filled.QrCode,
-            contentDescription = "QR or Link Invite",
-            modifier = Modifier.padding(end = 8.dp)
-        )
-        Text("QR or Link")
     }
 }
 

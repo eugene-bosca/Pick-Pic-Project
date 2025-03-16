@@ -15,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -118,7 +119,7 @@ class EventsViewModel @Inject constructor(
         }
     }
 
-    private fun getImagesByEventId(eventId: String) {
+    fun getImagesByEventId(eventId: String) {
         _isLoading.value = true
 
         // Launch a coroutine on the IO dispatcher since this is a network request.
