@@ -30,9 +30,7 @@ import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.shared.ImageFull
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
-import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.DpOffset
