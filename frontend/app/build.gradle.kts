@@ -88,6 +88,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview) // Preview support
     implementation(libs.androidx.material3) // Material 3 UI components
     implementation(libs.androidx.runtime.livedata.v154) // LiveData integration for Compose
+    implementation(libs.androidx.material.icons.extended) // Material icons
 
     // Firebase
     implementation(platform(libs.firebase.bom)) // Firebase BOM for version management
@@ -111,6 +112,7 @@ dependencies {
 
     // JSON Serialization
     implementation(libs.kotlinx.serialization.json) // Kotlinx serialization for JSON
+    implementation(libs.gson) // Parse requests
 
     // Navigation
     implementation(libs.androidx.navigation.compose) // Jetpack Compose navigation
@@ -139,10 +141,8 @@ dependencies {
     // Debug-only dependencies
     debugImplementation(libs.androidx.ui.tooling) // Compose UI tooling for debugging
     debugImplementation(libs.androidx.ui.test.manifest) // Manifest file support for UI tests
-
-    implementation("com.google.code.gson:gson:2.10.1") //parse requests
-    implementation("androidx.compose.material:material-icons-extended:1.5.4") // Use your Compose version}
 }
+
 kapt {
     correctErrorTypes = true
 }

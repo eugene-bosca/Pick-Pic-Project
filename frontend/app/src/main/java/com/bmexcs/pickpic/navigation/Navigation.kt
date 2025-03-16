@@ -19,7 +19,10 @@ import com.bmexcs.pickpic.presentation.shared.PickPicScaffold
 @Composable
 fun Navigation(
     navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Route.Auth.route) {
+    NavHost(
+        navController = navController,
+        startDestination = Route.Auth.route
+    ) {
         // Home Screen
         composable(Route.Home.route) {
             PickPicScaffold("Home Page", navController) {
