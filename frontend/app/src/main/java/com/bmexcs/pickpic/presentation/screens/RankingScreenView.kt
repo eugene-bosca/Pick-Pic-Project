@@ -73,6 +73,7 @@ fun RankingScreenView(
         ) {
             LaunchedEffect(key1 = swipeStartedKey) {
                 if (swipeStartedKey > 0) {
+                    // Delay to prevent several swipe actions occurring and stopping at once.
                     delay(100)
 
                     val absTotalOffsetX = kotlin.math.abs(totalOffsetX)

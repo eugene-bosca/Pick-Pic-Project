@@ -222,7 +222,6 @@ class EventApiService {
             val request = Request.Builder()
                 .url(url)
                 .addHeader("Authorization", "Bearer $token")
-                .addHeader("Content-Type", "application/json")
                 .post(Api.EMPTY_BODY)
                 .build()
 
@@ -252,7 +251,6 @@ class EventApiService {
             val request = Request.Builder()
                 .url(url)
                 .addHeader("Authorization", "Bearer $token")
-                .addHeader("Content-Type", "application/json")
                 .post(Api.EMPTY_BODY)
                 .build()
 
