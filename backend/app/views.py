@@ -12,6 +12,7 @@ from .models import User
 from django.http import FileResponse
 from django.contrib.auth.hashers import check_password
 from django.conf import settings
+from django.db.models import Subquery
 from rest_framework.request import Request
 
 import uuid
@@ -700,3 +701,20 @@ def vote_image(request: Request, event_id, image_id):
         scoreBy.score -= 1
 
     return Response(data={}, status=status.HTTP_202_ACCEPTED)
+
+def unranked_images(request: Request, event_id, user_id):
+
+    event_image_ids = EventContent.objects.filter(event_id=event_id).values_list('image_id', flat=True)
+
+    ranked_image_ids = ScoredBy.objects.filter(
+        image_id__in=event_image_ids,
+        user_id=user_id
+    ).values_list('image_id', flat=True)
+
+    unranked_images = EventContent.objects.filter(
+        event_id=event_id
+    ).exclude(image_id__in=ranked_image_ids)
+
+    serializer = EventContentSerializer(unranked_images)
+
+    return Response(data=serializer.data, status=status.HTTP_200_OK)
