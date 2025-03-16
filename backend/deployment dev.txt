@@ -1,9 +1,0 @@
-docker buildx build --platform linux/amd64 -t gcr.io/concrete-spider-449820-p0/pick-pic-backend -f Dockerfile.web .
-
-docker push gcr.io/concrete-spider-449820-p0/pick-pic-backend-dev
-
-gcloud init
-
-gcloud auth configure-docker gcr.io
-
-gcloud run deploy pick-pic-service --image gcr.io/concrete-spider-449820-p0/pick-pic-backend-dev --platform managed --region northamerica-northeast2 --allow-unauthenticated --add-cloudsql-instances concrete-spider-449820-p0:northamerica-northeast2:pick-pic-db --service-account pick-pic-admin@concrete-spider-449820-p0.iam.gserviceaccount.com --set-env-vars DB_NAME="pick_pic",DB_USER="client",DB_PASSWORD='qwerty!123',DB_CONNECTION_NAME="concrete-spider-449820-p0:northamerica-northeast2:pick-pic-db",DB_HOST="/cloudsql/concrete-spider-449820-p0:northamerica-northeast2:pick-pic-db",DB_PORT=""
