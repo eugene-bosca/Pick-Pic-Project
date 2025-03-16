@@ -43,6 +43,8 @@ fun EventScreenView(
     val isLoading by viewModel.isLoading.collectAsState()
     val context = LocalContext.current
 
+    val expandFilter = remember { mutableStateOf( false ) }
+
     // Pagination state
     val pageSize = 10
     var currentPage by remember { mutableStateOf(0) }
@@ -94,6 +96,48 @@ fun EventScreenView(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
+
+        Box(
+            modifier = Modifier
+                .padding(start = 300.dp)
+        ) {
+            ElevatedButton(
+                onClick = {
+                    expandFilter.value = !expandFilter.value
+                },
+                modifier = Modifier
+                    .width(100.dp)
+
+            ) {
+                Text("Filter")
+                Icon(
+                    painterResource(id = R.drawable.filter),
+                    contentDescription = "More options",
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            DropdownMenu(
+                expanded = expandFilter.value,
+                onDismissRequest = {
+                    expandFilter.value = !expandFilter.value
+                }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Date") },
+                    onClick = {
+                        viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                        expandFilter.value = !expandFilter.value
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Score") },
+                    onClick = {
+                        viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                        expandFilter.value = !expandFilter.value
+                    }
+                )
+            }
+        }
 
         when {
             isLoading -> {
