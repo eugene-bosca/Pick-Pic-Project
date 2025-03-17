@@ -721,6 +721,8 @@ def vote_image(request: Request, event_id, image_id):
     elif vote == 'downvote' and scoreBy.score > -1:
         scoreBy.score -= 1
 
+    scoreBy.save()
+
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 # Get the unranked images associated with a user
