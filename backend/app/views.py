@@ -107,11 +107,13 @@ class ScoredByViewSet(viewsets.ModelViewSet):
 # Secret key for JWT
 SECRET_KEY = settings.SECRET_KEY  # Use Django's secret key
 
+# Get the metadata for an event
 @api_view(['GET'])
 def event_info(request: Request, event_id):
     event = Event.objects.get(event_id=event_id)
     return Response(data=EventSerializer(event).data, status=status.HTTP_200_OK)
 
+# Authenticate a user
 @api_view(['POST'])
 def authenticate(request: Request):
     username = request.data.get('username')
@@ -146,7 +148,8 @@ def authenticate(request: Request):
         return Response({"exists": False, "comment": "User does not exist"}, status=404)
     except User.MultipleObjectsReturned:
         return Response({"exists": False, "comment": "Multiple users with the same username exist???"}, status=500)
- 
+
+# Get or delete an image from an event
 @api_view(['GET', 'DELETE'])
 def get_delete_image(request: Request, event_id=None, image_id=None):
     try:
@@ -187,6 +190,7 @@ def get_delete_image(request: Request, event_id=None, image_id=None):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# Add an image to an event
 @api_view(['PUT'])
 def create_image(request: Request, event_id=None):
     try:
@@ -214,6 +218,7 @@ def create_image(request: Request, event_id=None):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# Get/upload a users profile picture
 @api_view(['GET', 'PUT'])
 def user_pfp(request: Request):
     try:
@@ -257,6 +262,7 @@ def user_pfp(request: Request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# Get the number of images added to an event
 @api_view(['GET'])
 def event_image_count(request: Request, event_id):
     try:
@@ -265,6 +271,7 @@ def event_image_count(request: Request, event_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# List the users in an event
 @api_view(['GET'])
 def list_users_events(request: Request, user_id):
     try:
@@ -285,6 +292,7 @@ def list_users_events(request: Request, user_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
  
+ # Create a new event
 @extend_schema(
     request=EventSerializer,
     responses={201: EventSerializer, 404: {"error": "user not found"}},
@@ -310,7 +318,7 @@ def create_new_event(request: Request):
 
     return Response(status=status.HTTP_201_CREATED, data=EventSerializer(event).data)
 
-
+# Retrieves the userId associated with the given Firebase ID
 @api_view(['GET'])
 def get_user_id_by_firebase_id(request: Request, firebase_id):
     """
@@ -332,6 +340,7 @@ def get_user_id_by_firebase_id(request: Request, firebase_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# Adds a user to the given event
 @api_view(['POST'])
 def add_user_to_event(request: Request, event_id, user_id):
     """
@@ -372,6 +381,7 @@ def add_user_to_event(request: Request, event_id, user_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# Retrieve a userId associated wiht the given email
 @api_view(['GET'])
 def get_user_id_from_email(request: Request):
     """
@@ -396,6 +406,7 @@ def get_user_id_from_email(request: Request):
 
     return Response(data={'users': users}, status=status.HTTP_200_OK)
     
+# Get the image with the highest score
 @api_view(['GET'])
 def get_highest_scored_image(request: Request, event_id):
     """
@@ -437,7 +448,8 @@ def get_highest_scored_image(request: Request, event_id):
         return Response({'error': 'Invalid UUID format'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+# Decline an event invitation for the specified user
 @api_view(['DELETE'])
 def remove_event_user(request, event_id, user_id):
     """
@@ -450,6 +462,7 @@ def remove_event_user(request, event_id, user_id):
     except EventUser.DoesNotExist:
         return Response({'error': 'Event user not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+# Accept an event invitation for the specified user
 @api_view(['PUT'])
 def accept_event_user(request, event_id, user_id):
     """
@@ -463,6 +476,7 @@ def accept_event_user(request, event_id, user_id):
     except EventUser.DoesNotExist:
         return Response({'error': 'Event user not found.'}, status=status.HTTP_404_NOT_FOUND)
     
+# Get the events that the user is invited to but has not yet accepted
 @api_view(['GET'])
 def get_pending_events(request, user_id):
     """
@@ -476,6 +490,7 @@ def get_pending_events(request, user_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# Get the last-modified date for an event
 @api_view(['GET'])
 def event_last_modified(request, event_id):
     event = Event.objects.filter(event_id=event_id)
@@ -484,6 +499,7 @@ def event_last_modified(request, event_id):
     return Response(data={"last_modified": Event.objects.get(event_id=event_id).last_modified.strftime("%d/%m/%Y, %H:%M:%S") },
                     status=status.HTTP_200_OK)
 
+# Delete an event
 @api_view(['DELETE'])
 def user_delete_event(request, user_id, event_id):
     try:
@@ -502,7 +518,7 @@ def remove_user_from_event(request, event_id, user_id):
     except EventUser.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event does not exist or user is not part of this event" })
 
-
+# Invite one or more users to an event
 @api_view(['POST'])
 def invite_to_event(request, event_id):
     """
@@ -688,7 +704,7 @@ def get_pending_event_invitations(request, user_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
+# Vote on an image
 @extend_schema(
     request=VoteImageSerializer,
     responses={204: {}}
@@ -710,6 +726,7 @@ def vote_image(request: Request, event_id, image_id):
 
     return Response(status=status.HTTP_204_NO_CONTENT)
 
+# Get the unranked images associated with a user
 @extend_schema(
     responses={200: EventContentSerializer(many=True)}
 )

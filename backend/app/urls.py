@@ -64,7 +64,10 @@ urlpatterns = [
     path('user/<str:user_id>/events/<event_id>/', views.user_delete_event, name='Delete User\'s own Album'),
 
     path('user/from_fire_base/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='Exchange User ID For Firebase ID'),
-    path('user/from_email/', views.get_user_id_from_email, name='get user id from email'),
+    path('user/from_email/<str:email>/', views.get_user_id_from_email, name='Get User ID From Email'),
+
+    # View pending invitations for a user
+    path('user/<str:user_id>/pending_event_invitations/', views.get_pending_event_invitations, name='get_pending_event_invitations'),
 
     ### Invite-related endpoints
     # Direct user invitation (in-app method)
@@ -76,8 +79,4 @@ urlpatterns = [
 
     # Handle invitation acceptance/decline
     path('event/<str:event_id>/invitation/<str:action>/', views.handle_invitation, name='handle_invitation'),
-
-    # View pending invitations for a user
-    path('user/<str:user_id>/pending_event_invitations/', views.get_pending_event_invitations, name='get_pending_event_invitations'),
-    path('user/from_email/<str:email>/', views.get_user_id_from_email, name='Get User ID From Email'),
 ]
