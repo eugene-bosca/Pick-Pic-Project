@@ -50,6 +50,7 @@ Both the database and the Django REST Service are containerized through Docker c
 # Usage
 ### To run backend locally
 * Create .env (environment variables)
+* run `source .venv/bin/activate` or `.venv/bin/activate`
 * Create concrete-spider-449820-p0-b07324f24234.json (for GCS)
 
 ### Start dockerized backend
@@ -60,7 +61,6 @@ Both the database and the Django REST Service are containerized through Docker c
 1) `chmod +x cloud-sql-proxy`
 2) `./cloud-sql-proxy --credentials-file=GOOGLE_APPLICATION_CREDENTIALS CLOUDSQL_CONNECTION_NAME`
     - note: see .env for CLOUDSQL_CONNECTION_NAME
-
 
 ### Manual migration
 * Create migration: `docker-compose exec web python manage.py makemigrations app`
