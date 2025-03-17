@@ -49,7 +49,7 @@ urlpatterns = [
     
     # upvote/downvote
     path('event/<str:event_id>/image/<str:image_id>/vote/', views.vote_image, name='Upvote/Downvote Image'),
-
+ 
     # event
     path('event/create/', views.create_new_event, name='Create New Event'),
     path('event/<str:event_id>/', views.event_info, name='Event Info'),

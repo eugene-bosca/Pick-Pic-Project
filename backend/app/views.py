@@ -533,52 +533,33 @@ def remove_user_from_event(request, event_id, user_id):
     except EventUser.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event does not exist or user is not part of this event" })
 
-# Invite one or more users to an event
+
+@extend_schema(
+    request=UserSerializer,
+    responses={200: EventUserSerializer(many=True)}
+)
 @api_view(['POST'])
-def invite_to_event(request, event_id):
+def invite_to_event(request: Request, event_id):
     """
-    Invite one or more users to an event (in-app method).
-    Expects a payload with:
-    {
-        "user_id": ["uuid1", "uuid2", ...] or "user_id": "uuid"
-    }
+    Invite one user to an event (in-app method).
+
     """
     try:
         # Get the event
         event = Event.objects.get(event_id=event_id)
 
         # Check if the request has multiple user_ids or a single user_id
-        user_ids = request.data.get('user_id', [])
+        user_id = request.data.get('user_id')
 
-        if isinstance(user_ids, dict):
-            user_ids = []
-        elif isinstance(user_ids, str):
-            user_ids = [user_ids]
-        elif not isinstance(user_ids, list):
-            user_ids = []
+        event_user, _ = EventUser.objects.get_or_create(event_id=event.event_id, user_id=user_id)
 
-        if not user_ids:
-            return Response({'error': 'No user_ids provided'}, status=status.HTTP_400_BAD_REQUEST)
-
-        invited_users = []
-
-        for user_id in user_ids:
-            if User.objects.filter(user_id=user_id).exists():
-                # Create an EventUser with accepted=False
-                _, created = EventUser.objects.get_or_create(
-                    event_id=event_id,
-                    user_id=user_id,
-                    defaults={'accepted': False}
-                )
-
-            if created:
-                invited_users.append(user_id)
+        event_user.accepted = True
 
         return Response({
-            'message': f'Successfully invited {len(invited_users)} users',
-            'invited_users': UserSerializer(invited_users).data
-        }, status=status.HTTP_201_CREATED)
-
+            'message': f'Invite success',
+        }, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     except Event.DoesNotExist:
         return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
