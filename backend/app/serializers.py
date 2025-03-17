@@ -59,4 +59,4 @@ class EmailSerializer(serializers.Serializer):
     emails = serializers.ListField()
 
 class UUIDSerializer(serializers.Serializer):
-    ids = serializers.UUIDField()
+    id = serializers.UUIDField()

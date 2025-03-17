@@ -535,8 +535,8 @@ def remove_user_from_event(request, event_id, user_id):
 
 
 @extend_schema(
-    request=UserSerializer,
-    responses={200: EventUserSerializer(many=True)}
+    request=UUIDSerializer,
+    responses={200: EventUserSerializer}
 )
 @api_view(['POST'])
 def invite_to_event(request: Request, event_id):
@@ -551,13 +551,14 @@ def invite_to_event(request: Request, event_id):
         # Check if the request has multiple user_ids or a single user_id
         user_id = request.data.get('user_id')
 
-        event_user, _ = EventUser.objects.get_or_create(event_id=event.event_id, user_id=user_id)
+        event_user, _ = EventUser.objects.get_or_create(event_id=event_id, user_id=user_id)
 
         event_user.accepted = True
+        event_user.save()
 
-        return Response({
-            'message': f'Invite success',
-        }, status=status.HTTP_200_OK)
+        print(f'{event_user.event.event_id}: {event_user.user.user_id}: {event_user.accepted}')
+
+        return Response(EventUserSerializer(event_user).data, status=status.HTTP_200_OK)
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     except Event.DoesNotExist:
