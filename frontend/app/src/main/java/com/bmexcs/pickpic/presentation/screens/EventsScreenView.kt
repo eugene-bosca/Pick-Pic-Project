@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,7 +23,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
@@ -37,6 +38,19 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.sp
 
+private data class ButtonInfo (
+    val label: String,
+    val icon: Int,
+    val onClick: () -> Unit
+)
+
+private data class FullscreenImage (
+    val request: ImageRequest,
+    val data: ByteArray,
+    val id: String
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventScreenView(
     navController: NavHostController,
@@ -44,15 +58,28 @@ fun EventScreenView(
 ) {
     val context = LocalContext.current
 
+    // Current event info
+    val eventInfo by viewModel.event.collectAsState()
+    val eventId = eventInfo.event_id
+    val eventName = eventInfo.event_name // Use event_name instead of name
+
+    // Debugging: Print eventInfo to verify its structure
+    LaunchedEffect(eventInfo) {
+        println("Event Info: $eventInfo")
+    }
+
+    // Images
     val images = viewModel.images.collectAsState().value.toList()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    var fullScreenImage by remember { mutableStateOf<ImageRequest?>(null) }
+    // Pagination state
+    var pageSize by remember { mutableIntStateOf(8) }
 
-    val eventInfo by viewModel.event.collectAsState()
-    val eventId = eventInfo.event_id
-
-    val expandFilter = remember { mutableStateOf(false) }
+    val totalPages = if (images.size % pageSize == 0) {
+        images.size / pageSize
+    } else {
+        images.size / pageSize + 1
+    }
 
     // Infinite scroll state
     val gridState = rememberLazyGridState()
@@ -67,18 +94,68 @@ fun EventScreenView(
 
                     // Load more if we're within 5 items from the end
                     if (lastVisibleItemIndex >= totalItemsCount - 5) {
-                        viewModel.loadNextPage()
+                        pageSize += 8
                     }
                 }
             }
     }
 
-    // Rest of your existing code for launcher, buttons, etc...
+    // Filter button
+    val expandFilter = remember { mutableStateOf(false) }
+    val filterButtonBox = remember { mutableStateOf(Offset.Zero) }
+
+    // Fullscreen image
+    var fullScreenImage by remember { mutableStateOf<FullscreenImage?>(null) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            viewModel.uriToByteArray(context, uri)?.let { byteArray ->
+                viewModel.addImage(byteArray)
+            }
+        }
+    }
+
+    val buttons = listOf(
+        ButtonInfo(
+            "Invite",
+            R.drawable.group_add_24px,
+            onClick = { navController.navigate("invite/$eventId") }
+        ),
+        ButtonInfo(
+            "Filter",
+            R.drawable.filter,
+            onClick = { expandFilter.value = !expandFilter.value }
+        ),
+        ButtonInfo(
+            "Upload",
+            R.drawable.image,
+            onClick = { launcher.launch("image/*") }
+        ),
+        ButtonInfo(
+            "Rank",
+            R.drawable.podium,
+            onClick = { navController.navigate(Route.Ranking.route) }
+        )
+    )
 
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
     ) {
+        TopAppBar(
+            title = { Text(text = eventName) },
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            }
+        )
+
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -99,9 +176,9 @@ fun EventScreenView(
                         columns = GridCells.Fixed(2),
                         state = gridState,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        contentPadding = PaddingValues(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         itemsIndexed(images) { _, (imageId, stream) ->
                             stream?.let {
@@ -113,26 +190,15 @@ fun EventScreenView(
                                     .build()
 
                                 ImageTile(
-                                    imageData = it,
                                     imageRequest = imageRequest,
-                                    imageId = imageId,
-                                    onClick = { fullScreenImage = imageRequest },
-                                    viewModel = viewModel
+                                    onClick = {
+                                        fullScreenImage = FullscreenImage(
+                                            request = imageRequest,
+                                            data = it,
+                                            id = imageId
+                                        )
+                                    },
                                 )
-                            }
-                        }
-
-                        // Show loading indicator at bottom
-                        if (isLoading) {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator()
-                                }
                             }
                         }
                     }
@@ -156,8 +222,6 @@ fun EventScreenView(
             }
         }
 
-        val filterButtonBox = remember { mutableStateOf(Offset.Zero) }
-
         Box(
             modifier = Modifier.onGloballyPositioned { coordinates ->
                 filterButtonBox.value = coordinates.localToWindow(Offset.Zero)
@@ -173,91 +237,81 @@ fun EventScreenView(
                 DropdownMenuItem(
                     text = { Text("Date") },
                     onClick = {
-                        viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                        // TODO: filter viewModel.getImagesByEventId(viewModel.event.value.event_id)
                         expandFilter.value = !expandFilter.value
                     }
                 )
                 DropdownMenuItem(
                     text = { Text("Score") },
                     onClick = {
-                        viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                        // TODO: filter viewModel.getImagesByEventId(viewModel.event.value.event_id)
                         expandFilter.value = !expandFilter.value
                     }
                 )
             }
         }
 
-        fullScreenImage?.let { request ->
-            Dialog(
-                onDismissRequest = { fullScreenImage = null }
+        fullScreenImage?.let { image ->
+            ImageFull(
+                image = image.request,
+                onDismiss = {
+                    fullScreenImage = null
+                }
             ) {
-                ImageFull(
-                    image = request,
-                    onDismiss = { fullScreenImage = null }
-                )
+                NavigationBar {
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.trash_can),
+                                contentDescription = "Delete Photo"
+                            )
+                        },
+                        label = { Text("Delete Photo", fontSize = 16.sp) },
+                        selected = false,
+                        onClick = {
+                            image.id.let {
+                                viewModel.deleteImage(
+                                    viewModel.event.value.event_id,
+                                    it
+                                )
+                                fullScreenImage = null
+                            }
+                        },
+                    )
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.download_box),
+                                contentDescription = "Download Photo"
+                            )
+                        },
+                        label = { Text("Download Photo", fontSize = 16.sp) },
+                        selected = false,
+                        onClick = {
+                            viewModel.saved.value =
+                                viewModel.saveImageFromByteArrayToGallery(
+                                    context, image.data, image.id
+                                )
+                        },
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun ImageTile(
-    imageData: ByteArray,
-    imageRequest: ImageRequest,
-    imageId: String,
-    onClick: () -> Unit,
-    viewModel: EventsViewModel
-) {
-    ElevatedCard(
+fun ImageTile(imageRequest: ImageRequest, onClick: () -> Unit) {
+    AsyncImage(
+        model = imageRequest,
+        contentDescription = "Event image",
+        contentScale = ContentScale.Crop,
         modifier = Modifier
-            .size(width = 150.dp, height = 225.dp)
+            .fillMaxSize()
+            .padding(all = 15.dp)
+            .padding(bottom = 20.dp)
+            .border(width = 1.dp, color = Color.Black)
             .clip(RoundedCornerShape(12.dp))
             .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        val context = LocalContext.current
-
-        var isExpanded by remember { mutableStateOf(false) }
-
-        Box(modifier = Modifier.padding(start = 140.dp)) {
-            IconButton(
-                onClick = { isExpanded = !isExpanded },
-                modifier = Modifier.size(30.dp)
-            ) {
-                Icon(
-                    painterResource(id = R.drawable.more_horizontal),
-                    contentDescription = "More options"
-                )
-            }
-            DropdownMenu(
-                expanded = isExpanded,
-                onDismissRequest = { isExpanded = false }
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Delete Photo") },
-                    onClick = {
-                        viewModel.deleteImage(viewModel.event.value.event_id, imageId)
-                        isExpanded = false
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Download Photo") },
-                    onClick = {
-                        viewModel.saved.value = viewModel.saveImageFromByteArrayToGallery(context, imageData, imageId)
-                        isExpanded = false
-                    }
-                )
-            }
-        }
-        AsyncImage(
-            model = imageRequest,
-            contentDescription = "Event image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(all = 15.dp)
-                .padding(bottom = 20.dp)
-                .border(width = 1.dp, color = Color.Black)
-        )
-    }
+    )
 }

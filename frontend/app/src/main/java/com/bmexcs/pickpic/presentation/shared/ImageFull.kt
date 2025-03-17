@@ -2,7 +2,9 @@ package com.bmexcs.pickpic.presentation.shared
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -14,7 +16,8 @@ import coil.request.ImageRequest
 @Composable
 fun ImageFull(
     image: ImageRequest?,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    content: @Composable () -> Unit
 ) {
     if (image != null) {
         Dialog(
@@ -25,18 +28,24 @@ fun ImageFull(
                 dismissOnClickOutside = true // Dismiss on outside click
             )
         ) {
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clickable { onDismiss() } // Dismiss on click anywhere
+                    .clickable {
+                        onDismiss()
+                    }
             ) {
-                // Full-screen image
                 AsyncImage(
                     model = image,
                     contentDescription = "Full Screen Image",
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize().weight(1f)
                 )
+                Box(
+                    modifier = Modifier.fillMaxWidth().weight(0.2f)
+                ) {
+                    content.invoke()
+                }
             }
         }
     }

@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from .models import *
-from .serializers import UserSerializer, UserSettingsSerializer, EventSerializer, EventUserSerializer, ImageSerializer, EventContentSerializer, ScoredBySerializer
+from .serializers import UserSerializer, UserSettingsSerializer, EventSerializer, EventUserSerializer, ImageSerializer, EventContentSerializer, ScoredBySerializer, VoteImageSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,6 +14,8 @@ from django.contrib.auth.hashers import check_password
 from django.conf import settings
 from django.db.models import Subquery
 from rest_framework.request import Request
+from rest_framework import serializers
+
 
 import uuid
 import jwt
@@ -47,9 +49,10 @@ class EventUserViewSet(viewsets.ModelViewSet):
         queryset = self.queryset.filter(event_id=event_id)
 
         if not queryset.exists():
-            return Response(data={[]}, status=status.HTTP_200_OK)
+            return Response(data=[], status=status.HTTP_200_OK)
 
         serializer = self.get_serializer(queryset, many=True)
+
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 # Image ViewSet
@@ -581,7 +584,7 @@ def generate_invite_link(request, event_id):
 
 # Join event via link/QR code
 @api_view(['GET', 'POST'])
-def join_via_link(request, obfuscated_event_id):
+def join_via_link(request: Request, obfuscated_event_id):
     """
     Handle user joining an event via an invite link with jibberish event ID.
     GET: Return event details
@@ -684,11 +687,16 @@ def get_pending_event_invitations(request, user_id):
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+
+@extend_schema(
+    request=VoteImageSerializer,
+    responses={204: {}}
+)
 @api_view(['PUT'])
 def vote_image(request: Request, event_id, image_id):
-    user_id = request.query_params.get("user_id")
-    vote = request.query_params.get("vote")
+    user_id = request.data.get("user_id")
+    vote = request.data.get("vote")
 
     scoreBy, created = ScoredBy.objects.get_or_create(user_id=user_id, image_id=image_id)
 
@@ -697,11 +705,15 @@ def vote_image(request: Request, event_id, image_id):
 
     if vote == 'upvote' and scoreBy.score < 1:
         scoreBy.score += 1
-    elif vote == 'downvote' and scoreBy > -1:
+    elif vote == 'downvote' and scoreBy.score > -1:
         scoreBy.score -= 1
 
-    return Response(data={}, status=status.HTTP_202_ACCEPTED)
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
+@extend_schema(
+    responses={200: EventContentSerializer(many=True)}
+)
+@api_view(['GET'])
 def unranked_images(request: Request, event_id, user_id):
 
     event_image_ids = EventContent.objects.filter(event_id=event_id).values_list('image_id', flat=True)
@@ -715,6 +727,6 @@ def unranked_images(request: Request, event_id, user_id):
         event_id=event_id
     ).exclude(image_id__in=ranked_image_ids)
 
-    serializer = EventContentSerializer(unranked_images)
+    serializer = EventContentSerializer(unranked_images, many=True)
 
     return Response(data=serializer.data, status=status.HTTP_200_OK)
