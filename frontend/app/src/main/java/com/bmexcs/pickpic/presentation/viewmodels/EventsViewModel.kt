@@ -116,7 +116,7 @@ class EventsViewModel @Inject constructor(
         }
     }
 
-    fun getImagesByEventId(eventId: String) {
+    private fun getImagesByEventId(eventId: String) {
         _isLoading.value = true
 
         // Launch a coroutine on the IO dispatcher since this is a network request.
