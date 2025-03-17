@@ -10,8 +10,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.EventInfo
+import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
+import com.bmexcs.pickpic.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -30,10 +32,11 @@ private const val TAG = "EventsViewModel"
 class EventsViewModel @Inject constructor(
     private val eventRepository: EventRepository,
     private val imageRepository: ImageRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _images = MutableStateFlow<Map<String, ByteArray?>>(emptyMap())
-    val images: StateFlow<Map<String, ByteArray?>> = _images
+    private val _images = MutableStateFlow<Map<ImageInfo, ByteArray?>>(emptyMap())
+    val images: StateFlow<Map<ImageInfo, ByteArray?>> = _images
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading
@@ -52,6 +55,14 @@ class EventsViewModel @Inject constructor(
 
     fun refresh() {
         refreshInternal()
+    }
+
+    fun isCurrentUserOwner(ownerId: String): Boolean {
+        return userRepository.getUser().user_id == ownerId
+    }
+
+    fun isUserPhotoUploader(info: ImageInfo): Boolean {
+        return userRepository.getUser().user_id == info.image.image_id
     }
 
     fun addImage(imageByte: ByteArray) {
@@ -132,11 +143,12 @@ class EventsViewModel @Inject constructor(
         // Launch a coroutine on the IO dispatcher since this is a network request.
         viewModelScope.launch(Dispatchers.IO) {
             val images = eventRepository.getImages(eventId)
-            val imageBitmapList = mutableMapOf<String, ByteArray?>()
+
+            val imageBitmapList = mutableMapOf<ImageInfo, ByteArray?>()
 
             for (image in images) {
                 val byteArray = imageRepository.getImageByImageId(eventId, image.image.image_id)
-                imageBitmapList.put(image.image.image_id, byteArray)
+                imageBitmapList[image] = byteArray
             }
 
             _images.value = imageBitmapList

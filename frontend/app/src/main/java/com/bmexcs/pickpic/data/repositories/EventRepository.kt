@@ -5,7 +5,7 @@ import android.util.Log
 import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.ImageInfo
-import com.bmexcs.pickpic.data.models.BitmapRanked
+import com.bmexcs.pickpic.data.utils.BitmapRanked
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.sources.EventDataSource
 import com.bmexcs.pickpic.data.sources.ImageDataSource
@@ -18,8 +18,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.text.SimpleDateFormat
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 

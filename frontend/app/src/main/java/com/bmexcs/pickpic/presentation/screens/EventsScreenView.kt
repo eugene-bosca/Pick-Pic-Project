@@ -39,6 +39,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.sp
+import com.bmexcs.pickpic.data.models.ImageInfo
 
 private data class ButtonInfo (
     val label: String,
@@ -49,8 +50,10 @@ private data class ButtonInfo (
 private data class FullscreenImage (
     val request: ImageRequest,
     val data: ByteArray,
-    val id: String
-)
+    val info: ImageInfo
+) {
+    fun uuid(): String = info.image.image_id
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -190,7 +193,7 @@ fun EventScreenView(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
-                        itemsIndexed(images) { _, (imageId, stream) ->
+                        itemsIndexed(images) { _, (imageInfo, stream) ->
                             stream?.let {
                                 val imageRequest = ImageRequest.Builder(context)
                                     .data(it)
@@ -205,7 +208,7 @@ fun EventScreenView(
                                         fullScreenImage = FullscreenImage(
                                             request = imageRequest,
                                             data = it,
-                                            id = imageId
+                                            info = imageInfo
                                         )
                                     },
                                 )
@@ -269,25 +272,28 @@ fun EventScreenView(
                 }
             ) {
                 NavigationBar {
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                painter = painterResource(R.drawable.trash_can),
-                                contentDescription = "Delete Photo"
-                            )
-                        },
-                        label = { Text("Delete Photo", fontSize = 16.sp) },
-                        selected = false,
-                        onClick = {
-                            image.id.let {
-                                viewModel.deleteImage(
-                                    viewModel.event.value.event_id,
-                                    it
+                    if (viewModel.isCurrentUserOwner(eventInfo.owner.user_id) ||
+                        viewModel.isUserPhotoUploader(image.info)) {
+                        NavigationBarItem(
+                            icon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.trash_can),
+                                    contentDescription = "Delete Photo"
                                 )
-                                fullScreenImage = null
-                            }
-                        },
-                    )
+                            },
+                            label = { Text("Delete Photo", fontSize = 16.sp) },
+                            selected = false,
+                            onClick = {
+                                image.uuid().let {
+                                    viewModel.deleteImage(
+                                        viewModel.event.value.event_id,
+                                        it
+                                    )
+                                    fullScreenImage = null
+                                }
+                            },
+                        )
+                    }
                     NavigationBarItem(
                         icon = {
                             Icon(
@@ -300,7 +306,7 @@ fun EventScreenView(
                         onClick = {
                             viewModel.saved.value =
                                 viewModel.saveImageFromByteArrayToGallery(
-                                    context, image.data, image.id
+                                    context, image.data, image.uuid()
                                 )
                         },
                     )
