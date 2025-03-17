@@ -9,6 +9,7 @@ import com.bmexcs.pickpic.data.models.BitmapRanked
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.sources.EventDataSource
 import com.bmexcs.pickpic.data.sources.ImageDataSource
+import com.bmexcs.pickpic.data.utils.Vote
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -33,7 +34,7 @@ class EventRepository @Inject constructor(
     private val repositoryScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val mutex = Mutex()
-    private var unrankedImageCount: Long = 0
+    private var unrankedImageCount: Int = 0
     private val unrankedImageChannel = Channel<BitmapRanked>(capacity = QUEUE_SIZE)
 
     companion object {
@@ -79,6 +80,10 @@ class EventRepository @Inject constructor(
         return eventDataSource.getImageInfo(eventId)
     }
 
+    suspend fun voteOnImage(imageId: String, vote: Vote) {
+        eventDataSource.voteOnImage(event.value.event_id, imageId, vote)
+    }
+
     suspend fun getUnrankedImage(): BitmapRanked {
         val image = unrankedImageChannel.receive()
         Log.d(TAG, "getUnrankedImage: received image ${image.info.image.image_id}")
@@ -96,8 +101,7 @@ class EventRepository @Inject constructor(
 
             Log.d(TAG, "Filling queue with $countNeeded images")
 
-            // TODO: val info = eventDataSource.getUnrankedImages(eventId, countNeeded)
-            val imageInfos = eventDataSource.getImageInfo(event.value.event_id).take(countNeeded.toInt())
+            val imageInfos = eventDataSource.getUnrankedImages(event.value.event_id, countNeeded)
 
             for (imageInfo in imageInfos) {
                 val bitmapRanked =

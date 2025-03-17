@@ -86,7 +86,6 @@ fun RankingScreenView(
                             viewModel.onSwipe(RankingViewModel.SwipeDirection.LEFT)
                             Log.d("SwipeView", "Swipe Detected: LEFT")
                         }
-                        viewModel.loadNextImage()
                     } else {
                         Log.d("SwipeView", "Not a swipe. totalOffsetX too small: $absTotalOffsetX")
                     }
@@ -113,7 +112,7 @@ fun RankingScreenView(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     ReturnButton(onClick = { navController.navigate(Route.Event.route) })
-                    SkipButton(onClick = { viewModel.loadNextImage() })
+                    SkipButton(onClick = { viewModel.onSkip() })
                 }
             }
         }

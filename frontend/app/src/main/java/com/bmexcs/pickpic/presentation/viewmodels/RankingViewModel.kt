@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.BitmapRanked
 import com.bmexcs.pickpic.data.repositories.EventRepository
+import com.bmexcs.pickpic.data.utils.Vote
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,11 +22,9 @@ class RankingViewModel @Inject constructor(
     private val _currentImage = MutableStateFlow<BitmapRanked?>(null)
     val currentImage: StateFlow<BitmapRanked?> = _currentImage
 
-    enum class SwipeDirection(private val score: Long) {
-        LEFT(1),
-        RIGHT(-1);
-
-        fun toScore(): Long = score
+    enum class SwipeDirection {
+        LEFT,
+        RIGHT;
     }
 
     init {
@@ -33,12 +32,32 @@ class RankingViewModel @Inject constructor(
     }
 
     fun onSwipe(direction: SwipeDirection) {
-        if (currentImage.value != null) {
-            Log.d(TAG, "imageId = ${currentImage.value!!.info.image.image_id}, score = ${direction.toScore()}")
+        viewModelScope.launch {
+            if (currentImage.value != null) {
+                val imageId = currentImage.value!!.info.image.image_id
+
+                val vote = if (direction == SwipeDirection.LEFT) {
+                    Vote.UPVOTE
+                } else {
+                    Vote.DOWNVOTE
+                }
+
+                eventRepository.voteOnImage(imageId, vote)
+
+                Log.d(TAG, "imageId = ${imageId}, vote = $vote")
+            }
+        }.invokeOnCompletion {
+            loadNextImage()
         }
     }
 
-    fun loadNextImage() {
+    fun onSkip() {
+        viewModelScope.launch {
+            loadNextImage()
+        }
+    }
+
+    private fun loadNextImage() {
         viewModelScope.launch {
             Log.d(TAG, "Loading next image...")
             val image = eventRepository.getUnrankedImage()

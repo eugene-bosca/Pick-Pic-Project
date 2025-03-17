@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ImageVote(
     val user_id: String = "",
-    val vote: Long = 0
+    val vote: String = "upvote",
 )
