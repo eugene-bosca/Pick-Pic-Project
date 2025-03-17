@@ -119,7 +119,19 @@ class EventsViewModel @Inject constructor(
         }
     }
 
-    fun getImagesByEventId(eventId: String) {
+    fun loadNextPage() {
+        if (!isLoading.value) {
+            viewModelScope.launch {
+                isLoading.value = true
+                // Fetch next page from your data source
+                val newImages = repository.getImages(eventId, currentPage++)
+                _images.value = _images.value + newImages
+                isLoading.value = false
+            }
+        }
+    }
+
+    private fun getImagesByEventId(eventId: String) {
         _isLoading.value = true
 
         // Launch a coroutine on the IO dispatcher since this is a network request.

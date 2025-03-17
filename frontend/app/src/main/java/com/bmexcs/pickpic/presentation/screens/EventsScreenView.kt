@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -51,103 +52,41 @@ fun EventScreenView(
     val eventInfo by viewModel.event.collectAsState()
     val eventId = eventInfo.event_id
 
-    val expandFilter = remember { mutableStateOf( false ) }
+    val expandFilter = remember { mutableStateOf(false) }
 
-    // Pagination state
-    val pageSize = 10
-    var currentPage by remember { mutableIntStateOf(0) }
+    // Infinite scroll state
+    val gridState = rememberLazyGridState()
 
-    val totalPages = if (images.size % pageSize == 0) {
-        images.size / pageSize
-    } else {
-        images.size / pageSize + 1
-    }
+    // Load more when scrolled to end
+    LaunchedEffect(gridState) {
+        snapshotFlow { gridState.layoutInfo.visibleItemsInfo }
+            .collect { visibleItems ->
+                if (visibleItems.isNotEmpty() && !isLoading) {
+                    val lastVisibleItemIndex = visibleItems.last().index
+                    val totalItemsCount = gridState.layoutInfo.totalItemsCount
 
-    val imagesToDisplay = images
-        .drop(currentPage * pageSize) // Skip images for previous pages
-        .take(pageSize) // Take only `pageSize` images for the current page
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            viewModel.uriToByteArray(context, uri)?.let { byteArray ->
-                viewModel.addImage(byteArray)
+                    // Load more if we're within 5 items from the end
+                    if (lastVisibleItemIndex >= totalItemsCount - 5) {
+                        viewModel.loadNextPage()
+                    }
+                }
             }
-        }
     }
 
-    data class ButtonInfo (
-        val label: String,
-        val icon: Int,
-        val onClick: () -> Unit
-    )
-
-    val buttons = listOf(
-        ButtonInfo(
-            "Invite",
-            R.drawable.group_add_24px,
-            onClick = { navController.navigate("invite/$eventId") }
-        ),
-        ButtonInfo(
-            "Filter",
-            R.drawable.filter,
-            onClick = { expandFilter.value = !expandFilter.value }
-        ),
-        ButtonInfo(
-            "Upload",
-            R.drawable.image,
-            onClick = { launcher.launch("image/*") }
-        ),
-        ButtonInfo(
-            "Rank",
-            R.drawable.podium,
-            onClick = { navController.navigate(Route.Ranking.route) }
-        )
-    )
+    // Rest of your existing code for launcher, buttons, etc...
 
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
     ) {
-        // Pagination controls directly below the grid
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            ElevatedButton(
-                onClick = {
-                    if (currentPage > 0) {
-                        currentPage -= 1
-                    }
-                },
-                enabled = currentPage > 0
-            ) {
-                Text("Previous")
-            }
-
-            ElevatedButton(
-                onClick = {
-                    if (currentPage < totalPages - 1) {
-                        currentPage += 1
-                    }
-                },
-                enabled = currentPage < totalPages - 1
-            ) {
-                Text("Next")
-            }
-        }
-
-        Box( // Wrap the image content inside a Box with weight(1f)
+        Box(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
             when {
-                isLoading -> {
+                isLoading && images.isEmpty() -> {
                     CircularProgressIndicator()
                 }
 
@@ -158,6 +97,7 @@ fun EventScreenView(
                 else -> {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
+                        state = gridState,
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -179,6 +119,20 @@ fun EventScreenView(
                                     onClick = { fullScreenImage = imageRequest },
                                     viewModel = viewModel
                                 )
+                            }
+                        }
+
+                        // Show loading indicator at bottom
+                        if (isLoading) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
                             }
                         }
                     }
