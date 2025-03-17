@@ -13,7 +13,7 @@ class UserSettingsSerializer(serializers.ModelSerializer):
 
 
 class EventSerializer(serializers.ModelSerializer):
-    #owner = UserSerializer()
+    owner = UserSerializer()
 
     class Meta:
         model = Event
@@ -28,6 +28,7 @@ class EventUserSerializer(serializers.ModelSerializer):
         fields = ["user", "accepted"]
 
 class ImageSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
     class Meta:
         model = Image
         fields = "__all__"
@@ -53,3 +54,9 @@ class ScoredBySerializer(serializers.ModelSerializer):
 class VoteImageSerializer(serializers.Serializer):
     user_id = serializers.UUIDField()
     vote = serializers.CharField()
+
+class EmailSerializer(serializers.Serializer):
+    emails = serializers.ListField()
+
+class UUIDSerializer(serializers.Serializer):
+    id = serializers.UUIDField()

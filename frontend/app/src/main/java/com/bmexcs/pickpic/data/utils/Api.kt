@@ -8,7 +8,8 @@ import java.net.URL
 private const val TAG = "ApiUtils"
 
 object Api {
-    private const val BASE_URL = "https://pick-pic-service-627889116714.northamerica-northeast2.run.app"
+//    private const val BASE_URL = "https://pick-pic-service-627889116714.northamerica-northeast2.run.app"
+    private const val BASE_URL = "https://pick-pic-service-dev-627889116714.northamerica-northeast2.run.app"
 
     val EMPTY_BODY = ByteArray(0).toRequestBody(null, 0, 0)
 

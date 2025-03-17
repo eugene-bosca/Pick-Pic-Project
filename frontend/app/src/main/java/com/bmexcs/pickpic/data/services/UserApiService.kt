@@ -5,7 +5,8 @@ import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.UserEventList
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserCreation
-import com.bmexcs.pickpic.data.models.UserId
+import com.bmexcs.pickpic.data.models.UserEmails
+import com.bmexcs.pickpic.data.models.UserFirebaseId
 import com.bmexcs.pickpic.data.utils.Api
 import com.bmexcs.pickpic.data.utils.HttpException
 import com.google.gson.Gson
@@ -299,27 +300,31 @@ class UserApiService {
         }
 
     /**
-     * Retrieves the User ID given an email address.
+     * Retrieves the User given an email address.
      *
-     * **Endpoint**: `GET /user/from_email/{email}/`
+     * **Endpoint**: `POST /user/id/from_email/`
      *
-     * **Request Body**: Empty
+     * **Request Body**: `models.UserEmails` as `List<String>`
      *
-     * **Request Content-Type**: None
+     * **Request Content-Type**: JSON
      *
-     * **Response**: `models.UserId` as `String
+     * **Response**: `List<models.User>`
      */
-    suspend fun userIdFromEmail(email: String, token: String): String =
+    suspend fun usersFromEmails(emails: List<String>, token: String): List<User> =
         withContext(Dispatchers.IO) {
-            val endpoint = "user/from_email/$email/"
+            val endpoint = "user/id/from_email/"
             val url = Api.url(endpoint)
 
-            Log.d(TAG, "GET: $url")
+            Log.d(TAG, "POST: $url")
+
+            val requestBody = gson.toJson(UserEmails(emails))
+                .toRequestBody("application/json".toMediaType())
 
             val request = Request.Builder()
                 .url(url)
                 .addHeader("Authorization", "Bearer $token")
-                .get()
+                .addHeader("Content-Type", "application/json")
+                .post(requestBody)
                 .build()
 
             client.newCall(request).execute().use { response ->
@@ -328,35 +333,39 @@ class UserApiService {
                 val body = response.body?.string()
                     ?: throw HttpException(response.code, "Empty response body")
 
-                val resultType = object : TypeToken<UserId>() {}.type
-                val result: UserId = gson.fromJson(body, resultType)
+                val resultType = object : TypeToken<List<User>>() {}.type
+                val result: List<User> = gson.fromJson(body, resultType)
 
-                return@withContext result.user_id
+                return@withContext result
             }
         }
 
     /**
-     * Retrieves the User ID given an email address.
+     * Retrieves the User ID given a list of email addresses.
      *
-     * **Endpoint**: `GET /user/from_fire_base/{firebase_id}/`
+     * **Endpoint**: `POST /user/id/from_fire_base/`
      *
-     * **Request Body**: Empty
+     * **Request Body**: `models.UserFirebaseIds` as `List<String>`
      *
      * **Request Content-Type**: None
      *
-     * **Response**: `models.UserId` as `String`
+     * **Response**: `models.User`
      */
-    suspend fun userIdFromFirebase(firebaseId: String, token: String): String =
+    suspend fun userFromFirebaseId(firebaseId: String, token: String): User =
         withContext(Dispatchers.IO) {
-            val endpoint = "user/from_fire_base/$firebaseId/"
+            val endpoint = "user/id/from_fire_base/"
             val url = Api.url(endpoint)
 
-            Log.d(TAG, "GET: $url")
+            Log.d(TAG, "POST: $url")
+
+            val requestBody = gson.toJson(UserFirebaseId(firebaseId))
+                .toRequestBody("application/json".toMediaType())
 
             val request = Request.Builder()
                 .url(url)
                 .addHeader("Authorization", "Bearer $token")
-                .get()
+                .addHeader("Content-Type", "application/json")
+                .post(requestBody)
                 .build()
 
             client.newCall(request).execute().use { response ->
@@ -365,10 +374,12 @@ class UserApiService {
                 val body = response.body?.string()
                     ?: throw HttpException(response.code, "Empty response body")
 
-                val resultType = object : TypeToken<UserId>() {}.type
-                val result: UserId = gson.fromJson(body, resultType)
+                Log.d(TAG, body)
 
-                return@withContext result.user_id
+                val resultType = object : TypeToken<User>() {}.type
+                val result: User = gson.fromJson(body, resultType)
+
+                return@withContext result
             }
         }
 }

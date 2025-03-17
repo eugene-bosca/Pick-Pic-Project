@@ -22,7 +22,7 @@ class UserRepository @Inject constructor(
         authRepository.signOut()
     }
 
-    suspend fun getUserWithEmail(email: String): String {
-        return userDataSource.getUserIdFromEmail(email)
+    suspend fun getUsersFromEmails(emails: List<String>): List<User> {
+        return userDataSource.getUsersFromEmails(emails)
     }
 }

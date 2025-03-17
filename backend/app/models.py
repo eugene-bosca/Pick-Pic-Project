@@ -30,6 +30,7 @@ class Event(models.Model):
 
 class Image(models.Model):
     image_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     file_name = models.CharField(max_length=50, blank=True)
     score = models.IntegerField(default=0)
 
