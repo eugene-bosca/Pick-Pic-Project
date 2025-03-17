@@ -14,7 +14,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-
 @HiltViewModel
 class HomePageViewModel @Inject constructor(
     private val eventRepository: EventRepository,
