@@ -1,5 +1,8 @@
 package com.bmexcs.pickpic.presentation.viewmodels
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,22 +11,25 @@ import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
-import com.bmexcs.pickpic.data.utils.Api
-import com.bmexcs.pickpic.data.utils.HttpException
-import com.google.gson.reflect.TypeToken
+import com.bmexcs.pickpic.presentation.MainActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.Request
 import javax.inject.Inject
+import kotlin.math.log
 
 @HiltViewModel
 class InvitedViewModel @Inject constructor(
     private val eventRepository: EventRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
+
+    private var eventId = ""
+
+    fun setEventId(id: String) {
+        eventId = id
+    }
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -63,7 +69,6 @@ class InvitedViewModel @Inject constructor(
                 _isLoading.value = false
             }
         }
-        Log.d("ownerinfo: ",ownerInfo.value.toString())
     }
 
     fun getEventContentInfo(eventId: String) {
@@ -79,4 +84,29 @@ class InvitedViewModel @Inject constructor(
             }
         }
     }
+
+    fun checkUserLoggedIn(context: Context) {
+        // I don't think getUser should throw an exception when null
+        try {
+            userRepository.getUser()
+        } catch (e: Exception) {
+            Log.d("InvitedViewModel", e.toString())
+            redirectLogin(context)
+            Log.d("InvitedViewModel", "User is not logged in")
+        }
+    }
+
+    fun redirectLogin(context: Context) {
+        // Create an Intent to start MainActivity
+        val intent = Intent(context, MainActivity::class.java).apply {
+            putExtra("QR_REQUIRE_LOGIN", true)
+            putExtra("EVENT_ID", eventId) // Pass the eventId as an extra
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        context.startActivity(intent)
+
+        // Finish the current activity (user cannot go back)
+        (context as? Activity)?.finish()
+    }
+
 }
