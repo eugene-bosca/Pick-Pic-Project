@@ -38,7 +38,10 @@ class HomePageViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                Log.d("HomePageViewModel", "Fetching events for user: ${userRepository.getUser().user_id}")
+                Log.d(
+                    "HomePageViewModel",
+                    "Fetching events for user: ${userRepository.getUser().user_id}"
+                )
                 // Execute the network call on the IO dispatcher
                 val eventItems = withContext(Dispatchers.IO) {
                     eventRepository.getEvents()
@@ -52,5 +55,10 @@ class HomePageViewModel @Inject constructor(
                 _isLoading.value = false
             }
         }
+    }
+
+    // Method that checks if the current user is the same as the provided owner ID
+    fun isCurrentUserOwner(ownerId: String): Boolean {
+        return userRepository.getUser().user_id == ownerId
     }
 }

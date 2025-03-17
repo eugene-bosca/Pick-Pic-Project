@@ -150,8 +150,17 @@ fun EventListing(
                 )
             },
             trailingContent = {
-                IconButton(onClick = { /* doSomething() */ }) {
-                    Icon(Icons.Filled.MoreVert, contentDescription = null)
+                // Show a crown icon if the current user is the owner of the event
+                if (viewModel.isCurrentUserOwner(eventItem.owner)) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_crown),
+                        contentDescription = "Owner",
+                        tint = Color(0xFFD4AF37) // Gold color for the crown
+                    )
+                } else {
+                    IconButton(onClick = { /* doSomething() */ }) {
+                        Icon(Icons.Filled.MoreVert, contentDescription = null)
+                    }
                 }
             },
             colors = ListItemDefaults.colors(
