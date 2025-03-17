@@ -6,7 +6,9 @@ import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.models.BitmapRanked
+import com.bmexcs.pickpic.data.models.Email
 import com.bmexcs.pickpic.data.models.User
+import com.bmexcs.pickpic.data.models.UserId
 import com.bmexcs.pickpic.data.sources.EventDataSource
 import com.bmexcs.pickpic.data.sources.ImageDataSource
 import com.bmexcs.pickpic.data.utils.Vote
@@ -130,5 +132,9 @@ class EventRepository @Inject constructor(
                 }
             }
         }
+    }
+
+    suspend fun inviteUsersWithId(userIds: List<UserId>, eventId: String)  {
+        return eventDataSource.inviteUsersFromEmail(userIds, eventId)
     }
 }

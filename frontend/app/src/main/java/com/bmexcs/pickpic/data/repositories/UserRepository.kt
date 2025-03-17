@@ -1,6 +1,8 @@
 package com.bmexcs.pickpic.data.repositories
 
+import com.bmexcs.pickpic.data.models.Email
 import com.bmexcs.pickpic.data.models.User
+import com.bmexcs.pickpic.data.models.UserId
 import com.bmexcs.pickpic.data.sources.UserDataSource
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,7 +24,7 @@ class UserRepository @Inject constructor(
         authRepository.signOut()
     }
 
-    suspend fun getUserWithEmail(email: String): String {
+    suspend fun getUserIdWithEmail(email: String): UserId {
         return userDataSource.getUserIdFromEmail(email)
     }
 }

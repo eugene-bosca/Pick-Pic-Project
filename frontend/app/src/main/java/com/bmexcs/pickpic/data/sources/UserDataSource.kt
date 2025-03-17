@@ -1,8 +1,10 @@
 package com.bmexcs.pickpic.data.sources
 
 import android.util.Log
+import com.bmexcs.pickpic.data.models.Email
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserCreation
+import com.bmexcs.pickpic.data.models.UserId
 import com.bmexcs.pickpic.data.services.UserApiService
 import com.bmexcs.pickpic.data.utils.NotFoundException
 import javax.inject.Inject
@@ -64,10 +66,10 @@ class UserDataSource @Inject constructor(
         }
     }
 
-    suspend fun getUserIdFromEmail(email: String): String {
+    suspend fun getUserIdFromEmail(email: String): UserId {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
-        Log.d(TAG, "Getting user from $email")
+        Log.d(TAG, "Getting users from $email")
         return userApi.userIdFromEmail(email, token)
     }
 }
