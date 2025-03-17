@@ -41,6 +41,15 @@ class EventDataSource @Inject constructor(
         return eventResponse
     }
 
+    suspend fun getEventLastModified(eventId: String): Long {
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        Log.d(TAG, "getEventLastModified for event $eventId")
+
+        val eventResponse = eventApi.lastModified(eventId, token)
+        return eventResponse
+    }
+
     suspend fun getEventOwnerInfo(ownerId: String): User {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 

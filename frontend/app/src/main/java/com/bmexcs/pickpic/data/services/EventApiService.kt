@@ -5,6 +5,7 @@ import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.models.EventCreation
 import com.bmexcs.pickpic.data.models.EventId
+import com.bmexcs.pickpic.data.models.EventLastModified
 import com.bmexcs.pickpic.data.models.ImageCount
 import com.bmexcs.pickpic.data.models.ImageVote
 import com.bmexcs.pickpic.data.models.User
@@ -22,6 +23,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 private const val TAG = "EventApiService"
 
@@ -539,7 +542,7 @@ class EventApiService {
             }
         }
 
-    /** TODO change return type
+    /**
      * Retrieves when the event was last modified.
      *
      * **Endpoint**: `GET /event/{event_id}/last_modified/`
@@ -548,9 +551,9 @@ class EventApiService {
      *
      * **Request Content-Type**: None
      *
-     * **Response**: `String`
+     * **Response**: `models.EventLastModified` as `Long`
      */
-    suspend fun lastModified(eventId: String, token: String): String =
+    suspend fun lastModified(eventId: String, token: String): Long =
         withContext(Dispatchers.IO) {
             val endpoint = "event/$eventId/last_modified/"
             val url = Api.url(endpoint)
@@ -566,10 +569,17 @@ class EventApiService {
             client.newCall(request).execute().use { response ->
                 Api.handleResponseStatus(response)
 
-                val body = response.body?.string() // Changed to get string content
+                val body = response.body?.string()
                     ?: throw HttpException(response.code, "Empty response body")
 
-                return@withContext body
+                val resultType = object : TypeToken<EventLastModified>() {}.type
+                val result: EventLastModified = gson.fromJson(body, resultType)
+
+                val formatter = SimpleDateFormat("dd/MM/yyyy, HH:mm:ss", Locale.getDefault())
+                val timestamp = formatter.parse(result.last_modified)?.time
+                    ?: throw Exception("Failed to parse date string")
+
+                return@withContext timestamp
             }
         }
 
