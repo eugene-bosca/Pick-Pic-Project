@@ -51,9 +51,7 @@ fun Navigation(
 
         // Ranking Screen
         composable(Route.Ranking.route) {
-            PickPicScaffold("Ranking", navController) {
-                RankingScreenView(navController)
-            }
+            RankingScreenView(navController)
         }
 
         // Auth Screen

@@ -7,13 +7,18 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,12 +34,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.presentation.viewmodels.RankingViewModel
 import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.navigation.Route
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RankingScreenView(
     navController: NavHostController,
@@ -46,6 +52,9 @@ fun RankingScreenView(
 
     val currentBitmap by viewModel.currentImage.collectAsState()
 
+    val eventInfo by viewModel.event.collectAsState()
+    val eventName = eventInfo.event_name
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -53,6 +62,18 @@ fun RankingScreenView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        TopAppBar(
+            title = { Text(text = eventName) },
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            }
+        )
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -87,7 +108,10 @@ fun RankingScreenView(
                             Log.d("SwipeView", "Swipe Detected: LEFT")
                         }
                     } else {
-                        Log.d("SwipeView", "Not a swipe. totalOffsetX too small: $absTotalOffsetX")
+                        Log.d(
+                            "SwipeView",
+                            "Not a swipe. totalOffsetX too small: $absTotalOffsetX"
+                        )
                     }
 
                     totalOffsetX = 0f
@@ -102,33 +126,21 @@ fun RankingScreenView(
                 )
             }
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
+                modifier = Modifier.fillMaxSize().padding(16.dp),
                 contentAlignment = Alignment.BottomCenter
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    ReturnButton(onClick = { navController.navigate(Route.Event.route) })
-                    SkipButton(onClick = { viewModel.onSkip() })
-                }
+                SkipButton(onClick = { viewModel.onSkip() })
             }
         }
     }
 }
 
 @Composable
-fun ReturnButton(onClick: () -> Unit) {
-    Button(onClick) {
-        Text("Return to Events Page")
-    }
-}
-
-@Composable
 fun SkipButton(onClick: () -> Unit) {
-    Button(onClick) {
-        Text("Skip Photo")
+    Button(
+        onClick,
+        modifier = Modifier.fillMaxWidth().height(56.dp)
+    ) {
+        Text("Skip", fontSize = 18.sp)
     }
 }
