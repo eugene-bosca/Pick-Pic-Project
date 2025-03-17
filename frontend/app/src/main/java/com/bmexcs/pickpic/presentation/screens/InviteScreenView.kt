@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -13,28 +14,65 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.bmexcs.pickpic.data.models.UserInfo
 import com.bmexcs.pickpic.presentation.viewmodels.InviteViewModel
 
 @Composable
 fun InviteScreenView(
     navController: NavHostController,
-    eventId: String, // Pass the eventId from the parent screen
+    eventId: String,
+    viewModel: InviteViewModel = hiltViewModel()
 ) {
-    Column(modifier = Modifier.padding(16.dp)) {
-        // Existing email input and list UI
-        EditableEmailField()
+    // Load invited users when the screen is first displayed
+    LaunchedEffect(eventId) {
+        viewModel.loadInvitedUsers(eventId)
+    }
+
+    val invitedUsers by viewModel.invitedUsers.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxSize()
+    ) {
+        // Error message if any
+        error?.let {
+            Text(
+                text = it,
+                color = Color.Red,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
+
+        // Loading indicator
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+
+        // Email input field
+        EditableEmailField(
+            eventId = eventId,
+            viewModel = viewModel
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Add a button to navigate to the QR screen
+        // QR Code navigation button
         Button(
             onClick = {
-                navController.navigate("qrInviteView/$eventId") // Corrected route name
+                navController.navigate("qrInviteView/$eventId")
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Generate QR Code")
         }
+
+        // Already invited users list
+        InvitedUsersList(invitedUsers = invitedUsers)
     }
 }
 
@@ -43,7 +81,10 @@ fun isValidEmail(email: String): Boolean {
 }
 
 @Composable
-fun EditableEmailField(viewModel: InviteViewModel = hiltViewModel()) {
+fun EditableEmailField(
+    eventId: String,
+    viewModel: InviteViewModel = hiltViewModel()
+) {
     var userEmail by remember { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
     val emailList by viewModel.emailList.collectAsState()
@@ -81,7 +122,7 @@ fun EditableEmailField(viewModel: InviteViewModel = hiltViewModel()) {
             Button(
                 onClick = {
                     if (userEmail.isNotBlank() && isValidEmail(userEmail)) {
-                        viewModel.addEmail(userEmail.trim()) // Use ViewModel function
+                        viewModel.addEmail(userEmail.trim())
                         userEmail = "" // Clear the input field
                     } else {
                         isError = true // Show error message
@@ -112,7 +153,7 @@ fun EditableEmailField(viewModel: InviteViewModel = hiltViewModel()) {
                         modifier = Modifier
                             .padding(4.dp)
                             .clickable {
-                                viewModel.removeEmail(email) // Use ViewModel function
+                                viewModel.removeEmail(email)
                             }
                     )
                 }
@@ -124,12 +165,47 @@ fun EditableEmailField(viewModel: InviteViewModel = hiltViewModel()) {
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-                    viewModel.confirmInvites(emailList)
+                    viewModel.confirmInvites(emailList, eventId)
                 },
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Confirm Invite")
+            }
+        }
+    }
+}
+
+@Composable
+fun InvitedUsersList(invitedUsers: List<UserInfo>) {
+    if (invitedUsers.isNotEmpty()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Already Invited Users",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Column {
+                invitedUsers.forEach { user ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(20.dp))
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = user.email, // TODO: make this display name?
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(4.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
             }
         }
     }
