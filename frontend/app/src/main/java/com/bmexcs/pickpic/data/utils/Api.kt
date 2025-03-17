@@ -1,7 +1,6 @@
 package com.bmexcs.pickpic.data.utils
 
 import android.util.Log
-import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.net.URL
 
@@ -9,8 +8,6 @@ private const val TAG = "ApiUtils"
 
 object Api {
     private const val BASE_URL = "https://pick-pic-service-627889116714.northamerica-northeast2.run.app"
-
-    val EMPTY_BODY = ByteArray(0).toRequestBody(null, 0, 0)
 
     fun handleResponseStatus(response: Response): Boolean {
         val code = response.code
