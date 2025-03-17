@@ -127,6 +127,12 @@ class EventDataSource @Inject constructor(
         return eventApi.declineInvite(eventId, token, userId)
     }
 
+    // directly adds a user to an event
+    suspend fun addUserToEvent(eventId: String, userId: String) {
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+        eventApi.addUser(eventId, userId, token)
+    }
+
     suspend fun getImageInfo(eventId: String): List<ImageInfo> {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
@@ -153,5 +159,13 @@ class EventDataSource @Inject constructor(
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         eventApi.vote(eventId, imageId, userId, vote, token)
+    }
+
+    suspend fun inviteUsersFromEmail(userIds: List<String>, eventId: String) {
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        Log.d(TAG, "Inviting users $userIds to event $eventId")
+
+        userApi.inviteUsersFromIds(userIds, eventId, token)
     }
 }

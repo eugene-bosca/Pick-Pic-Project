@@ -6,6 +6,7 @@ import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.models.BitmapRanked
+import com.bmexcs.pickpic.data.models.Email
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.sources.EventDataSource
 import com.bmexcs.pickpic.data.sources.ImageDataSource
@@ -84,6 +85,10 @@ class EventRepository @Inject constructor(
         eventDataSource.declineEvent(eventId)
     }
 
+    suspend fun addUserToEvent(eventId: String, userId: String) {
+        eventDataSource.addUserToEvent(eventId, userId)
+    }
+
     fun setCurrentEvent(eventInfo: EventInfo) {
         event.value = eventInfo
         repositoryScope.launch {
@@ -130,5 +135,9 @@ class EventRepository @Inject constructor(
                 }
             }
         }
+    }
+
+    suspend fun inviteUsersWithId(userIds: List<String>, eventId: String)  {
+        return eventDataSource.inviteUsersFromEmail(userIds, eventId)
     }
 }
