@@ -722,6 +722,6 @@ def unranked_images(request: Request, event_id, user_id):
         event_id=event_id
     ).exclude(image_id__in=ranked_image_ids)
 
-    serializer = EventContentSerializer(unranked_images)
+    serializer = EventContentSerializer(unranked_images, many=True)
 
     return Response(data=serializer.data, status=status.HTTP_200_OK)
