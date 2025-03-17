@@ -218,7 +218,7 @@ def create_image(request: Request, event_id=None):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# Get/upload a users profile picture
+# Get/upload a user profile
 @api_view(['GET', 'PUT'])
 def user_pfp(request: Request):
     try:
