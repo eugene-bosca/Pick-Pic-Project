@@ -39,8 +39,6 @@ fun PickPicScaffold(
                 NavDrawerEntry("Home", navController, Route.Home.route)
                 NavDrawerEntry("Profile", navController, Route.Profile.route)
                 NavDrawerEntry("Support", navController, Route.Support.route)
-                NavDrawerEntry("Events", navController, Route.Event.route)
-                NavDrawerEntry("Ranking", navController, Route.Ranking.route)
             }
         }
     ) {
