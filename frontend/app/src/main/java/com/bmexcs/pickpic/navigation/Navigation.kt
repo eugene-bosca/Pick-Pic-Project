@@ -25,7 +25,7 @@ fun Navigation(
     ) {
         // Home Screen
         composable(Route.Home.route) {
-            PickPicScaffold("Home Page", navController) {
+            PickPicScaffold("", navController) {
                 HomePageScreenView(navController)
             }
         }
