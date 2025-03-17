@@ -1,13 +1,13 @@
 package com.bmexcs.pickpic.data.services
 
 import android.util.Log
-import com.bmexcs.pickpic.data.models.Email
 import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.UserEventList
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserCreation
 import com.bmexcs.pickpic.data.models.UserEmails
 import com.bmexcs.pickpic.data.models.UserFirebaseId
+import com.bmexcs.pickpic.data.models.UserIds
 import com.bmexcs.pickpic.data.utils.Api
 import com.bmexcs.pickpic.data.utils.HttpException
 import com.google.gson.Gson
@@ -311,7 +311,7 @@ class UserApiService {
      *
      * **Response**: `List<models.User>`
      */
-    suspend fun usersFromEmails(emails: List<String>, token: String): List<User> =
+    suspend fun usersFromEmails(emails: List<String>, token: String): List<String> =
         withContext(Dispatchers.IO) {
             val endpoint = "user/id/from_email/"
             val url = Api.url(endpoint)
@@ -334,10 +334,12 @@ class UserApiService {
                 val body = response.body?.string()
                     ?: throw HttpException(response.code, "Empty response body")
 
-                val resultType = object : TypeToken<List<User>>() {}.type
-                val result: List<User> = gson.fromJson(body, resultType)
+                Log.d(TAG, body)
 
-                return@withContext result
+                val resultType = object : TypeToken<UserIds>() {}.type
+                val result: UserIds = gson.fromJson(body, resultType)
+
+                return@withContext result.users
             }
         }
 
@@ -384,14 +386,14 @@ class UserApiService {
             }
         }
 
-    suspend fun inviteUsersFromEmail(userIds: List<User>, eventId: String, token: String): String =
+    suspend fun inviteUsersFromIds(userIds: List<String>, eventId: String, token: String) =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/invite/users/"
+            val endpoint = "event/$eventId/invite/user/"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "POST: $url")
 
-            val requestBody = gson.toJson(userIds)
+            val requestBody = gson.toJson(userIds.first())
                 .toRequestBody("application/json".toMediaType())
 
             val request = Request.Builder()
@@ -403,14 +405,6 @@ class UserApiService {
 
             client.newCall(request).execute().use { response ->
                 Api.handleResponseStatus(response)
-
-                val body = response.body?.string()
-                    ?: throw HttpException(response.code, "Empty response body")
-
-                val resultType = object : TypeToken<String>() {}.type
-                val result: String = gson.fromJson(body, resultType)
-
-                return@withContext result
             }
         }
 }

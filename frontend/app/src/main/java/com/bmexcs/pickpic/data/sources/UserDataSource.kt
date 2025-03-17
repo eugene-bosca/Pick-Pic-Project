@@ -64,7 +64,7 @@ class UserDataSource @Inject constructor(
         }
     }
 
-    suspend fun getUsersFromEmails(emails: List<String>): List<User> {
+    suspend fun getUsersFromEmails(emails: List<String>): List<String> {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         Log.d(TAG, "Getting users from $emails")

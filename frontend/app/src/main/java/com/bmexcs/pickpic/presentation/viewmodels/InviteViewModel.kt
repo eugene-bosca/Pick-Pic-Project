@@ -43,7 +43,7 @@ class InviteViewModel @Inject constructor(
             try {
                 // Loop through each email to fetch the userId one by one on the IO dispatcher.
                 val userIds = withContext(Dispatchers.IO) {
-                    val ids = mutableListOf<User>()
+                    val ids = mutableListOf<String>()
                     ids.addAll(userRepository.getUsersFromEmails(emailList))
                     ids
                 }

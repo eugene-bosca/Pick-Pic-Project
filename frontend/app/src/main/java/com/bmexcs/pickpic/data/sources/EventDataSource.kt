@@ -161,11 +161,11 @@ class EventDataSource @Inject constructor(
         eventApi.vote(eventId, imageId, userId, vote, token)
     }
 
-    suspend fun inviteUsersFromEmail(userId: List<User>, eventId: String) {
+    suspend fun inviteUsersFromEmail(userIds: List<String>, eventId: String) {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
-        Log.d(TAG, "Inviting users $userId to event $eventId")
+        Log.d(TAG, "Inviting users $userIds to event $eventId")
 
-        userApi.inviteUsersFromEmail(userId, eventId, token)
+        userApi.inviteUsersFromIds(userIds, eventId, token)
     }
 }
