@@ -54,15 +54,13 @@ fun EventScreenView(
 ) {
     val context = LocalContext.current
 
-    val images = viewModel.images.collectAsState().value.toList()
-    val isLoading by viewModel.isLoading.collectAsState()
-
-    var fullScreenImage by remember { mutableStateOf<FullscreenImage?>(null) }
-
+    // Current event info
     val eventInfo by viewModel.event.collectAsState()
     val eventId = eventInfo.event_id
 
-    val expandFilter = remember { mutableStateOf( false ) }
+    // Images
+    val images = viewModel.images.collectAsState().value.toList()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     // Pagination state
     val pageSize = 10
@@ -77,6 +75,13 @@ fun EventScreenView(
     val imagesToDisplay = images
         .drop(currentPage * pageSize) // Skip images for previous pages
         .take(pageSize) // Take only `pageSize` images for the current page
+
+    // Filter button
+    val expandFilter = remember { mutableStateOf( false ) }
+    val filterButtonBox = remember { mutableStateOf(Offset.Zero) }
+
+    // Fullscreen image
+    var fullScreenImage by remember { mutableStateOf<FullscreenImage?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -164,9 +169,9 @@ fun EventScreenView(
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        contentPadding = PaddingValues(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         itemsIndexed(imagesToDisplay) { _, (imageId, stream) ->
                             stream?.let {
@@ -209,8 +214,6 @@ fun EventScreenView(
                 )
             }
         }
-
-        val filterButtonBox = remember { mutableStateOf(Offset.Zero) }
 
         Box(
             modifier = Modifier.onGloballyPositioned { coordinates ->
@@ -292,22 +295,16 @@ fun EventScreenView(
 
 @Composable
 fun ImageTile(imageRequest: ImageRequest, onClick: () -> Unit) {
-    ElevatedCard(
+    AsyncImage(
+        model = imageRequest,
+        contentDescription = "Event image",
+        contentScale = ContentScale.Crop,
         modifier = Modifier
-            .size(width = 150.dp, height = 225.dp)
+            .fillMaxSize()
+            .padding(all = 15.dp)
+            .padding(bottom = 20.dp)
+            .border(width = 1.dp, color = Color.Black)
             .clip(RoundedCornerShape(12.dp))
             .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        AsyncImage(
-            model = imageRequest,
-            contentDescription = "Event image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(all = 15.dp)
-                .padding(bottom = 20.dp)
-                .border(width = 1.dp, color = Color.Black)
-        )
-    }
+    )
 }
