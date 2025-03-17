@@ -14,6 +14,8 @@ from django.contrib.auth.hashers import check_password
 from django.conf import settings
 from django.db.models import Subquery
 from rest_framework.request import Request
+from rest_framework import serializers
+
 
 import uuid
 import jwt
@@ -47,9 +49,10 @@ class EventUserViewSet(viewsets.ModelViewSet):
         queryset = self.queryset.filter(event_id=event_id)
 
         if not queryset.exists():
-            return Response(data={[]}, status=status.HTTP_200_OK)
+            return Response(data=[], status=status.HTTP_200_OK)
 
         serializer = self.get_serializer(queryset, many=True)
+
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 # Image ViewSet
@@ -581,7 +584,7 @@ def generate_invite_link(request, event_id):
 
 # Join event via link/QR code
 @api_view(['GET', 'POST'])
-def join_via_link(request, obfuscated_event_id):
+def join_via_link(request: Request, obfuscated_event_id):
     """
     Handle user joining an event via an invite link with jibberish event ID.
     GET: Return event details
@@ -702,6 +705,10 @@ def vote_image(request: Request, event_id, image_id):
 
     return Response(data={}, status=status.HTTP_202_ACCEPTED)
 
+@extend_schema(
+    responses={200: EventContentSerializer(many=True)}
+)
+@api_view(['GET'])
 def unranked_images(request: Request, event_id, user_id):
 
     event_image_ids = EventContent.objects.filter(event_id=event_id).values_list('image_id', flat=True)

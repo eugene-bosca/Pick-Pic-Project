@@ -20,7 +20,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
@@ -36,6 +35,18 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.sp
 
+private data class ButtonInfo (
+    val label: String,
+    val icon: Int,
+    val onClick: () -> Unit
+)
+
+private data class FullscreenImage (
+    val request: ImageRequest,
+    val data: ByteArray,
+    val id: String
+)
+
 @Composable
 fun EventScreenView(
     navController: NavHostController,
@@ -43,15 +54,13 @@ fun EventScreenView(
 ) {
     val context = LocalContext.current
 
-    val images = viewModel.images.collectAsState().value.toList()
-    val isLoading by viewModel.isLoading.collectAsState()
-
-    var fullScreenImage by remember { mutableStateOf<ImageRequest?>(null) }
-
+    // Current event info
     val eventInfo by viewModel.event.collectAsState()
     val eventId = eventInfo.event_id
 
-    val expandFilter = remember { mutableStateOf( false ) }
+    // Images
+    val images = viewModel.images.collectAsState().value.toList()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     // Pagination state
     val pageSize = 10
@@ -67,6 +76,13 @@ fun EventScreenView(
         .drop(currentPage * pageSize) // Skip images for previous pages
         .take(pageSize) // Take only `pageSize` images for the current page
 
+    // Filter button
+    val expandFilter = remember { mutableStateOf( false ) }
+    val filterButtonBox = remember { mutableStateOf(Offset.Zero) }
+
+    // Fullscreen image
+    var fullScreenImage by remember { mutableStateOf<FullscreenImage?>(null) }
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -76,12 +92,6 @@ fun EventScreenView(
             }
         }
     }
-
-    data class ButtonInfo (
-        val label: String,
-        val icon: Int,
-        val onClick: () -> Unit
-    )
 
     val buttons = listOf(
         ButtonInfo(
@@ -140,7 +150,7 @@ fun EventScreenView(
             }
         }
 
-        Box( // Wrap the image content inside a Box with weight(1f)
+        Box(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
@@ -151,7 +161,7 @@ fun EventScreenView(
                     CircularProgressIndicator()
                 }
 
-                images.isEmpty() -> {
+                imagesToDisplay.isEmpty() -> {
                     Text("Empty event. Click Add Photos to get started!")
                 }
 
@@ -159,11 +169,11 @@ fun EventScreenView(
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        contentPadding = PaddingValues(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
-                        itemsIndexed(images) { _, (imageId, stream) ->
+                        itemsIndexed(imagesToDisplay) { _, (imageId, stream) ->
                             stream?.let {
                                 val imageRequest = ImageRequest.Builder(context)
                                     .data(it)
@@ -173,11 +183,14 @@ fun EventScreenView(
                                     .build()
 
                                 ImageTile(
-                                    imageData = it,
                                     imageRequest = imageRequest,
-                                    imageId = imageId,
-                                    onClick = { fullScreenImage = imageRequest },
-                                    viewModel = viewModel
+                                    onClick = {
+                                        fullScreenImage = FullscreenImage(
+                                            request = imageRequest,
+                                            data = it,
+                                            id = imageId
+                                        )
+                                    },
                                 )
                             }
                         }
@@ -201,8 +214,6 @@ fun EventScreenView(
                 )
             }
         }
-
-        val filterButtonBox = remember { mutableStateOf(Offset.Zero) }
 
         Box(
             modifier = Modifier.onGloballyPositioned { coordinates ->
@@ -233,77 +244,67 @@ fun EventScreenView(
             }
         }
 
-        fullScreenImage?.let { request ->
-            Dialog(
-                onDismissRequest = { fullScreenImage = null }
+        fullScreenImage?.let { image ->
+            ImageFull(
+                image = image.request,
+                onDismiss = {
+                    fullScreenImage = null
+                }
             ) {
-                ImageFull(
-                    image = request,
-                    onDismiss = { fullScreenImage = null }
-                )
+                NavigationBar {
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.trash_can),
+                                contentDescription = "Delete Photo"
+                            )
+                        },
+                        label = { Text("Delete Photo", fontSize = 16.sp) },
+                        selected = false,
+                        onClick = {
+                            image.id.let {
+                                viewModel.deleteImage(
+                                    viewModel.event.value.event_id,
+                                    it
+                                )
+                                fullScreenImage = null
+                            }
+                        },
+                    )
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.download_box),
+                                contentDescription = "Download Photo"
+                            )
+                        },
+                        label = { Text("Download Photo", fontSize = 16.sp) },
+                        selected = false,
+                        onClick = {
+                            viewModel.saved.value =
+                                viewModel.saveImageFromByteArrayToGallery(
+                                    context, image.data, image.id
+                                )
+                        },
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun ImageTile(
-    imageData: ByteArray,
-    imageRequest: ImageRequest,
-    imageId: String,
-    onClick: () -> Unit,
-    viewModel: EventsViewModel
-) {
-    ElevatedCard(
+fun ImageTile(imageRequest: ImageRequest, onClick: () -> Unit) {
+    AsyncImage(
+        model = imageRequest,
+        contentDescription = "Event image",
+        contentScale = ContentScale.Crop,
         modifier = Modifier
-            .size(width = 150.dp, height = 225.dp)
+            .fillMaxSize()
+            .padding(all = 15.dp)
+            .padding(bottom = 20.dp)
+            .border(width = 1.dp, color = Color.Black)
             .clip(RoundedCornerShape(12.dp))
             .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        val context = LocalContext.current
-
-        var isExpanded by remember { mutableStateOf(false) }
-
-        Box(modifier = Modifier.padding(start = 140.dp)) {
-            IconButton(
-                onClick = { isExpanded = !isExpanded },
-                modifier = Modifier.size(30.dp)
-            ) {
-                Icon(
-                    painterResource(id = R.drawable.more_horizontal),
-                    contentDescription = "More options"
-                )
-            }
-            DropdownMenu(
-                expanded = isExpanded,
-                onDismissRequest = { isExpanded = false }
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Delete Photo") },
-                    onClick = {
-                        viewModel.deleteImage(viewModel.event.value.event_id, imageId)
-                        isExpanded = false
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Download Photo") },
-                    onClick = {
-                        viewModel.saved.value = viewModel.saveImageFromByteArrayToGallery(context, imageData, imageId)
-                        isExpanded = false
-                    }
-                )
-            }
-        }
-        AsyncImage(
-            model = imageRequest,
-            contentDescription = "Event image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(all = 15.dp)
-                .padding(bottom = 20.dp)
-                .border(width = 1.dp, color = Color.Black)
-        )
-    }
+    )
 }

@@ -45,10 +45,10 @@ urlpatterns = [
     path('event/<str:event_id>/image/<str:image_id>/', views.get_delete_image, name='GET/DELETE Image'),
     path('event/<str:event_id>/image/count/', views.event_image_count, name='Event Image Count'),
     path('event/<str:event_id>/image/highest_score/', views.get_highest_scored_image, name='Get Highest Score Image'),
-    path('event/<str:event_id>/user/<str:user_id>/unranked/', views.unranked_images, name='GET unranked images'),
+    path('event/<str:event_id>/image/user/<str:user_id>/unranked/', views.unranked_images, name='GET unranked images'),
     
     # upvote/downvote
-    path('/event/<str:event_id>/image/<str:image_id>/vote/', views.vote_image, name='Upvote/Downvote Image'),
+    path('event/<str:event_id>/image/<str:image_id>/vote/', views.vote_image, name='Upvote/Downvote Image'),
 
     # event
     path('event/create/', views.create_new_event, name='Create New Event'),
