@@ -705,10 +705,10 @@ def vote_image(request: Request, event_id, image_id):
 
     if vote == 'upvote' and scoreBy.score < 1:
         scoreBy.score += 1
-    elif vote == 'downvote' and scoreBy > -1:
+    elif vote == 'downvote' and scoreBy.score > -1:
         scoreBy.score -= 1
 
-    return Response(data={}, status=status.HTTP_204_NO_CONTENT)
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 @extend_schema(
     responses={200: EventContentSerializer(many=True)}

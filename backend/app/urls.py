@@ -60,7 +60,6 @@ urlpatterns = [
     path('event/<str:event_id>/users/', views.EventUserViewSet.as_view({'get': 'retrieve'}), name='Event Users'),
     path('event/<str:event_id>/user/<str:user_id>/', views.remove_event_user, name='Remove Event User'),
 
-
     path('user/<str:user_id>/events/', views.list_users_events, name='List Users Events'),
     path('user/<str:user_id>/events/<event_id>/', views.user_delete_event, name='Delete User\'s own Album'),
 
