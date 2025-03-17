@@ -7,4 +7,3 @@ from .models import EventContent, Event
 def update_event_last_modified(sender, instance, **kwargs):
     event = instance.event
     event.save()  # Triggers auto_now=True on last_modified
-

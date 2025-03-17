@@ -3,6 +3,6 @@ package com.bmexcs.pickpic.data.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UserId (
-    val user_id: String = ""
+data class UserFirebaseId (
+    val firebase_id: String = ""
 )

@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from .models import *
-from .serializers import UserSerializer, UserSettingsSerializer, EventSerializer, EventUserSerializer, ImageSerializer, EventContentSerializer, ScoredBySerializer, VoteImageSerializer
+from .serializers import *
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -107,11 +107,13 @@ class ScoredByViewSet(viewsets.ModelViewSet):
 # Secret key for JWT
 SECRET_KEY = settings.SECRET_KEY  # Use Django's secret key
 
+# Get the metadata for an event
 @api_view(['GET'])
 def event_info(request: Request, event_id):
     event = Event.objects.get(event_id=event_id)
     return Response(data=EventSerializer(event).data, status=status.HTTP_200_OK)
 
+# Authenticate a user
 @api_view(['POST'])
 def authenticate(request: Request):
     username = request.data.get('username')
@@ -146,7 +148,8 @@ def authenticate(request: Request):
         return Response({"exists": False, "comment": "User does not exist"}, status=404)
     except User.MultipleObjectsReturned:
         return Response({"exists": False, "comment": "Multiple users with the same username exist???"}, status=500)
- 
+
+# Get or delete an image from an event
 @api_view(['GET', 'DELETE'])
 def get_delete_image(request: Request, event_id=None, image_id=None):
     try:
@@ -187,11 +190,15 @@ def get_delete_image(request: Request, event_id=None, image_id=None):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# Add an image to an event
 @api_view(['PUT'])
-def create_image(request: Request, event_id=None):
+def create_image(request: Request, event_id=None, user_id=None):
     try:
         if not Event.objects.filter(event_id=event_id).exists():
-            return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event not found" }) 
+            return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event not found" })
+
+        if not User.objects.filter(user_id=user_id).exists():
+            return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"user not found" })  
 
         file_bytes = request.body
         content_type = request.headers.get('Content-Type') 
@@ -208,12 +215,17 @@ def create_image(request: Request, event_id=None):
 
         new_image = Image.objects.create(file_name=unique_name)
         
-        event_content = EventContent.objects.create(event_id=event_id, image_id=(new_image.image_id))
+        event_content = EventContent.objects.create(
+            event_id=event_id,
+            user_id=user_id,
+            image_id=(new_image.image_id)
+        )
 
         return Response(status=status.HTTP_201_CREATED, data=EventContentSerializer(event_content).data)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# Get/upload a user profile
 @api_view(['GET', 'PUT'])
 def user_pfp(request: Request):
     try:
@@ -257,6 +269,7 @@ def user_pfp(request: Request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# Get the number of images added to an event
 @api_view(['GET'])
 def event_image_count(request: Request, event_id):
     try:
@@ -265,6 +278,7 @@ def event_image_count(request: Request, event_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# List the users in an event
 @api_view(['GET'])
 def list_users_events(request: Request, user_id):
     try:
@@ -285,6 +299,7 @@ def list_users_events(request: Request, user_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
  
+ # Create a new event
 @extend_schema(
     request=EventSerializer,
     responses={201: EventSerializer, 404: {"error": "user not found"}},
@@ -310,28 +325,33 @@ def create_new_event(request: Request):
 
     return Response(status=status.HTTP_201_CREATED, data=EventSerializer(event).data)
 
-
-@api_view(['GET'])
-def get_user_id_by_firebase_id(request: Request, firebase_id):
+# Retrieves the user associated with the given Firebase ID
+@extend_schema(
+    request=UUIDSerializer,
+    responses={200: UserSerializer}
+)
+@api_view(['POST'])
+def get_user_id_by_firebase_id(request: Request):
     """
-    Retrieves the user_id associated with a given firebase_id.
+    Retrieves the user associated with a given firebase_id.
 
     Args:
         request: The HTTP request object.
         firebase_id: The firebase_id to search for.
 
     Returns:
-        Response: A JSON response containing the user_id or an error message.
+        Response: A JSON response containing the user or an error message.
     """
-
     try:
-        user = User.objects.get(firebase_id=firebase_id)
-        return Response({'user_id': user.user_id}, status=status.HTTP_200_OK) # Convert UUID to string for JSON serialization
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        firebase_id = request.data.get('firebase_id')
 
+        user = User.objects.get(firebase_id=firebase_id)
+    except User.DoesNotExist:
+        return Response(data={ 'error': 'user does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    return Response(data=UserSerializer(user).data, status=status.HTTP_200_OK)
+
+# Adds a user to the given event
 @api_view(['POST'])
 def add_user_to_event(request: Request, event_id, user_id):
     """
@@ -372,7 +392,12 @@ def add_user_to_event(request: Request, event_id, user_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(['GET'])
+# Retrieve a userId associated wiht the given email
+@extend_schema(
+    request=EmailSerializer,
+    responses={200: UserSerializer(many=True)}
+)
+@api_view(['POST'])
 def get_user_id_from_email(request: Request):
     """
     Retrieves the user_id associated with a given email address.
@@ -384,7 +409,7 @@ def get_user_id_from_email(request: Request):
     Returns:
         Response: A JSON response containing the user_id or an error message.
     """
-    emails = request.query_params.getlist("emails")
+    emails = request.data.get("emails")
     users = []
 
     existing_users = User.objects.filter(email__in=emails)
@@ -396,6 +421,7 @@ def get_user_id_from_email(request: Request):
 
     return Response(data={'users': users}, status=status.HTTP_200_OK)
     
+# Get the image with the highest score
 @api_view(['GET'])
 def get_highest_scored_image(request: Request, event_id):
     """
@@ -437,7 +463,8 @@ def get_highest_scored_image(request: Request, event_id):
         return Response({'error': 'Invalid UUID format'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+# Decline an event invitation for the specified user
 @api_view(['DELETE'])
 def remove_event_user(request, event_id, user_id):
     """
@@ -450,6 +477,7 @@ def remove_event_user(request, event_id, user_id):
     except EventUser.DoesNotExist:
         return Response({'error': 'Event user not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+# Accept an event invitation for the specified user
 @api_view(['PUT'])
 def accept_event_user(request, event_id, user_id):
     """
@@ -463,6 +491,7 @@ def accept_event_user(request, event_id, user_id):
     except EventUser.DoesNotExist:
         return Response({'error': 'Event user not found.'}, status=status.HTTP_404_NOT_FOUND)
     
+# Get the events that the user is invited to but has not yet accepted
 @api_view(['GET'])
 def get_pending_events(request, user_id):
     """
@@ -476,6 +505,7 @@ def get_pending_events(request, user_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# Get the last-modified date for an event
 @api_view(['GET'])
 def event_last_modified(request, event_id):
     event = Event.objects.filter(event_id=event_id)
@@ -484,6 +514,7 @@ def event_last_modified(request, event_id):
     return Response(data={"last_modified": Event.objects.get(event_id=event_id).last_modified.strftime("%d/%m/%Y, %H:%M:%S") },
                     status=status.HTTP_200_OK)
 
+# Delete an event
 @api_view(['DELETE'])
 def user_delete_event(request, user_id, event_id):
     try:
@@ -502,7 +533,7 @@ def remove_user_from_event(request, event_id, user_id):
     except EventUser.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event does not exist or user is not part of this event" })
 
-
+# Invite one or more users to an event
 @api_view(['POST'])
 def invite_to_event(request, event_id):
     """
@@ -688,7 +719,7 @@ def get_pending_event_invitations(request, user_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
+# Vote on an image
 @extend_schema(
     request=VoteImageSerializer,
     responses={204: {}}
@@ -710,6 +741,7 @@ def vote_image(request: Request, event_id, image_id):
 
     return Response(status=status.HTTP_204_NO_CONTENT)
 
+# Get the unranked images associated with a user
 @extend_schema(
     responses={200: EventContentSerializer(many=True)}
 )

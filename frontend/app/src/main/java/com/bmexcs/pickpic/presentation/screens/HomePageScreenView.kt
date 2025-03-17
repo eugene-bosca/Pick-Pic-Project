@@ -151,7 +151,7 @@ fun EventListing(
             },
             trailingContent = {
                 // Show a crown icon if the current user is the owner of the event
-                if (viewModel.isCurrentUserOwner(eventItem.owner)) {
+                if (viewModel.isCurrentUserOwner(eventItem.owner.user_id)) {
                     Icon(
                         painter = painterResource(R.drawable.ic_crown),
                         contentDescription = "Owner",

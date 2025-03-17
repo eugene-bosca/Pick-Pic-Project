@@ -51,7 +51,7 @@ fun InvitedQRView(
     // Fetch event owner info only after eventInfo is available
     LaunchedEffect(eventInfo) {
         if (eventInfo != null) {
-            viewModel.getEventOwnerInfo(eventInfo.owner)
+            viewModel.getEventOwnerInfo(eventInfo.owner.user_id)
         }
     }
     Column(
