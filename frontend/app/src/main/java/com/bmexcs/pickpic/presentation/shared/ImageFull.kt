@@ -1,5 +1,6 @@
 package com.bmexcs.pickpic.presentation.shared
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,7 +28,13 @@ fun ImageFull(
                 dismissOnClickOutside = true // Dismiss on outside click
             )
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable {
+                        onDismiss()
+                    }
+            ) {
                 AsyncImage(
                     model = image,
                     contentDescription = "Full Screen Image",
