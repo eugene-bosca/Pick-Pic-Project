@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.text.SimpleDateFormat
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,6 +32,8 @@ class EventRepository @Inject constructor(
 ) {
     private val _eventInfo = MutableStateFlow(EventInfo())
     val event = _eventInfo
+
+    private var timestamp: Long = 0
 
     private val repositoryScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -51,6 +55,17 @@ class EventRepository @Inject constructor(
 
     suspend fun getEventOwnerInfo(ownerId: String): User {
         return eventDataSource.getEventOwnerInfo(ownerId)
+    }
+
+    suspend fun isUpdated(eventId: String): Boolean {
+        val lastModified =  eventDataSource.getEventLastModified(eventId)
+
+        return if (lastModified > timestamp) {
+            timestamp = lastModified
+            true
+        } else {
+            false
+        }
     }
 
     suspend fun createEvent(name: String): EventInfo {

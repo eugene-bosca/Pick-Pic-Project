@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.EventInfo
@@ -13,13 +14,17 @@ import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import javax.inject.Inject
+
+private const val TAG = "EventsViewModel"
 
 @HiltViewModel
 class EventsViewModel @Inject constructor(
@@ -42,6 +47,11 @@ class EventsViewModel @Inject constructor(
     init {
         _eventInfo.value = eventRepository.event.value
         getImagesByEventId(event.value.event_id)
+        startAutoRefresh()
+    }
+
+    fun refresh() {
+        refreshInternal()
     }
 
     fun addImage(imageByte: ByteArray) {
@@ -131,5 +141,21 @@ class EventsViewModel @Inject constructor(
 
             _images.value = imageBitmapList
         }.invokeOnCompletion { _isLoading.value = false }
+    }
+
+    private fun startAutoRefresh() {
+        viewModelScope.launch(Dispatchers.IO) {
+            while (isActive) {
+                delay(5000)
+                if (eventRepository.isUpdated(event.value.event_id)) {
+                    refreshInternal()
+                }
+            }
+        }
+    }
+
+    private fun refreshInternal() {
+        Log.d(TAG, "Refreshing events page...")
+        getImagesByEventId(event.value.event_id)
     }
 }

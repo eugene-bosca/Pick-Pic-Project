@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.BitmapRanked
+import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.utils.Vote
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,12 +23,16 @@ class RankingViewModel @Inject constructor(
     private val _currentImage = MutableStateFlow<BitmapRanked?>(null)
     val currentImage: StateFlow<BitmapRanked?> = _currentImage
 
+    private val _eventInfo = MutableStateFlow(EventInfo())
+    val event = _eventInfo
+
     enum class SwipeDirection {
         LEFT,
         RIGHT;
     }
 
     init {
+        _eventInfo.value = eventRepository.event.value
         loadNextImage()
     }
 
