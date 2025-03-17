@@ -46,9 +46,7 @@ fun Navigation(
 
         // Event Screen
         composable(Route.Event.route) {
-            PickPicScaffold("Events", navController) {
-                EventScreenView(navController)
-            }
+            EventScreenView(navController)
         }
 
         // Ranking Screen

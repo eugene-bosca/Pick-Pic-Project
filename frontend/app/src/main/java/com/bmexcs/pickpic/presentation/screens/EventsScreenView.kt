@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,6 +49,7 @@ private data class FullscreenImage (
     val id: String
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventScreenView(
     navController: NavHostController,
@@ -57,6 +60,12 @@ fun EventScreenView(
     // Current event info
     val eventInfo by viewModel.event.collectAsState()
     val eventId = eventInfo.event_id
+    val eventName = eventInfo.event_name // Use event_name instead of name
+
+    // Debugging: Print eventInfo to verify its structure
+    LaunchedEffect(eventInfo) {
+        println("Event Info: $eventInfo")
+    }
 
     // Images
     val images = viewModel.images.collectAsState().value.toList()
@@ -77,7 +86,7 @@ fun EventScreenView(
         .take(pageSize) // Take only `pageSize` images for the current page
 
     // Filter button
-    val expandFilter = remember { mutableStateOf( false ) }
+    val expandFilter = remember { mutableStateOf(false) }
     val filterButtonBox = remember { mutableStateOf(Offset.Zero) }
 
     // Fullscreen image
@@ -120,6 +129,18 @@ fun EventScreenView(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
     ) {
+        TopAppBar(
+            title = { Text(text = eventName) },
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            }
+        )
+
         // Pagination controls directly below the grid
         Row(
             modifier = Modifier
