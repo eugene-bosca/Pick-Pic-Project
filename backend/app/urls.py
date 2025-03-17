@@ -61,7 +61,7 @@ urlpatterns = [
     path('event/<str:event_id>/user/<str:user_id>/', views.remove_event_user, name='Remove Event User'),
 
     path('user/<str:user_id>/events/', views.list_users_events, name='List Users Events'),
-    path('user/<str:user_id>/events/<event_id>/', views.user_delete_event, name='Delete User\'s own Album'),
+    path('user/<str:user_id>/events/<str:event_id>/', views.user_delete_event, name='Delete User\'s own Album'),
 
     path('user/from_fire_base/<str:firebase_id>/', views.get_user_id_by_firebase_id, name='Exchange User ID For Firebase ID'),
     path('user/from_email/<str:email>/', views.get_user_id_from_email, name='Get User ID From Email'),
