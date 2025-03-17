@@ -96,7 +96,7 @@ class InvitedViewModel @Inject constructor(
         }
     }
 
-    fun redirectLogin(context: Context) {
+    private fun redirectLogin(context: Context) {
         // Create an Intent to start MainActivity
         val intent = Intent(context, MainActivity::class.java).apply {
             putExtra("QR_REQUIRE_LOGIN", true)
@@ -109,4 +109,26 @@ class InvitedViewModel @Inject constructor(
         (context as? Activity)?.finish()
     }
 
+    fun handleAcceptInvite(context: Context) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                eventRepository.addUserToEvent(eventId, userRepository.getUser().user_id)
+                Log.d("InvitedViewModel", "Invading Poland")
+            } catch (e: Exception) {
+                Log.d("InvitedViewModel", e.toString())
+            } finally {
+                _isLoading.value = false
+                toMainActivity(context)
+            }
+        }
+    }
+    fun handleDeclineInvite(context: Context) {
+        toMainActivity(context)
+    }
+
+    private fun toMainActivity(context: Context) {
+        val intent = Intent(context, MainActivity::class.java)
+        context.startActivity(intent)
+    }
 }

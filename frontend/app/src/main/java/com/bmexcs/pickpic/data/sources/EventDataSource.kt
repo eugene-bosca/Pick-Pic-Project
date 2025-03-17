@@ -6,7 +6,6 @@ import com.bmexcs.pickpic.data.models.EventCreation
 import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.models.User
-import com.bmexcs.pickpic.data.models.UserId
 import com.bmexcs.pickpic.data.services.EventApiService
 import com.bmexcs.pickpic.data.services.UserApiService
 import com.bmexcs.pickpic.data.utils.NotFoundException
@@ -128,6 +127,12 @@ class EventDataSource @Inject constructor(
         return eventApi.declineInvite(eventId, token, userId)
     }
 
+    // directly adds a user to an event
+    suspend fun addUserToEvent(eventId: String, userId: String) {
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+        eventApi.addUser(eventId, userId, token)
+    }
+
     suspend fun getImageInfo(eventId: String): List<ImageInfo> {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
@@ -156,7 +161,7 @@ class EventDataSource @Inject constructor(
         eventApi.vote(eventId, imageId, userId, vote, token)
     }
 
-    suspend fun inviteUsersFromEmail(userId: List<UserId>, eventId: String) {
+    suspend fun inviteUsersFromEmail(userId: List<User>, eventId: String) {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         Log.d(TAG, "Inviting users $userId to event $eventId")

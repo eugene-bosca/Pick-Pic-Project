@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.Email
-import com.bmexcs.pickpic.data.models.UserId
+import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -43,12 +43,8 @@ class InviteViewModel @Inject constructor(
             try {
                 // Loop through each email to fetch the userId one by one on the IO dispatcher.
                 val userIds = withContext(Dispatchers.IO) {
-                    val ids = mutableListOf<UserId>()
-                    for (email in emailList) {
-                        // Replace this with your actual call that retrieves a UserId for a single email.
-                        val userId = userRepository.getUserIdWithEmail(email)
-                        ids.add(userId)
-                    }
+                    val ids = mutableListOf<User>()
+                    ids.addAll(userRepository.getUsersFromEmails(emailList))
                     ids
                 }
                 // Get event id from repository (assuming it has been set)

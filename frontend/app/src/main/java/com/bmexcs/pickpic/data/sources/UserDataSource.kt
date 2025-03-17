@@ -4,7 +4,6 @@ import android.util.Log
 import com.bmexcs.pickpic.data.models.Email
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserCreation
-import com.bmexcs.pickpic.data.models.UserId
 import com.bmexcs.pickpic.data.services.UserApiService
 import com.bmexcs.pickpic.data.utils.NotFoundException
 import javax.inject.Inject

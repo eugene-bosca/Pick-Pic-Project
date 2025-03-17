@@ -96,11 +96,7 @@ fun InvitedQRView(
                         verticalAlignment = Alignment.CenterVertically // Align buttons vertically
                     ) {
                         Button(
-                            onClick = {
-                                // Handle accept action
-                                val intent = Intent(context, MainActivity::class.java)
-                                context.startActivity(intent)
-                                      },
+                            onClick = { viewModel.handleAcceptInvite(context) },
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(end = 8.dp)
@@ -112,7 +108,7 @@ fun InvitedQRView(
 
                         Button(
                             onClick = {
-                                // Handle decline action
+                                viewModel.handleDeclineInvite(context)
                             },
                             modifier = Modifier
                                 .weight(1f)

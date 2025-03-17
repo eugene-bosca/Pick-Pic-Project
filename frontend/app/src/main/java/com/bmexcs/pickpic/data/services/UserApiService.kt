@@ -384,7 +384,7 @@ class UserApiService {
             }
         }
 
-    suspend fun inviteUsersFromEmail(userIds: List<UserId>, eventId: String, token: String): String =
+    suspend fun inviteUsersFromEmail(userIds: List<User>, eventId: String, token: String): String =
         withContext(Dispatchers.IO) {
             val endpoint = "event/$eventId/invite/users/"
             val url = Api.url(endpoint)
