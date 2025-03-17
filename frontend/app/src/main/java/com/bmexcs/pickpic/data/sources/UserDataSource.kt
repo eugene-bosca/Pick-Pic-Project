@@ -29,8 +29,7 @@ class UserDataSource @Inject constructor(
         Log.d(TAG, "Initialize user state with firebaseId=$firebaseId")
 
         cachedUser = try {
-            val userId = userApi.userIdFromFirebase(firebaseId, token)
-            val user = userApi.get(userId, token)
+            val user = userApi.userFromFirebaseId(firebaseId, token)
             user
         } catch (e: NotFoundException) {
             Log.d(TAG, "User not found, creating new user")
@@ -64,10 +63,10 @@ class UserDataSource @Inject constructor(
         }
     }
 
-    suspend fun getUserIdFromEmail(email: String): String {
+    suspend fun getUsersFromEmails(emails: List<String>): List<User> {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
-        Log.d(TAG, "Getting user from $email")
-        return userApi.userIdFromEmail(email, token)
+        Log.d(TAG, "Getting users from $emails")
+        return userApi.usersFromEmails(emails, token)
     }
 }

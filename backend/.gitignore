@@ -177,3 +177,5 @@ cython_debug/
 
 # GCS and firebase service account
 concrete-spider-449820-p0-b07324f24234.json
+
+deployment-dev.txt

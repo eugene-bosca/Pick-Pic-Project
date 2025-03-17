@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from .models import *
-from .serializers import UserSerializer, UserSettingsSerializer, EventSerializer, EventUserSerializer, ImageSerializer, EventContentSerializer, ScoredBySerializer, VoteImageSerializer
+from .serializers import *
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -192,10 +192,13 @@ def get_delete_image(request: Request, event_id=None, image_id=None):
 
 # Add an image to an event
 @api_view(['PUT'])
-def create_image(request: Request, event_id=None):
+def create_image(request: Request, event_id=None, user_id=None):
     try:
         if not Event.objects.filter(event_id=event_id).exists():
-            return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event not found" }) 
+            return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event not found" })
+
+        if not User.objects.filter(user_id=user_id).exists():
+            return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"user not found" })  
 
         file_bytes = request.body
         content_type = request.headers.get('Content-Type') 
@@ -212,7 +215,11 @@ def create_image(request: Request, event_id=None):
 
         new_image = Image.objects.create(file_name=unique_name)
         
-        event_content = EventContent.objects.create(event_id=event_id, image_id=(new_image.image_id))
+        event_content = EventContent.objects.create(
+            event_id=event_id,
+            user_id=user_id,
+            image_id=(new_image.image_id)
+        )
 
         return Response(status=status.HTTP_201_CREATED, data=EventContentSerializer(event_content).data)
     except Exception as e:
@@ -318,27 +325,31 @@ def create_new_event(request: Request):
 
     return Response(status=status.HTTP_201_CREATED, data=EventSerializer(event).data)
 
-# Retrieves the userId associated with the given Firebase ID
-@api_view(['GET'])
-def get_user_id_by_firebase_id(request: Request, firebase_id):
+# Retrieves the user associated with the given Firebase ID
+@extend_schema(
+    request=UUIDSerializer,
+    responses={200: UserSerializer}
+)
+@api_view(['POST'])
+def get_user_id_by_firebase_id(request: Request):
     """
-    Retrieves the user_id associated with a given firebase_id.
+    Retrieves the user associated with a given firebase_id.
 
     Args:
         request: The HTTP request object.
         firebase_id: The firebase_id to search for.
 
     Returns:
-        Response: A JSON response containing the user_id or an error message.
+        Response: A JSON response containing the user or an error message.
     """
-
     try:
+        firebase_id = request.data.get('firebase_id')
+
         user = User.objects.get(firebase_id=firebase_id)
-        return Response({'user_id': user.user_id}, status=status.HTTP_200_OK) # Convert UUID to string for JSON serialization
     except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(data={ 'error': 'user does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    return Response(data=UserSerializer(user).data, status=status.HTTP_200_OK)
 
 # Adds a user to the given event
 @api_view(['POST'])
@@ -382,7 +393,11 @@ def add_user_to_event(request: Request, event_id, user_id):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # Retrieve a userId associated wiht the given email
-@api_view(['GET'])
+@extend_schema(
+    request=EmailSerializer,
+    responses={200: UserSerializer(many=True)}
+)
+@api_view(['POST'])
 def get_user_id_from_email(request: Request):
     """
     Retrieves the user_id associated with a given email address.
@@ -394,7 +409,7 @@ def get_user_id_from_email(request: Request):
     Returns:
         Response: A JSON response containing the user_id or an error message.
     """
-    emails = request.query_params.getlist("emails")
+    emails = request.data.get("emails")
     users = []
 
     existing_users = User.objects.filter(email__in=emails)
