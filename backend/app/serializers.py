@@ -49,3 +49,7 @@ class ScoredBySerializer(serializers.ModelSerializer):
     class Meta:
         model = ScoredBy
         fields = "__all__"
+
+class VoteImageSerializer(serializers.Serializer):
+    user_id = serializers.UUIDField()
+    vote = serializers.CharField()

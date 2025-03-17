@@ -15,7 +15,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -28,7 +27,6 @@ class EventsViewModel @Inject constructor(
     private val imageRepository: ImageRepository,
 ) : ViewModel() {
 
-    // Backing property for the dog images list
     private val _images = MutableStateFlow<Map<String, ByteArray?>>(emptyMap())
     val images: StateFlow<Map<String, ByteArray?>> = _images
 
@@ -67,10 +65,9 @@ class EventsViewModel @Inject constructor(
         var byteArray: ByteArray? = null
 
         try {
-            if(uri == null) {
+            if (uri == null) {
                 return null
             }
-
             // Open an InputStream from the URI
             inputStream = context.contentResolver.openInputStream(uri)
 
@@ -119,7 +116,7 @@ class EventsViewModel @Inject constructor(
         }
     }
 
-    fun getImagesByEventId(eventId: String) {
+    private fun getImagesByEventId(eventId: String) {
         _isLoading.value = true
 
         // Launch a coroutine on the IO dispatcher since this is a network request.

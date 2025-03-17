@@ -6,12 +6,13 @@ import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.models.EventCreation
 import com.bmexcs.pickpic.data.models.EventId
 import com.bmexcs.pickpic.data.models.ImageCount
-import com.bmexcs.pickpic.data.models.UnrankedCount
+import com.bmexcs.pickpic.data.models.ImageVote
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserEventInviteLink
 import com.bmexcs.pickpic.data.models.UserInfo
 import com.bmexcs.pickpic.data.utils.Api
 import com.bmexcs.pickpic.data.utils.HttpException
+import com.bmexcs.pickpic.data.utils.Vote
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -236,56 +237,35 @@ class EventApiService {
     }
 
     /**
-     * Decreases the ranking of the specified image by 1.
+     * Changes the ranking of the specified image by the specified vote value.
      *
-     * **Endpoint**: `POST /event/{event_id}/image/{image_id}/downvote/`
+     * **Endpoint**: `PUT /event/{event_id}/image/{image_id}/vote/`
      *
-     * **Request Body**: Empty
+     * **Request Body**: models.ImageVote
      *
-     * **Request Content-Type**: None
+     * **Request Content-Type**: JSON
      *
      * **Response**: Empty
      */
-    suspend fun downvote(eventId: String, imageId: String, token: String) =
+    suspend fun vote(eventId: String, imageId: String, userId: String, vote: Vote, token: String) =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/image/$imageId/downvote/"
+            val endpoint = "event/$eventId/image/$imageId/vote/"
             val url = Api.url(endpoint)
 
-            Log.d(TAG, "POST: $url")
+            Log.d(TAG, "PUT: $url")
+
+            val imageVote = ImageVote(
+                user_id = userId,
+                vote = vote.toString()
+            )
+
+            val requestBody = gson.toJson(imageVote)
+                .toRequestBody("application/json".toMediaType())
 
             val request = Request.Builder()
                 .url(url)
                 .addHeader("Authorization", "Bearer $token")
-                .post(Api.EMPTY_BODY)
-                .build()
-
-            client.newCall(request).execute().use { response ->
-                Api.handleResponseStatus(response)
-            }
-        }
-
-    /**
-     * Increases the ranking of the specified image by 1.
-     *
-     * **Endpoint**: `POST /event/{event_id}/image/{image_id}/upvote/`
-     *
-     * **Request Body**: Empty
-     *
-     * **Request Content-Type**: None
-     *
-     * **Response**: Empty
-     */
-    suspend fun upvote(eventId: String, imageId: String, token: String) =
-        withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/image/$imageId/upvote/"
-            val url = Api.url(endpoint)
-
-            Log.d(TAG, "POST: $url")
-
-            val request = Request.Builder()
-                .url(url)
-                .addHeader("Authorization", "Bearer $token")
-                .post(Api.EMPTY_BODY)
+                .put(requestBody)
                 .build()
 
             client.newCall(request).execute().use { response ->
@@ -364,17 +344,6 @@ class EventApiService {
             }
         }
 
-    /**
-     * Accepts the invitation link.
-     *
-     * **Endpoint**: `PUT /event/{event_id}/invite/{invite_link}/accept/`
-     *
-     * **Request Body**: Empty
-     *
-     * **Request Content-Type**: None
-     *
-     * **Response**: Empty or Error
-     */
     /**
      * Accepts the invitation for the specified event.
      *
@@ -535,30 +504,26 @@ class EventApiService {
     /**
      * Retrieves all ImageInfos that the specified user has not yet ranked.
      *
-     * **Endpoint**: `GET /event/{event_id}/user/{user_id}/unranked/`
+     * **Endpoint**: `GET /event/{event_id}/image/user/{user_id}/unranked/`
      *
-     * **Request Body**: models.UnrankedCount (passed as Long)
+     * **Request Body**: Empty
      *
-     * **Request Content-Type**: JSON
+     * **Request Content-Type**: None
      *
      * **Response**: List<models.ImageInfo>
      *
      */
-    suspend fun getUnrankedImages(eventId: String, userId: String, count: Long, token: String)
+    suspend fun getUnrankedImages(eventId: String, userId: String, token: String)
         : List<ImageInfo> = withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/user/$userId/unranked/"
+            val endpoint = "event/$eventId/image/user/$userId/unranked/"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "GET: $url")
 
-            val requestBody = gson.toJson(UnrankedCount(count))
-                .toRequestBody("application/json".toMediaType())
-
             val request = Request.Builder()
                 .url(url)
                 .addHeader("Authorization", "Bearer $token")
-                .addHeader("Content-Type", "application/json")
-                .post(requestBody)
+                .get()
                 .build()
 
             client.newCall(request).execute().use { response ->
