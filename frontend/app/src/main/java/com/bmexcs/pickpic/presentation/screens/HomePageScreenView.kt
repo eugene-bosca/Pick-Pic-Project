@@ -12,11 +12,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.DpOffset
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.R
 import androidx.navigation.NavHostController
@@ -31,6 +34,7 @@ fun HomePageScreenView(
     viewModel: HomePageViewModel = hiltViewModel(),
 ) {
     val events by viewModel.events.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.fetchEvents()
@@ -53,30 +57,46 @@ fun HomePageScreenView(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            JoinEventButton(navController)
+            InvitesButton(navController)
             CreateEventButton(navController)
         }
         Spacer(modifier = Modifier.height(32.dp))
 
-        if (events.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("No Events Found")
+        when {
+            isLoading && events.isEmpty() -> {
+                CircularProgressIndicator()
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentPadding = PaddingValues(horizontal = 16.dp)
-            ) {
-                items(events) { eventItem: EventInfo ->
-                    EventListing(viewModel, eventItem, navController)
-                    Spacer(modifier = Modifier.height(16.dp))
+
+            events.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No Events Found")
+                }
+            }
+
+            else -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    items(events) { eventItem: EventInfo ->
+                        EventListing(
+                            isOwner = viewModel.isCurrentUserOwner(eventItem.owner.user_id),
+                            eventItem = eventItem,
+                            onEnter = {
+                                viewModel.setEvent(eventItem)
+                                navController.navigate(Route.Event.route)
+                            },
+                            onDelete = {
+                                viewModel.deleteEvent(eventItem.event_id)
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
             }
         }
@@ -84,7 +104,7 @@ fun HomePageScreenView(
 }
 
 @Composable
-fun JoinEventButton(navController: NavHostController) {
+fun InvitesButton(navController: NavHostController) {
     Button(
         onClick = {
             navController.navigate(Route.EventInvitation.route)
@@ -121,15 +141,15 @@ fun CreateEventButton(navController: NavHostController) {
 
 @Composable
 fun EventListing(
-    viewModel: HomePageViewModel,
+    isOwner: Boolean,
     eventItem: EventInfo,
-    navController: NavHostController
+    onEnter: () -> Unit,
+    onDelete: () -> Unit,
 ) {
+    val expandFilter = remember { mutableStateOf(false) }
+
     ElevatedButton(
-        onClick = {
-            viewModel.setEvent(eventItem)
-            navController.navigate(Route.Event.route)
-        },
+        onClick = onEnter,
         shape = RoundedCornerShape(16.dp),
     ) {
         ListItem(
@@ -137,31 +157,43 @@ fun EventListing(
                 Text(eventItem.event_name)
             },
             supportingContent = {
-                Text(
-                    text = "Last modified: " + eventItem.last_modified.let {
-                        try {
-                            java.time.Instant.parse(it)
-                                .atZone(java.time.ZoneId.systemDefault())
-                                .format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy", java.util.Locale.ENGLISH))
-                        } catch (e: Exception) {
-                            "Invalid Date" // Fallback in case of parsing errors
-                        }
-                    }
-                )
+                Text(text = "Host: ${eventItem.owner.display_name}")
             },
             trailingContent = {
-                // Show a crown icon if the current user is the owner of the event
-                if (viewModel.isCurrentUserOwner(eventItem.owner.user_id)) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_crown),
-                        contentDescription = "Owner",
-                        tint = Color(0xFFD4AF37) // Gold color for the crown
-                    )
-                } else {
-                    IconButton(onClick = { /* doSomething() */ }) {
-                        Icon(Icons.Filled.MoreVert, contentDescription = null)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (isOwner) {
+                        IconButton(onClick = { expandFilter.value = !expandFilter.value }) {
+                            Icon(Icons.Filled.MoreVert, contentDescription = null)
+
+                            DropdownMenu(
+                                expanded = expandFilter.value,
+                                onDismissRequest = {
+                                    expandFilter.value = !expandFilter.value
+                                }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Delete") },
+                                    onClick = {
+                                        onDelete()
+                                        expandFilter.value = false
+                                    }
+                                )
+                            }
+                        }
+
+                        Box(modifier = Modifier.size(24.dp)) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_crown),
+                                contentDescription = "Owner",
+                                tint = Color(0xFFD4AF37),
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
                     }
                 }
+
             },
             colors = ListItemDefaults.colors(
                 containerColor = Color.Transparent

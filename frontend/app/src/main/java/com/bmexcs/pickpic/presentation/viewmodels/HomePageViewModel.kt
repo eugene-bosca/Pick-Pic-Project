@@ -33,6 +33,12 @@ class HomePageViewModel @Inject constructor(
         eventRepository.setCurrentEvent(eventInfo)
     }
 
+    fun deleteEvent(eventId: String) {
+        viewModelScope.launch {
+            eventRepository.deleteEvent(eventId)
+        }
+    }
+
     fun fetchEvents() {
         viewModelScope.launch {
             _isLoading.value = true

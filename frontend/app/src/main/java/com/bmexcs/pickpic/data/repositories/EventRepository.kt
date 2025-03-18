@@ -71,6 +71,10 @@ class EventRepository @Inject constructor(
         return eventDataSource.createEvent(name)
     }
 
+    suspend fun deleteEvent(id: String) {
+        eventDataSource.deleteEvent(id)
+    }
+
     suspend fun getUserEventsPending(): List<EventMember> {
         return eventDataSource.getEventsPending()
     }

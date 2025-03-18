@@ -12,7 +12,7 @@ object Api {
     fun handleResponseStatus(response: Response): Boolean {
         val code = response.code
 
-        if (code == 200 || code == 201) {
+        if (code == 200 || code == 201 || code == 202) {
             Log.i(TAG, "Response code: $code")
             return true
         }
