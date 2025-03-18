@@ -3,7 +3,7 @@ package com.bmexcs.pickpic.data.sources
 import android.util.Log
 import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.models.EventCreation
-import com.bmexcs.pickpic.data.models.EventMember
+import com.bmexcs.pickpic.data.models.Invitation
 import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.services.EventApiService
@@ -59,7 +59,7 @@ class EventDataSource @Inject constructor(
         return user
     }
 
-    suspend fun getEventsPending(): List<EventMember> {
+    suspend fun getEventsPending(): List<Invitation> {
         val userId = userDataSource.getUser().user_id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
@@ -151,6 +151,7 @@ class EventDataSource @Inject constructor(
             emptyList()
         }
 
+        Log.d(TAG, "${eventContentList.size} found for $eventId")
         return eventContentList
     }
 

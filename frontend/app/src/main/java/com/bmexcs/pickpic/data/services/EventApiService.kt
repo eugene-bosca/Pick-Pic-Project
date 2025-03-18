@@ -361,7 +361,7 @@ class EventApiService {
      */
     suspend fun acceptInvite(eventId: String, token: String, userId: String): Boolean =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/invitation/accept/"
+            val endpoint = "event/$eventId/invitation/${"accept"}/"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "POST: $url")
@@ -403,7 +403,7 @@ class EventApiService {
      */
     suspend fun declineInvite(eventId: String, token: String, userId: String): Boolean =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/invitation/decline/"
+            val endpoint = "event/$eventId/invitation/${"decline"}/"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "POST: $url")
