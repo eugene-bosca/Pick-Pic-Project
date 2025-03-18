@@ -92,10 +92,9 @@ class InviteViewModel @Inject constructor(
         }
     }
 
-    fun kickUser(eventId: String, email: List<String>) {
+    fun kickUser(eventId: String, userId: String) {
         viewModelScope.launch {
             try {
-                val userId = getUserIdFromEmail(email)
                 eventRepository.removeUserFromEvent(eventId, userId)
                 loadInvitedUsers(eventId)
             } catch (e: Exception) {
@@ -104,20 +103,8 @@ class InviteViewModel @Inject constructor(
             }
         }
     }
-
     fun isCurrentUserOwner(ownerId: String): Boolean {
         return userRepository.getUser().user_id == ownerId
     }
 
-    suspend fun getUserIdFromEmail(email: List<String>): String {
-        return try {
-            withContext(Dispatchers.IO) {
-                userRepository.getUsersFromEmails(email).first()
-            }
-        } catch (e: Exception) {
-            _errorMessage.value = e.localizedMessage ?: "An unknown error occurred"
-            Log.e("EventInvitationViewModel", "Error getting user id from email", e)
-            ""
-        }
-    }
 }

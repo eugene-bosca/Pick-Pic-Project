@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class InvitedUser (
-    val user: UserInfo,
+    val user: User,
     val accepted: Boolean
 )

@@ -84,8 +84,9 @@ fun InviteScreenView(
         InvitedUsersList(
             invitedUsers = invitedUsers,
             eventId = eventId,
+            ownerId = ownerId,
             isEventOwner = isEventOwner,
-            onKickUser = { eventId, email -> viewModel.kickUser(eventId, email) }
+            onKickUser = { eventId, userId -> viewModel.kickUser(eventId, userId) }
         )
     }
 }
@@ -196,7 +197,7 @@ fun InvitedUsersList(
     eventId: String,
     ownerId: String,
     isEventOwner: Boolean,
-    onKickUser: (eventId: String, email: List<String>) -> Unit
+    onKickUser: (eventId: String, userId: String) -> Unit
 ) {
     if (invitedUsers.isNotEmpty()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -212,7 +213,7 @@ fun InvitedUsersList(
             LazyColumn {
                 items(invitedUsers) { invitedUser ->
                     // Check if this invited user is the owner
-                    val isOwner = invitedUser.user.id == ownerId
+                    val isOwner = invitedUser.user.user_id == ownerId
 
                     // For the owner or accepted users, use full opacity; otherwise, use reduced opacity.
                     val rowAlpha = if (isOwner || invitedUser.accepted) 1f else 0.5f
@@ -265,7 +266,7 @@ fun InvitedUsersList(
                             if (isEventOwner && invitedUser.accepted && !isOwner) {
                                 IconButton(
                                     onClick = {
-                                        onKickUser(eventId, listOf(invitedUser.user.email))
+                                        onKickUser(eventId, invitedUser.user.user_id)
                                     }
                                 ) {
                                     Icon(
