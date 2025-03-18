@@ -4,12 +4,13 @@ from .serializers import *
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, OpenApiTypes
 
 from .models import User
 
 from django.http import FileResponse
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 from rest_framework.request import Request
 
 import uuid
@@ -39,7 +40,7 @@ class EventUserViewSet(viewsets.ModelViewSet):
     queryset = EventUser.objects.all()
     serializer_class = EventUserSerializer
     lookup_field = "event_id"
-    def retrieve(self, request, *args, **kwargs):
+    def list(self, request, **kwargs):
         event_id = kwargs.get(self.lookup_field)
         queryset = self.queryset.filter(event_id=event_id)
 
@@ -72,7 +73,7 @@ class EventContentViewSet(viewsets.ModelViewSet):
     serializer_class = EventContentSerializer
     lookup_field = "event_id"
 
-    def retrieve(self, request, *args, **kwargs):
+    def list(self, request, **kwargs):
         event_id = kwargs.get(self.lookup_field)
         queryset = self.queryset.filter(event_id=event_id)
 
@@ -150,31 +151,59 @@ def get_delete_image(request: Request, event_id=None, image_id=None):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # Add an image to an event
+
+@extend_schema(
+    request={'image/jpeg': OpenApiTypes.BINARY, 
+             'image/png': OpenApiTypes.BINARY,
+             'image/heic': OpenApiTypes.BINARY,
+             'image/heif': OpenApiTypes.BINARY,
+             'image/bmp': OpenApiTypes.BINARY,
+             'image/webp': OpenApiTypes.BINARY,},
+    responses={201: EventContentSerializer},
+)
 @api_view(['PUT'])
 def create_image(request: Request, event_id=None, user_id=None):
-    try:
-        if not Event.objects.filter(event_id=event_id).exists():
-            return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event not found" })
 
-        if not User.objects.filter(user_id=user_id).exists():
-            return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"user not found" })  
+    print(event_id)
+    print(user_id)
+
+    try:
+
+        event = get_object_or_404(Event, event_id=event_id)
+
+        print(event.event_name)
+
+        user = get_object_or_404(User, user_id=user_id)
+
+        print(user.display_name)
 
         file_bytes = request.body
-        content_type = request.headers.get('Content-Type')
+
+        print(len(file_bytes))
+
+        content_type = str(request.headers.get('Content-Type'))
+
+        print(content_type)
 
         if not content_type or not content_type.startswith("image/"):
             return Response(
                 status=status.HTTP_400_BAD_REQUEST,
-                data={"error": "Unsupported or missing Content-Type header"}
+                data={"error": f"Unsupported or missing Content-Type header {content_type}"}
             )
 
         # Extract the extension from the content type (e.g., "image/jpeg" -> ".jpeg")
         file_extension = "." + content_type.split("/")[-1]
         unique_name = datetime.now().strftime("%Y%m%d%H%M%S%f") + file_extension
 
+        print(unique_name)
+
         upload_to_gcs('pick-pic', file_bytes, unique_name, content_type)
 
+        print(unique_name)
+
         new_image = Image.objects.create(file_name=unique_name, user_id=user_id)
+
+        print(new_image.image_id)
         
         event_content = EventContent.objects.create(
             event_id=event_id,
@@ -185,7 +214,7 @@ def create_image(request: Request, event_id=None, user_id=None):
 
         return Response(status=status.HTTP_201_CREATED, data=EventContentSerializer(event_content).data)
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(data={'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # Get/upload a user profile
 @api_view(['GET', 'PUT'])
@@ -501,7 +530,7 @@ def remove_user_from_event(request, event_id, user_id):
     responses={204: {}}
 )
 @api_view(['POST'])
-def invite_to_event(request: Request, event_id):
+def invite_to_event(request: Request, event_id, accept = None):
     """
     Invite one user to an event (in-app method).
     """
@@ -512,15 +541,14 @@ def invite_to_event(request: Request, event_id):
         # Check if the request has multiple user_ids or a single user_id
         user_ids = request.data.get('user_ids')
 
-        print(user_ids)
-
         for user_id in user_ids:
             try:
                 event_user, _ = EventUser.objects.get_or_create(event_id=event_id, user_id=user_id)
             except:
                 pass
-            event_user.accepted = True
-            event_user.save()
+            if accept == 'accept':
+                event_user.accepted = True
+                event_user.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
     except Event.DoesNotExist:
