@@ -539,7 +539,7 @@ class EventApiService {
         withContext(Dispatchers.IO) {
             Log.d(TAG, "removing user: $userId")
 
-            val endpoint = "event/${eventId}/user/${userId}"
+            val endpoint = "event/${eventId}/user/$userId/"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "Delete: $url")
