@@ -31,8 +31,11 @@ class RankingViewModel @Inject constructor(
     private val _eventInfo = MutableStateFlow(EventInfo())
     val event = _eventInfo
 
-    private var _currentImage = MutableStateFlow<BitmapWithID?>(null)
+    private val _currentImage = MutableStateFlow<BitmapWithID?>(null)
     val currentImage = _currentImage
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading
 
     private val unrankedImageInfo = MutableStateFlow<ArrayDeque<ImageInfo>>(ArrayDeque())
 
@@ -53,10 +56,13 @@ class RankingViewModel @Inject constructor(
 
     fun onSwipe(direction: SwipeDirection) {
         if (_currentImage.value == null && unrankedImageInfo.value.isEmpty()) {
+            _isLoading.value = false
             return
         }
 
         viewModelScope.launch {
+            _isLoading.value = true
+
             val vote = if (direction == SwipeDirection.LEFT) {
                 Vote.UPVOTE
             } else {
@@ -69,6 +75,7 @@ class RankingViewModel @Inject constructor(
             val next = unrankedImageInfo.value.removeFirstOrNull() ?: run {
                 Log.d(TAG, "Unranked image queue empty")
                 _currentImage.value = null
+                _isLoading.value = false
                 return@launch
             }
 
@@ -82,6 +89,8 @@ class RankingViewModel @Inject constructor(
 
             val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
             _currentImage.value = BitmapWithID(imageId, bitmap)
+
+            _isLoading.value = false
         }
     }
 
@@ -91,10 +100,13 @@ class RankingViewModel @Inject constructor(
         val next = unrankedImageInfo.value.removeFirstOrNull() ?: run {
             Log.d(TAG, "Tried to load first image but unranked image queue empty")
             _currentImage.value = null
+            _isLoading.value = false
             return
         }
 
         viewModelScope.launch {
+            _isLoading.value = true
+
             val imageId = next.image.image_id
 
             val byteArray = imageRepository.getImageByImageId(
@@ -105,6 +117,8 @@ class RankingViewModel @Inject constructor(
             val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
 
             _currentImage.value = BitmapWithID(imageId, bitmap)
+
+            _isLoading.value = false
         }
     }
 }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,6 +45,8 @@ fun RankingScreenView(
     var swipeStartedKey by remember { mutableIntStateOf(0) }
 
     val currentBitmap by viewModel.currentImage.collectAsState()
+
+    val isLoading by viewModel.isLoading.collectAsState()
 
     val eventInfo by viewModel.event.collectAsState()
     val eventName = eventInfo.event_name
@@ -110,18 +113,20 @@ fun RankingScreenView(
                 }
             }
 
-            currentBitmap?.also { image ->
-                Image(
-                    bitmap = image.bitmap.asImageBitmap(),
-                    contentDescription = "Current Image",
-                    modifier = Modifier.fillMaxSize()
-                )
-            } ?: run {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator()
+                } else {
+                    currentBitmap?.let { image ->
+                        Image(
+                            bitmap = image.bitmap.asImageBitmap(),
+                            contentDescription = "Current Image",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } ?: Text(
                         "All images ranked!",
                         fontSize = 18.sp
                     )
