@@ -100,6 +100,10 @@ class EventRepository @Inject constructor(
         eventDataSource.addUserToEvent(eventId, userId)
     }
 
+    suspend fun removeUserFromEvent(eventId: String, userId: String) {
+        eventDataSource.removeUserFromEvent(eventId, userId)
+    }
+
     fun setCurrentEvent(eventInfo: EventInfo) {
         event.value = eventInfo
         repositoryScope.launch {

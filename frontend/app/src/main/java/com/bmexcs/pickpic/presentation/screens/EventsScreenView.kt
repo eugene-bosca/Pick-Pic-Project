@@ -123,7 +123,8 @@ fun EventScreenView(
         ButtonInfo(
             "Invite",
             R.drawable.group_add_24px,
-            onClick = { navController.navigate("invite/$eventId") }
+            onClick = { navController.navigate("invite/$eventId/${eventInfo.owner.user_id}") }
+
         ),
         ButtonInfo(
             "Filter",

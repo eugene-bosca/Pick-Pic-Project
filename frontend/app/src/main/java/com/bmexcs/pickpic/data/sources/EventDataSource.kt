@@ -148,6 +148,11 @@ class EventDataSource @Inject constructor(
         eventApi.addUser(eventId, userId, token)
     }
 
+    suspend fun removeUserFromEvent(eventId: String, userId: String) {
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+        eventApi.removeUser(eventId, userId, token)
+    }
+
     suspend fun getImageInfo(eventId: String): List<ImageInfo> {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 

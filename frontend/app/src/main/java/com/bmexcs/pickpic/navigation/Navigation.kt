@@ -74,10 +74,11 @@ fun Navigation(
         }
 
         // Invite Screen
-        composable("invite/{eventId}") { backStackEntry ->
+        composable("invite/{eventId}/{ownerId}") { backStackEntry ->
             val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
+            val ownerId = backStackEntry.arguments?.getString("ownerId") ?: ""
             PickPicScaffold("Invite Friends", navController) {
-                InviteScreenView(navController, eventId) // Pass eventId to InviteScreenView
+                InviteScreenView(navController, eventId, ownerId) // Pass eventId and ownerId to InviteScreenView
             }
         }
 

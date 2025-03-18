@@ -523,6 +523,43 @@ class EventApiService {
         }
 
     /**
+     *
+     * Removes a user from an event.
+     *
+     * **Endpoint**: `Delete /event/{event_id}/user/{user}`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: JSON
+     *
+     * **Response**: Empty
+     *
+     */
+    suspend fun removeUser(eventId: String, userId: String, token: String) =
+        withContext(Dispatchers.IO) {
+            Log.d(TAG, "removing user: $userId")
+
+            val endpoint = "event/${eventId}/users/${userId}"
+            val url = Api.url(endpoint)
+
+            Log.d(TAG, "Delete: $url")
+
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .addHeader("Content-Type", "application/json")
+                .delete()
+                .build()
+
+            Log.d(TAG, "Request: $request")
+
+            client.newCall(request).execute().use { response ->
+                Log.d(TAG, "Response: $response")
+                Api.handleResponseStatus(response)
+            }
+        }
+
+    /**
      * Retrieves all ImageInfos that the specified user has not yet ranked.
      *
      * **Endpoint**: `GET /event/{event_id}/image/user/{user_id}/unranked/`

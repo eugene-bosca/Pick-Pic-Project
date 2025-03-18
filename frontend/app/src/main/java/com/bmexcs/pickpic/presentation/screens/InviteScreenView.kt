@@ -17,6 +17,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.data.models.InvitedUser
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.draw.alpha
 import com.bmexcs.pickpic.presentation.viewmodels.InviteViewModel
 
@@ -24,6 +26,7 @@ import com.bmexcs.pickpic.presentation.viewmodels.InviteViewModel
 fun InviteScreenView(
     navController: NavHostController,
     eventId: String,
+    ownerId: String,
     viewModel: InviteViewModel = hiltViewModel()
 ) {
     // Load invited users when the screen is first displayed
@@ -34,6 +37,8 @@ fun InviteScreenView(
     val invitedUsers by viewModel.invitedUsers.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+
+    val isEventOwner = viewModel.isCurrentUserOwner(ownerId)
 
     Column(
         modifier = Modifier
@@ -76,7 +81,12 @@ fun InviteScreenView(
 
         Spacer(modifier = Modifier.height(25.dp))
 
-        InvitedUsersList(invitedUsers = invitedUsers)
+        InvitedUsersList(
+            invitedUsers = invitedUsers,
+            eventId = eventId,
+            isEventOwner = isEventOwner,
+            onKickUser = { eventId, email -> viewModel.kickUser(eventId, email) }
+        )
     }
 }
 
@@ -181,7 +191,13 @@ fun EditableEmailField(
 }
 
 @Composable
-fun InvitedUsersList(invitedUsers: List<InvitedUser>) {
+fun InvitedUsersList(
+    invitedUsers: List<InvitedUser>,
+    eventId: String,
+    ownerId: String,
+    isEventOwner: Boolean,
+    onKickUser: (eventId: String, email: List<String>) -> Unit
+) {
     if (invitedUsers.isNotEmpty()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -195,8 +211,11 @@ fun InvitedUsersList(invitedUsers: List<InvitedUser>) {
 
             LazyColumn {
                 items(invitedUsers) { invitedUser ->
-                    // Set reduced opacity if not accepted
-                    val rowAlpha = if (invitedUser.accepted) 1f else 0.5f
+                    // Check if this invited user is the owner
+                    val isOwner = invitedUser.user.id == ownerId
+
+                    // For the owner or accepted users, use full opacity; otherwise, use reduced opacity.
+                    val rowAlpha = if (isOwner || invitedUser.accepted) 1f else 0.5f
 
                     Row(
                         modifier = Modifier
@@ -219,20 +238,49 @@ fun InvitedUsersList(invitedUsers: List<InvitedUser>) {
                                 modifier = Modifier.padding(4.dp)
                             )
                         }
-                        if (!invitedUser.accepted) {
-                            Text(
-                                text = "Pending Invite",
-                                fontSize = 14.sp,
-                                color = Color.Gray,
-                                modifier = Modifier.padding(4.dp)
-                            )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            when {
+                                // If the invited user is the owner, show "Owner" and do not grey out.
+                                isOwner -> {
+                                    Text(
+                                        text = "Owner",
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.padding(4.dp)
+                                    )
+                                }
+                                // If the invite hasn't been accepted, show "Pending Invite" in gray.
+                                !invitedUser.accepted -> {
+                                    Text(
+                                        text = "Pending Invite",
+                                        fontSize = 14.sp,
+                                        color = Color.Gray,
+                                        modifier = Modifier.padding(4.dp)
+                                    )
+                                }
+                            }
+                            // Show remove icon only if:
+                            // - the current user is the event owner,
+                            // - the invited user has accepted,
+                            // - and the invited user is not the owner.
+                            if (isEventOwner && invitedUser.accepted && !isOwner) {
+                                IconButton(
+                                    onClick = {
+                                        onKickUser(eventId, listOf(invitedUser.user.email))
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Remove user"
+                                    )
+                                }
+                            }
                         }
                     }
-
                     Spacer(modifier = Modifier.height(4.dp))
                 }
             }
         }
     }
 }
+
 
