@@ -125,22 +125,6 @@ fun RankingScreenView(
                     modifier = Modifier.fillMaxSize()
                 )
             }
-            Box(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                SkipButton(onClick = { viewModel.onSkip() })
-            }
         }
-    }
-}
-
-@Composable
-fun SkipButton(onClick: () -> Unit) {
-    Button(
-        onClick,
-        modifier = Modifier.fillMaxWidth().height(56.dp)
-    ) {
-        Text("Skip", fontSize = 18.sp)
     }
 }

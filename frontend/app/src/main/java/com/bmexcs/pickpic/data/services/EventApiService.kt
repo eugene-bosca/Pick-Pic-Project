@@ -155,7 +155,6 @@ class EventApiService {
         userId: String,
         imageData: ByteArray,
         token: String,
-        contentType: String = "image/png"
     ) = withContext(Dispatchers.IO) {
         val endpoint = "event/$eventId/image/user/$userId/create/"
         val url = Api.url(endpoint)
@@ -165,7 +164,7 @@ class EventApiService {
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
-            .addHeader("Content-Type", contentType)
+            .addHeader("Content-Type", "image/png")
             .put(imageData.toRequestBody())
             .build()
 

@@ -32,7 +32,6 @@ class RankingViewModel @Inject constructor(
     }
 
     init {
-        Log.d(TAG, "init")
         _eventInfo.value = eventRepository.event.value
         loadNextImage()
     }
@@ -53,12 +52,6 @@ class RankingViewModel @Inject constructor(
                 Log.d(TAG, "imageId = ${imageId}, vote = $vote")
             }
         }.invokeOnCompletion {
-            loadNextImage()
-        }
-    }
-
-    fun onSkip() {
-        viewModelScope.launch {
             loadNextImage()
         }
     }

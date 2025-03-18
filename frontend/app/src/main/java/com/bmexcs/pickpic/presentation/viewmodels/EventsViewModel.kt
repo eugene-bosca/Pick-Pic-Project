@@ -56,6 +56,13 @@ class EventsViewModel @Inject constructor(
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        viewModelScope.launch {
+            eventRepository.clearUnrankedQueue()
+        }
+    }
+
     fun refresh() {
         viewModelScope.launch {
             refreshInternal()
@@ -99,7 +106,7 @@ class EventsViewModel @Inject constructor(
             // Convert the Bitmap to ByteArray
             if (bitmap != null) {
                 val byteArrayOutputStream = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
 
                 byteArray = byteArrayOutputStream.toByteArray()
             }

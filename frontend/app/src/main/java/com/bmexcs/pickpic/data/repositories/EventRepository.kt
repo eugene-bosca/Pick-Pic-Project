@@ -12,6 +12,7 @@ import com.bmexcs.pickpic.data.utils.BitmapRanked
 import com.bmexcs.pickpic.data.utils.Vote
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -89,7 +90,9 @@ class EventRepository @Inject constructor(
     fun setCurrentEvent(eventInfo: EventInfo) {
         event.value = eventInfo
         repositoryScope.launch {
-            fillUnrankedQueue()
+            mutex.withLock {
+                fillUnrankedQueue()
+            }
         }
     }
 
@@ -102,34 +105,46 @@ class EventRepository @Inject constructor(
     }
 
     suspend fun getUnrankedImage(): BitmapRanked {
-        val image = unrankedImageChannel.receive()
-        Log.d(TAG, "getUnrankedImage: received image ${image.info.image.image_id}")
+        val image = mutex.withLock {
+            val image = unrankedImageChannel.receive()
+            Log.d(TAG, "getUnrankedImage: received image ${image.info.image.image_id}")
 
-        mutex.withLock { unrankedImageCount-- }
+            unrankedImageCount--
 
-        repositoryScope.launch { fillUnrankedQueue() }
+            fillUnrankedQueue()
+            image
+        }
         return image
     }
 
-    private suspend fun fillUnrankedQueue() {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun clearUnrankedQueue() {
         mutex.withLock {
-            val countNeeded = QUEUE_SIZE - unrankedImageCount
-            if (countNeeded <= 0) return
+            while (!unrankedImageChannel.isEmpty) {
+                unrankedImageChannel.receive()
+            }
+            unrankedImageCount = 0
+        }
+    }
 
-            Log.d(TAG, "Filling queue with $countNeeded images")
+    private suspend fun fillUnrankedQueue() {
+        val countNeeded = QUEUE_SIZE - unrankedImageCount
+        if (countNeeded <= 0) return
 
-            val imageInfos = eventDataSource.getUnrankedImages(event.value.event_id, countNeeded)
+        Log.d(TAG, "Filling queue with $countNeeded images")
 
-            for (imageInfo in imageInfos) {
-                val bitmapRanked =
-                    imageDataSource.getImageBinary(event.value.event_id, imageInfo.image.image_id)
-                        ?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
-                        ?.let { BitmapRanked(imageInfo, it) }
+        val imageInfos = eventDataSource.getUnrankedImages(event.value.event_id, countNeeded)
+        Log.d(TAG, "size = ${imageInfos.size}, imageInfos = $imageInfos")
 
-                if (bitmapRanked != null) {
-                    unrankedImageChannel.send(bitmapRanked)
-                    unrankedImageCount++
-                }
+        for (imageInfo in imageInfos) {
+            val bitmapRanked =
+                imageDataSource.getImageBinary(event.value.event_id, imageInfo.image.image_id)
+                    ?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
+                    ?.let { BitmapRanked(imageInfo, it) }
+
+            if (bitmapRanked != null) {
+                unrankedImageChannel.send(bitmapRanked)
+                unrankedImageCount++
             }
         }
     }
