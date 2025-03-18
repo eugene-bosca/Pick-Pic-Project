@@ -2,7 +2,6 @@ package com.bmexcs.pickpic.data.services
 
 import android.util.Log
 import com.bmexcs.pickpic.data.models.EventInfo
-import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.UserEventList
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserCreation

@@ -171,6 +171,7 @@ class EventDataSource @Inject constructor(
             emptyList()
         }
 
+        Log.d(TAG, "${eventContentList.size} found for $eventId")
         return eventContentList
     }
 
