@@ -3,6 +3,7 @@ package com.bmexcs.pickpic.presentation.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,7 +15,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.data.models.UserInfo
+import com.bmexcs.pickpic.data.models.InvitedUser
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.draw.alpha
 import com.bmexcs.pickpic.presentation.viewmodels.InviteViewModel
 
 @Composable
@@ -71,7 +74,8 @@ fun InviteScreenView(
             Text("Generate QR Code")
         }
 
-        // Already invited users list
+        Spacer(modifier = Modifier.height(25.dp))
+
         InvitedUsersList(invitedUsers = invitedUsers)
     }
 }
@@ -177,7 +181,7 @@ fun EditableEmailField(
 }
 
 @Composable
-fun InvitedUsersList(invitedUsers: List<UserInfo>) {
+fun InvitedUsersList(invitedUsers: List<InvitedUser>) {
     if (invitedUsers.isNotEmpty()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -189,24 +193,46 @@ fun InvitedUsersList(invitedUsers: List<UserInfo>) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Column {
-                invitedUsers.forEach { user ->
+            LazyColumn {
+                items(invitedUsers) { invitedUser ->
+                    // Set reduced opacity if not accepted
+                    val rowAlpha = if (invitedUser.accepted) 1f else 0.5f
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .alpha(rowAlpha)
                             .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(20.dp))
                             .padding(8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = user.email, // TODO: make this display name?
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(4.dp)
-                        )
+                        Column {
+                            Text(
+                                text = invitedUser.user.display_name,
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(4.dp)
+                            )
+                            Text(
+                                text = invitedUser.user.email,
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(4.dp)
+                            )
+                        }
+                        if (!invitedUser.accepted) {
+                            Text(
+                                text = "Pending Invite",
+                                fontSize = 14.sp,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(4.dp)
+                            )
+                        }
                     }
+
                     Spacer(modifier = Modifier.height(4.dp))
                 }
             }
         }
     }
 }
+

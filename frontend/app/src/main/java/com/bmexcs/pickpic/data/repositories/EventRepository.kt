@@ -7,6 +7,7 @@ import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.models.BitmapRanked
 import com.bmexcs.pickpic.data.models.Email
+import com.bmexcs.pickpic.data.models.InvitedUser
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserInfo
 import com.bmexcs.pickpic.data.sources.EventDataSource
@@ -64,7 +65,7 @@ class EventRepository @Inject constructor(
      * @param eventId The ID of the event
      * @return List of UserInfo objects representing the users in the event
      */
-    suspend fun getEventUsers(eventId: String): List<UserInfo> {
+    suspend fun getEventUsers(eventId: String): List<InvitedUser> {
         return eventDataSource.getEventUsers(eventId)
     }
 

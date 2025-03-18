@@ -5,6 +5,7 @@ import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.models.EventCreation
 import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.ImageInfo
+import com.bmexcs.pickpic.data.models.InvitedUser
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserInfo
 import com.bmexcs.pickpic.data.services.EventApiService
@@ -75,7 +76,7 @@ class EventDataSource @Inject constructor(
      * @param eventId The ID of the event
      * @return List of UserInfo objects representing the users in the event
      */
-    suspend fun getEventUsers(eventId: String): List<UserInfo> {
+    suspend fun getEventUsers(eventId: String): List<InvitedUser> {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         Log.d(TAG, "Getting users for event $eventId")
