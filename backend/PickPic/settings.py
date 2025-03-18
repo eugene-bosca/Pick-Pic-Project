@@ -34,7 +34,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-rhpqcpy6zqp=4kef9&9dhkzpg%*@^o=%a&p*4v$6%!yt269z1$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]  
 
@@ -160,5 +160,7 @@ REST_FRAMEWORK = {
         #'rest_framework.authentication.SessionAuthentication',
     ),
 }
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
 
 from .firebase_config import *

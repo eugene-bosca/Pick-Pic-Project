@@ -52,11 +52,11 @@ urlpatterns = [
     # event
     path('event/create/', views.create_new_event, name='Create New Event'),
     path('event/<str:event_id>/', views.event_info, name='Event Info'),
-    path('event/<str:event_id>/content/', views.EventContentViewSet.as_view({'get': 'retrieve'}), name='Event Content'),
+    path('event/<str:event_id>/content/', views.EventContentViewSet.as_view({'get': 'list'}), name='Event Content'),
     path('event/<str:event_id>/last_modified/', views.event_last_modified, name='Event Last Modified Timestamp'),
 
     # event users
-    path('event/<str:event_id>/users/', views.EventUserViewSet.as_view({'get': 'retrieve'}), name='Event Users'),
+    path('event/<str:event_id>/users/', views.EventUserViewSet.as_view({'get': 'list'}), name='Event Users'),
     path('event/<str:event_id>/user/<str:user_id>/', views.remove_event_user, name='Remove Event User'),
 
     path('user/<str:user_id>/events/', views.list_users_events, name='List Users Events'),
@@ -70,7 +70,7 @@ urlpatterns = [
 
     ### Invite-related endpoints
     # Direct user invitation (in-app method)
-    path('event/<str:event_id>/invite/users/', views.invite_to_event, name='invite users to event'),
+    path('event/<str:event_id>/invite/users/<str:accept>', views.invite_to_event, name='invite users to event'),
 
     # Link/QR invitation handling
     path('event/invite/generate/<str:event_id>/', views.generate_invite_link, name='generate_invite_link'), # Generates a link with obfuscated event ID
