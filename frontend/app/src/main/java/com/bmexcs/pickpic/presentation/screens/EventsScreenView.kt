@@ -53,26 +53,6 @@ private data class FullscreenImage (
     val info: ImageInfo
 ) {
     fun uuid(): String = info.image.image_id
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as FullscreenImage
-
-        if (request != other.request) return false
-        if (!data.contentEquals(other.data)) return false
-        if (info != other.info) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = request.hashCode()
-        result = 31 * result + data.contentHashCode()
-        result = 31 * result + info.hashCode()
-        return result
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
