@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.bmexcs.pickpic.data.models.ImageInfo
+import kotlinx.coroutines.launch
 
 private data class ButtonInfo (
     val label: String,
@@ -62,19 +63,18 @@ fun EventScreenView(
     viewModel: EventsViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // Current event info
     val eventInfo by viewModel.event.collectAsState()
     val eventId = eventInfo.event_id
-    val eventName = eventInfo.event_name // Use event_name instead of name
-
-    // Debugging: Print eventInfo to verify its structure
-    LaunchedEffect(eventInfo) {
-        println("Event Info: $eventInfo")
-    }
+    val eventName = eventInfo.event_name
 
     // Images
-    val images = viewModel.images.collectAsState().value.toList()
+    val images by viewModel.images.collectAsState()
+    val imageList = images.toList()
+
     val isLoading by viewModel.isLoading.collectAsState()
 
     // Pagination state
@@ -112,6 +112,17 @@ fun EventScreenView(
     // Fullscreen image
     var fullScreenImage by remember { mutableStateOf<FullscreenImage?>(null) }
 
+    // Observe the snackbar message
+    val snackbarMessage by viewModel.snackbarMessage.collectAsState()
+    LaunchedEffect(snackbarMessage) {
+        snackbarMessage?.let { message ->
+            scope.launch {
+                snackbarHostState.showSnackbar(message)
+                viewModel.clearSnackbarMessage()
+            }
+        }
+    }
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -146,151 +157,167 @@ fun EventScreenView(
         )
     )
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Top,
-    ) {
-        TopAppBar(
-            title = { Text(text = eventName) },
-            navigationIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, // Add SnackbarHost here
+        topBar = {
+            TopAppBar(
+                title = { Text(text = eventName) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    // Refresh button
+                    IconButton(onClick = { viewModel.refresh() }) {
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = "Refresh"
+                        )
+                    }
+                    // Download album button
+                    IconButton(onClick = { viewModel.downloadAlbum(context, imageList) }) {
+                        Icon(
+                            painter = painterResource(R.drawable.download),
+                            contentDescription = "Download Album"
+                        )
+                    }
                 }
-            },
-            actions = {
-                IconButton(onClick = { viewModel.refresh() }) {
-                    Icon(
-                        imageVector = Icons.Filled.Refresh,
-                        contentDescription = "Refresh"
-                    )
-                }
-            }
-        )
+            )
+        },
+        content = { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                verticalArrangement = Arrangement.Top,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    when {
+                        isLoading && images.isEmpty() -> {
+                            CircularProgressIndicator()
+                        }
 
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            when {
-                isLoading && images.isEmpty() -> {
-                    CircularProgressIndicator()
-                }
+                        images.isEmpty() -> {
+                            Text("Empty event. Click Add Photos to get started!")
+                        }
 
-                images.isEmpty() -> {
-                    Text("Empty event. Click Add Photos to get started!")
-                }
+                        else -> {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(2),
+                                state = gridState,
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                            ) {
+                                items(images.entries.toList()) { (imageInfo, stream) ->
+                                    stream?.let {
+                                        val imageRequest = ImageRequest.Builder(context)
+                                            .data(it)
+                                            .memoryCachePolicy(CachePolicy.ENABLED)
+                                            .diskCachePolicy(CachePolicy.ENABLED)
+                                            .crossfade(true)
+                                            .build()
 
-                else -> {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        state = gridState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                    ) {
-                        items(images) { (imageInfo, stream) ->
-                            stream?.let {
-                                val imageRequest = ImageRequest.Builder(context)
-                                    .data(it)
-                                    .memoryCachePolicy(CachePolicy.ENABLED)
-                                    .diskCachePolicy(CachePolicy.ENABLED)
-                                    .crossfade(true)
-                                    .build()
-
-                                ImageTile(
-                                    imageRequest = imageRequest,
-                                    onClick = {
-                                        fullScreenImage = FullscreenImage(
-                                            request = imageRequest,
-                                            data = it,
-                                            info = imageInfo
+                                        ImageTile(
+                                            imageRequest = imageRequest,
+                                            onClick = {
+                                                fullScreenImage = FullscreenImage(
+                                                    request = imageRequest,
+                                                    data = it,
+                                                    info = imageInfo
+                                                )
+                                            },
                                         )
-                                    },
-                                )
+                                    }
+                                }
                             }
                         }
                     }
                 }
-            }
-        }
 
-        NavigationBar {
-            buttons.forEach { info ->
-                NavigationBarItem(
-                    icon = {
-                        Icon(
-                            painter = painterResource(info.icon),
-                            contentDescription = info.label
+                NavigationBar {
+                    buttons.forEach { info ->
+                        NavigationBarItem(
+                            icon = {
+                                Icon(
+                                    painter = painterResource(info.icon),
+                                    contentDescription = info.label
+                                )
+                            },
+                            label = { Text(info.label, fontSize = 16.sp) },
+                            selected = false,
+                            onClick = info.onClick,
                         )
-                    },
-                    label = { Text(info.label, fontSize = 16.sp) },
-                    selected = false,
-                    onClick = info.onClick,
-                )
-            }
-        }
-
-        Box(
-            modifier = Modifier.onGloballyPositioned { coordinates ->
-                filterButtonBox.value = coordinates.localToWindow(Offset.Zero)
-            }
-        ) {
-            DropdownMenu(
-                expanded = expandFilter.value,
-                onDismissRequest = {
-                    expandFilter.value = !expandFilter.value
-                },
-                offset = DpOffset(100.dp, 0.dp)
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Date") },
-                    onClick = {
-                        // TODO: filter viewModel.getImagesByEventId(viewModel.event.value.event_id)
-                        expandFilter.value = !expandFilter.value
                     }
-                )
-                DropdownMenuItem(
-                    text = { Text("Score") },
-                    onClick = {
-                        // TODO: filter viewModel.getImagesByEventId(viewModel.event.value.event_id)
-                        expandFilter.value = !expandFilter.value
-                    }
-                )
-            }
-        }
-
-        fullScreenImage?.let { image ->
-            ImageFull(
-                image = image.request,
-                title = image.info.image.user.display_name,
-                score = image.info.image.score,
-                isDeleteButtonVisible = viewModel.isCurrentUserOwner(eventInfo.owner.user_id) ||
-                        viewModel.isUserPhotoUploader(image.info),
-                onDismiss = {
-                    fullScreenImage = null
-                },
-                onDelete = {
-                    viewModel.deleteImage(
-                        viewModel.event.value.event_id,
-                        image.uuid()
-                    )
-                    fullScreenImage = null
-                },
-                onDownload = {
-                    viewModel.saved.value =
-                        viewModel.saveImageFromByteArrayToGallery(
-                            context, image.data, image.uuid()
-                        )
                 }
-            )
+
+                Box(
+                    modifier = Modifier.onGloballyPositioned { coordinates ->
+                        filterButtonBox.value = coordinates.localToWindow(Offset.Zero)
+                    }
+                ) {
+                    DropdownMenu(
+                        expanded = expandFilter.value,
+                        onDismissRequest = {
+                            expandFilter.value = !expandFilter.value
+                        },
+                        offset = DpOffset(100.dp, 0.dp)
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Date") },
+                            onClick = {
+                                // TODO: filter viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                                expandFilter.value = !expandFilter.value
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Score") },
+                            onClick = {
+                                // TODO: filter viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                                expandFilter.value = !expandFilter.value
+                            }
+                        )
+                    }
+                }
+
+                fullScreenImage?.let { image ->
+                    ImageFull(
+                        image = image.request,
+                        title = image.info.image.user.display_name,
+                        score = image.info.image.score,
+                        isDeleteButtonVisible = viewModel.isCurrentUserOwner(eventInfo.owner.user_id) ||
+                                viewModel.isUserPhotoUploader(image.info),
+                        onDismiss = {
+                            fullScreenImage = null
+                        },
+                        onDelete = {
+                            viewModel.deleteImage(
+                                viewModel.event.value.event_id,
+                                image.uuid()
+                            )
+                            fullScreenImage = null
+                        },
+                        onDownload = {
+                            viewModel.saved.value =
+                                viewModel.saveImageFromByteArrayToGallery(
+                                    context, image.data, image.uuid()
+                                )
+                        }
+                    )
+                }
+            }
         }
-    }
+    )
 }
 
 @Composable
