@@ -66,15 +66,12 @@ fun EventScreenView(
     // Current event info
     val eventInfo by viewModel.event.collectAsState()
     val eventId = eventInfo.event_id
-    val eventName = eventInfo.event_name // Use event_name instead of name
-
-    // Debugging: Print eventInfo to verify its structure
-    LaunchedEffect(eventInfo) {
-        println("Event Info: $eventInfo")
-    }
+    val eventName = eventInfo.event_name
 
     // Images
-    val images = viewModel.images.collectAsState().value.toList()
+    val images by viewModel.images.collectAsState() // Observe the StateFlow
+    val imageList = images.toList() // Convert the map to a list of pairs
+
     val isLoading by viewModel.isLoading.collectAsState()
 
     // Pagination state
@@ -160,10 +157,18 @@ fun EventScreenView(
                 }
             },
             actions = {
+                // Refresh button
                 IconButton(onClick = { viewModel.refresh() }) {
                     Icon(
                         imageVector = Icons.Filled.Refresh,
                         contentDescription = "Refresh"
+                    )
+                }
+                // Download album button
+                IconButton(onClick = { viewModel.downloadAlbum(context, imageList) }) {
+                    Icon(
+                        painter = painterResource(R.drawable.download), // Use your download icon here
+                        contentDescription = "Download Album"
                     )
                 }
             }
@@ -193,7 +198,7 @@ fun EventScreenView(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
-                        items(images) { (imageInfo, stream) ->
+                        items(images.entries.toList()) { (imageInfo, stream) ->
                             stream?.let {
                                 val imageRequest = ImageRequest.Builder(context)
                                     .data(it)

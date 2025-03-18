@@ -170,4 +170,15 @@ class EventsViewModel @Inject constructor(
         Log.d(TAG, "Refreshing events page...")
         getImagesByEventId(event.value.event_id)
     }
+
+    fun downloadAlbum(context: Context, images: List<Pair<ImageInfo, ByteArray?>>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            images.forEach { (imageInfo, byteArray) ->
+                byteArray?.let {
+                    val imageName = "event_${event.value.event_id}_${imageInfo.image.image_id}.jpg"
+                    saveImageFromByteArrayToGallery(context, it, imageName)
+                }
+            }
+        }
+    }
 }
