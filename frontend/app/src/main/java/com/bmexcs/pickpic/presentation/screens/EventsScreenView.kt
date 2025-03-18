@@ -318,16 +318,21 @@ fun EventScreenView(
 
 @Composable
 fun ImageTile(imageRequest: ImageRequest, onClick: () -> Unit) {
-    AsyncImage(
-        model = imageRequest,
-        contentDescription = "Event image",
-        contentScale = ContentScale.Crop,
+    ElevatedCard(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(all = 15.dp)
-            .padding(bottom = 20.dp)
-            .border(width = 1.dp, color = Color.Black)
+            .size(width = 150.dp, height = 225.dp)
             .clip(RoundedCornerShape(12.dp))
             .clickable { onClick() },
-    )
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        AsyncImage(
+            model = imageRequest,
+            contentDescription = "Event image",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(all = 15.dp)
+                .border(width = 1.dp, color = Color.Black)
+        )
+    }
 }
