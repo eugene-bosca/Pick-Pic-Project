@@ -165,7 +165,7 @@ class EventApiService {
             .url(url)
             .addHeader("Authorization", "Bearer $token")
             .addHeader("Content-Type", "image/png")
-            .put(imageData.toRequestBody())
+            .put(imageData.toRequestBody("image/png".toMediaType()))
             .build()
 
         client.newCall(request).execute().use { response ->
