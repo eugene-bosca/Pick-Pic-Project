@@ -10,8 +10,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.EventInfo
+import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
+import com.bmexcs.pickpic.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -30,10 +32,11 @@ private const val TAG = "EventsViewModel"
 class EventsViewModel @Inject constructor(
     private val eventRepository: EventRepository,
     private val imageRepository: ImageRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _images = MutableStateFlow<Map<String, ByteArray?>>(emptyMap())
-    val images: StateFlow<Map<String, ByteArray?>> = _images
+    private val _images = MutableStateFlow<Map<ImageInfo, ByteArray?>>(emptyMap())
+    val images: StateFlow<Map<ImageInfo, ByteArray?>> = _images
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading
@@ -46,28 +49,37 @@ class EventsViewModel @Inject constructor(
 
     init {
         _eventInfo.value = eventRepository.event.value
-        getImagesByEventId(event.value.event_id)
-        startAutoRefresh()
+        viewModelScope.launch {
+            getImagesByEventId(event.value.event_id)
+        }.invokeOnCompletion {
+            startAutoRefresh()
+        }
     }
 
     fun refresh() {
-        refreshInternal()
+        viewModelScope.launch {
+            refreshInternal()
+        }
+    }
+
+    fun isCurrentUserOwner(ownerId: String): Boolean {
+        return userRepository.getUser().user_id == ownerId
+    }
+
+    fun isUserPhotoUploader(info: ImageInfo): Boolean {
+        return userRepository.getUser().user_id == info.image.image_id
     }
 
     fun addImage(imageByte: ByteArray) {
         viewModelScope.launch(Dispatchers.IO) {
             imageRepository.addImageBinary(event.value.event_id, imageByte)
-        }.invokeOnCompletion({
-            getImagesByEventId(event.value.event_id)
-        })
+        }
     }
 
     fun deleteImage(eventId: String, imageId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             imageRepository.deleteImage(eventId, imageId)
-        }.invokeOnCompletion({
-            getImagesByEventId(event.value.event_id)
-        })
+        }
     }
 
     fun uriToByteArray(context: Context, uri: Uri?): ByteArray? {
@@ -87,7 +99,7 @@ class EventsViewModel @Inject constructor(
             // Convert the Bitmap to ByteArray
             if (bitmap != null) {
                 val byteArrayOutputStream = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
 
                 byteArray = byteArrayOutputStream.toByteArray()
             }
@@ -126,21 +138,21 @@ class EventsViewModel @Inject constructor(
         }
     }
 
-    private fun getImagesByEventId(eventId: String) {
+    private suspend fun getImagesByEventId(eventId: String) {
         _isLoading.value = true
 
-        // Launch a coroutine on the IO dispatcher since this is a network request.
-        viewModelScope.launch(Dispatchers.IO) {
-            val images = eventRepository.getImages(eventId)
-            val imageBitmapList = mutableMapOf<String, ByteArray?>()
+        val images = eventRepository.getAllImageInfo(eventId)
 
-            for (image in images) {
-                val byteArray = imageRepository.getImageByImageId(eventId, image.image.image_id)
-                imageBitmapList.put(image.image.image_id, byteArray)
-            }
+        val imageBitmapList = mutableMapOf<ImageInfo, ByteArray?>()
 
-            _images.value = imageBitmapList
-        }.invokeOnCompletion { _isLoading.value = false }
+        for (image in images) {
+            val byteArray = imageRepository.getImageByImageId(eventId, image.image.image_id)
+            imageBitmapList[image] = byteArray
+        }
+
+        _images.value = imageBitmapList
+
+        _isLoading.value = false
     }
 
     private fun startAutoRefresh() {
@@ -154,7 +166,7 @@ class EventsViewModel @Inject constructor(
         }
     }
 
-    private fun refreshInternal() {
+    private suspend fun refreshInternal() {
         Log.d(TAG, "Refreshing events page...")
         getImagesByEventId(event.value.event_id)
     }

@@ -114,7 +114,7 @@ class EventApiService {
      *
      * **Response Body**: `List<models.ImageInfo>`
      */
-    suspend fun getImageInfo(eventId: String, token: String): List<ImageInfo> =
+    suspend fun getAllImageInfo(eventId: String, token: String): List<ImageInfo> =
         withContext(Dispatchers.IO) {
             val endpoint = "event/$eventId/content/"
             val url = Api.url(endpoint)
@@ -156,7 +156,6 @@ class EventApiService {
         userId: String,
         imageData: ByteArray,
         token: String,
-        contentType: String = "image/png"
     ) = withContext(Dispatchers.IO) {
         val endpoint = "event/$eventId/image/user/$userId/create/"
         val url = Api.url(endpoint)
@@ -166,8 +165,8 @@ class EventApiService {
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
-            .addHeader("Content-Type", contentType)
-            .put(imageData.toRequestBody())
+            .addHeader("Content-Type", "image/png")
+            .put(imageData.toRequestBody("image/png".toMediaType()))
             .build()
 
         client.newCall(request).execute().use { response ->

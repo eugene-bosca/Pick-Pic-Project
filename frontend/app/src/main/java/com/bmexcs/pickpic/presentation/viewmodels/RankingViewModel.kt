@@ -1,30 +1,43 @@
 package com.bmexcs.pickpic.presentation.viewmodels
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.BitmapRanked
 import com.bmexcs.pickpic.data.models.EventInfo
+import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.repositories.EventRepository
+import com.bmexcs.pickpic.data.repositories.ImageRepository
 import com.bmexcs.pickpic.data.utils.Vote
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "RankingViewModel"
 
+data class BitmapWithID(
+    val id: String,
+    val bitmap: Bitmap,
+)
+
 @HiltViewModel
 class RankingViewModel @Inject constructor(
     private val eventRepository: EventRepository,
+    private val imageRepository: ImageRepository
 ) : ViewModel() {
-
-    private val _currentImage = MutableStateFlow<BitmapRanked?>(null)
-    val currentImage: StateFlow<BitmapRanked?> = _currentImage
 
     private val _eventInfo = MutableStateFlow(EventInfo())
     val event = _eventInfo
+
+    private val _currentImage = MutableStateFlow<BitmapWithID?>(null)
+    val currentImage = _currentImage
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading
+
+    private val unrankedImageInfo = MutableStateFlow<ArrayDeque<ImageInfo>>(ArrayDeque())
 
     enum class SwipeDirection {
         LEFT,
@@ -33,41 +46,79 @@ class RankingViewModel @Inject constructor(
 
     init {
         _eventInfo.value = eventRepository.event.value
-        loadNextImage()
+        viewModelScope.launch {
+            Log.d(TAG, "Creating unranked image queue, size = ${unrankedImageInfo.value.size}")
+            unrankedImageInfo.value = ArrayDeque(eventRepository.getUnrankedImageInfo())
+        }.invokeOnCompletion {
+            loadFirstImage()
+        }
     }
 
     fun onSwipe(direction: SwipeDirection) {
+        if (_currentImage.value == null && unrankedImageInfo.value.isEmpty()) {
+            _isLoading.value = false
+            return
+        }
+
         viewModelScope.launch {
-            if (currentImage.value != null) {
-                val imageId = currentImage.value!!.info.image.image_id
+            _isLoading.value = true
 
-                val vote = if (direction == SwipeDirection.LEFT) {
-                    Vote.UPVOTE
-                } else {
-                    Vote.DOWNVOTE
-                }
-
-                eventRepository.voteOnImage(imageId, vote)
-
-                Log.d(TAG, "imageId = ${imageId}, vote = $vote")
+            val vote = if (direction == SwipeDirection.LEFT) {
+                Vote.UPVOTE
+            } else {
+                Vote.DOWNVOTE
             }
-        }.invokeOnCompletion {
-            loadNextImage()
+
+            Log.d(TAG, "Voting on imageId = ${_currentImage.value!!.id} with vote = $vote")
+            eventRepository.voteOnImage(_currentImage.value!!.id, vote)
+
+            val next = unrankedImageInfo.value.removeFirstOrNull() ?: run {
+                Log.d(TAG, "Unranked image queue empty")
+                _currentImage.value = null
+                _isLoading.value = false
+                return@launch
+            }
+
+            Log.d(TAG, "Loading next image")
+            val imageId = next.image.image_id
+
+            val byteArray = imageRepository.getImageByImageId(
+                _eventInfo.value.event_id,
+                imageId
+            ) ?: throw Exception("Image does not exist")
+
+            val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+            _currentImage.value = BitmapWithID(imageId, bitmap)
+
+            _isLoading.value = false
         }
     }
 
-    fun onSkip() {
-        viewModelScope.launch {
-            loadNextImage()
-        }
-    }
+    private fun loadFirstImage() {
+        Log.d(TAG, "Loading first image")
 
-    private fun loadNextImage() {
+        val next = unrankedImageInfo.value.removeFirstOrNull() ?: run {
+            Log.d(TAG, "Tried to load first image but unranked image queue empty")
+            _currentImage.value = null
+            _isLoading.value = false
+            return
+        }
+
         viewModelScope.launch {
-            Log.d(TAG, "Loading next image...")
-            val image = eventRepository.getUnrankedImage()
-            Log.d(TAG, "Received image ${image.info.image.image_id}")
-            _currentImage.value = image
+            _isLoading.value = true
+
+            val imageId = next.image.image_id
+
+            val byteArray = imageRepository.getImageByImageId(
+                _eventInfo.value.event_id,
+                imageId
+            ) ?: throw Exception("Image does not exist")
+
+            val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+
+            _currentImage.value = BitmapWithID(imageId, bitmap)
+
+            _isLoading.value = false
         }
     }
 }
