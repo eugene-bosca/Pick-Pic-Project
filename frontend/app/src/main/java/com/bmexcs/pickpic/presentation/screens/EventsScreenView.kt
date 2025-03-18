@@ -288,6 +288,7 @@ fun EventScreenView(
             ImageFull(
                 image = image.request,
                 title = image.info.image.user.display_name,
+                score = image.info.image.score,
                 isDeleteButtonVisible = viewModel.isCurrentUserOwner(eventInfo.owner.user_id) ||
                         viewModel.isUserPhotoUploader(image.info),
                 onDismiss = {
@@ -336,6 +337,7 @@ fun ImageTile(imageRequest: ImageRequest, onClick: () -> Unit) {
 fun ImageFull(
     image: ImageRequest,
     title: String,
+    score: Long,
     isDeleteButtonVisible: Boolean,
     onDismiss: () -> Unit,
     onDelete: () -> Unit,
@@ -356,12 +358,24 @@ fun ImageFull(
                     onDismiss()
                 }
         ) {
-            Text(
-                title,
-                fontSize = 24.sp,
-                color = Color.White,
-                modifier = Modifier.padding(10.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    title,
+                    fontSize = 24.sp,
+                    color = Color.White,
+                )
+
+                Text(
+                    "Score: $score",
+                    fontSize = 24.sp,
+                    color = Color.White,
+                )
+            }
 
             AsyncImage(
                 model = image,
