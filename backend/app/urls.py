@@ -70,7 +70,7 @@ urlpatterns = [
 
     ### Invite-related endpoints
     # Direct user invitation (in-app method)
-    path('event/<str:event_id>/invite/user/', views.invite_to_event, name='invite user(s) to event'),
+    path('event/<str:event_id>/invite/users/', views.invite_to_event, name='invite users to event'),
 
     # Link/QR invitation handling
     path('event/invite/generate/<str:event_id>/', views.generate_invite_link, name='generate_invite_link'), # Generates a link with obfuscated event ID

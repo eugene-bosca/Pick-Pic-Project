@@ -58,5 +58,11 @@ class VoteImageSerializer(serializers.Serializer):
 class EmailSerializer(serializers.Serializer):
     emails = serializers.ListField()
 
-class UUIDSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
+class UserIDSerializer(serializers.Serializer):
+    user_id = serializers.UUIDField()
+
+class UserListSerializer(serializers.Serializer):
+    user_ids = serializers.ListField(
+        child=serializers.UUIDField(),
+        allow_empty=False
+    )

@@ -23,6 +23,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -489,14 +490,18 @@ class EventApiService {
      */
     suspend fun addUser(eventId: String, userId: String, token: String) =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/${eventId}/invite/user/"
+            Log.d(TAG, "you are schizophrenic")
+
+            val endpoint = "event/${eventId}/invite/users/${"accept"}"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "POST: $url")
 
             // Create a JSON body with the user_id
+
+            val userIds: List<String> = listOf(userId)
             val jsonBody = JSONObject().apply {
-                put("user_id", userId)
+                put("user_ids", JSONArray(userIds)) // Convert List<String> to JSONArray
             }.toString()
 
             Log.d(TAG, "JSON body: $jsonBody")
