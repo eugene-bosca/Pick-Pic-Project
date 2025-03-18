@@ -8,6 +8,7 @@ import com.bmexcs.pickpic.data.models.EventId
 import com.bmexcs.pickpic.data.models.EventLastModified
 import com.bmexcs.pickpic.data.models.ImageCount
 import com.bmexcs.pickpic.data.models.ImageVote
+import com.bmexcs.pickpic.data.models.InvitedUser
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserEventInviteLink
 import com.bmexcs.pickpic.data.models.UserInfo
@@ -521,6 +522,43 @@ class EventApiService {
         }
 
     /**
+     *
+     * Removes a user from an event.
+     *
+     * **Endpoint**: `Delete /event/{event_id}/user/{user}`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: JSON
+     *
+     * **Response**: Empty
+     *
+     */
+    suspend fun removeUser(eventId: String, userId: String, token: String) =
+        withContext(Dispatchers.IO) {
+            Log.d(TAG, "removing user: $userId")
+
+            val endpoint = "event/${eventId}/user/$userId/"
+            val url = Api.url(endpoint)
+
+            Log.d(TAG, "Delete: $url")
+
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .addHeader("Content-Type", "application/json")
+                .delete()
+                .build()
+
+            Log.d(TAG, "Request: $request")
+
+            client.newCall(request).execute().use { response ->
+                Log.d(TAG, "Response: $response")
+                Api.handleResponseStatus(response)
+            }
+        }
+
+    /**
      * Retrieves all ImageInfos that the specified user has not yet ranked.
      *
      * **Endpoint**: `GET /event/{event_id}/image/user/{user_id}/unranked/`
@@ -610,7 +648,7 @@ class EventApiService {
      *
      * **Response**: `List<models.UserInfo>`
      */
-    suspend fun getUsers(eventId: String, token: String): List<UserInfo> =
+    suspend fun getUsers(eventId: String, token: String): List<InvitedUser> =
         withContext(Dispatchers.IO) {
             val endpoint = "event/$eventId/users/" // Fixed endpoint path to match Django URL
             val url = Api.url(endpoint)
@@ -629,8 +667,8 @@ class EventApiService {
                 val body = response.body?.string()
                     ?: throw HttpException(response.code, "Empty response body")
 
-                val resultType = object : TypeToken<List<UserInfo>>() {}.type
-                val result: List<UserInfo> = gson.fromJson(body, resultType)
+                val resultType = object : TypeToken<List<InvitedUser>>() {}.type
+                val result: List<InvitedUser> = gson.fromJson(body, resultType)
 
                 return@withContext result
             }

@@ -3,9 +3,10 @@ package com.bmexcs.pickpic.data.sources
 import android.util.Log
 import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.models.EventCreation
-import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.ImageInfo
+import com.bmexcs.pickpic.data.models.InvitedUser
 import com.bmexcs.pickpic.data.models.User
+import com.bmexcs.pickpic.data.models.UserInfo
 import com.bmexcs.pickpic.data.services.EventApiService
 import com.bmexcs.pickpic.data.services.UserApiService
 import com.bmexcs.pickpic.data.utils.NotFoundException
@@ -59,7 +60,7 @@ class EventDataSource @Inject constructor(
         return user
     }
 
-    suspend fun getEventsPending(): List<EventMember> {
+    suspend fun getEventsPending(): List<EventInfo> {
         val userId = userDataSource.getUser().user_id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
@@ -67,6 +68,19 @@ class EventDataSource @Inject constructor(
 
         val eventResponse = userApi.getPendingEvents(userId, token)
         return eventResponse
+    }
+
+    /**
+     * Retrieves the list of users for a specific event
+     * @param eventId The ID of the event
+     * @return List of UserInfo objects representing the users in the event
+     */
+    suspend fun getEventUsers(eventId: String): List<InvitedUser> {
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        Log.d(TAG, "Getting users for event $eventId")
+
+        return eventApi.getUsers(eventId, token)
     }
 
     suspend fun createEvent(name: String): EventInfo {
@@ -139,6 +153,12 @@ class EventDataSource @Inject constructor(
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
         eventApi.addUser(eventId, userId, token)
     }
+
+    suspend fun removeUserFromEvent(eventId: String, userId: String) {
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+        eventApi.removeUser(eventId, userId, token)
+    }
+
 
     suspend fun getAllImageInfo(eventId: String): List<ImageInfo> {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
