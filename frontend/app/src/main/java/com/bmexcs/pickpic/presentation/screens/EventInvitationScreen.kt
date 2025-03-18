@@ -30,7 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.data.models.Invitation
+import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.presentation.viewmodels.EventInvitationViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,17 +44,6 @@ fun EventInvitationScreenView(
     LaunchedEffect(Unit) {
         viewModel.fetchEvents()
     }
-    TopAppBar(
-        title = { Text("Invites") },
-        navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back"
-                )
-            }
-        }
-    )
 
     Column(
         modifier = Modifier
@@ -78,7 +67,7 @@ fun EventInvitationScreenView(
                     .weight(1f),
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
-                items(events) { eventItem: Invitation ->
+                items(events) { eventItem: EventInfo ->
                     ListItem(
                         headlineContent = {
                             Text(eventItem.event_name)

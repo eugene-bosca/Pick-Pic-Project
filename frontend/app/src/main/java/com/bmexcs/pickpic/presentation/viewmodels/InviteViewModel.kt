@@ -3,8 +3,8 @@ package com.bmexcs.pickpic.presentation.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.Email
-import com.bmexcs.pickpic.data.models.User
+import com.bmexcs.pickpic.data.models.InvitedUser
+import com.bmexcs.pickpic.data.models.UserInfo
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,6 +28,12 @@ class InviteViewModel @Inject constructor(
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
+    // Alias for UI usage (matches viewModel.error in the UI)
+    val error: StateFlow<String?> = _errorMessage
+
+    // New state for invited users
+    private val _invitedUsers = MutableStateFlow<List<InvitedUser>>(emptyList())
+    val invitedUsers: StateFlow<List<InvitedUser>> = _invitedUsers
 
     fun addEmail(email: String) {
         _emailList.value += email
@@ -37,24 +43,46 @@ class InviteViewModel @Inject constructor(
         _emailList.value -= email
     }
 
-    fun confirmInvites(emailList: List<String>) {
+    /**
+     * Loads the invited users for the given eventId.
+     * Assumes that eventRepository provides a method getInvitedUsers(eventId: String): List<UserInfo>.
+     */
+    fun loadInvitedUsers(eventId: String) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                // Loop through each email to fetch the userId one by one on the IO dispatcher.
-                val userIds = withContext(Dispatchers.IO) {
-                    val ids = mutableListOf<String>()
-                    ids.addAll(userRepository.getUsersFromEmails(emailList))
-                    ids
+                val users = withContext(Dispatchers.IO) {
+                    eventRepository.getEventUsers(eventId)
                 }
-                // Get event id from repository (assuming it has been set)
-                val eventId = eventRepository.event.value.event_id
+                _invitedUsers.value = users
+            } catch(e: Exception) {
+                _errorMessage.value = e.localizedMessage ?: "An unknown error occurred"
+                Log.e("InviteViewModel", "Error loading invited users", e)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 
-                // Send invite request on the IO dispatcher
+    /**
+     * Confirms the invites for the provided email list and eventId.
+     * Upon successful invitation, it clears the email list and refreshes the invited users.
+     */
+    fun confirmInvites(emailList: List<String>, eventId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val userIds = withContext(Dispatchers.IO) {
+                    userRepository.getUsersFromEmails(emailList)
+                }
                 withContext(Dispatchers.IO) {
                     eventRepository.inviteUsersWithId(userIds, eventId)
                 }
                 _errorMessage.value = null
+                // Clear the email list after successful invitation
+                _emailList.value = emptyList()
+                // Refresh the invited users list
+                loadInvitedUsers(eventId)
             } catch (e: Exception) {
                 _errorMessage.value = e.localizedMessage ?: "An unknown error occurred"
                 Log.e("InviteViewModel", "Error inviting users", e)
@@ -63,4 +91,20 @@ class InviteViewModel @Inject constructor(
             }
         }
     }
+
+    fun kickUser(eventId: String, userId: String) {
+        viewModelScope.launch {
+            try {
+                eventRepository.removeUserFromEvent(eventId, userId)
+                loadInvitedUsers(eventId)
+            } catch (e: Exception) {
+                _errorMessage.value = e.localizedMessage ?: "An unknown error occurred"
+                Log.e("EventInvitationViewModel", "Error declining event", e)
+            }
+        }
+    }
+    fun isCurrentUserOwner(ownerId: String): Boolean {
+        return userRepository.getUser().user_id == ownerId
+    }
+
 }

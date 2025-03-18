@@ -61,7 +61,9 @@ fun Navigation(
 
         // Event Invitation Accept Screen
         composable(Route.EventInvitation.route) {
-            EventInvitationScreenView(navController)
+            PickPicScaffold("Pending Invites", navController) {
+                EventInvitationScreenView(navController)
+            }
         }
 
         // Create Event Screen
@@ -72,11 +74,10 @@ fun Navigation(
         }
 
         // Invite Screen
-        composable("invite/{eventId}") { backStackEntry ->
+        composable("invite/{eventId}/{ownerId}") { backStackEntry ->
             val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
-            PickPicScaffold("Invite Friends", navController) {
-                InviteScreenView(navController, eventId) // Pass eventId to InviteScreenView
-            }
+            val ownerId = backStackEntry.arguments?.getString("ownerId") ?: ""
+            InviteScreenView(navController, eventId, ownerId) // Pass eventId and ownerId to InviteScreenView
         }
 
         // QR Invite Screen
