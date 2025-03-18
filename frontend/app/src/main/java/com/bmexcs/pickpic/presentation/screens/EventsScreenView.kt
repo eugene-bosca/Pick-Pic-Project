@@ -8,7 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -53,6 +53,26 @@ private data class FullscreenImage (
     val info: ImageInfo
 ) {
     fun uuid(): String = info.image.image_id
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as FullscreenImage
+
+        if (request != other.request) return false
+        if (!data.contentEquals(other.data)) return false
+        if (info != other.info) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = request.hashCode()
+        result = 31 * result + data.contentHashCode()
+        result = 31 * result + info.hashCode()
+        return result
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -193,7 +213,7 @@ fun EventScreenView(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
-                        itemsIndexed(images) { _, (imageInfo, stream) ->
+                        items(images) { (imageInfo, stream) ->
                             stream?.let {
                                 val imageRequest = ImageRequest.Builder(context)
                                     .data(it)
