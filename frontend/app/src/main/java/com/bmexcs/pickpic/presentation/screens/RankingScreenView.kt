@@ -57,8 +57,7 @@ fun RankingScreenView(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFD0DADC)),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {

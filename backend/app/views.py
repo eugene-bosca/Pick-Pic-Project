@@ -289,7 +289,7 @@ def create_new_event(request: Request):
 
 # Retrieves the user associated with the given Firebase ID
 @extend_schema(
-    request=UUIDSerializer,
+    request=UserIDSerializer,
     responses={200: UserSerializer}
 )
 @api_view(['POST'])
@@ -309,7 +309,7 @@ def get_user_id_by_firebase_id(request: Request):
 
         user = User.objects.get(firebase_id=firebase_id)
     except User.DoesNotExist:
-        return Response(data={ 'error': 'user does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(data={ 'error': 'user does not exist' }, status=status.HTTP_404_NOT_FOUND)
 
     return Response(data=UserSerializer(user).data, status=status.HTTP_200_OK)
 
@@ -497,32 +497,32 @@ def remove_user_from_event(request, event_id, user_id):
 
 
 @extend_schema(
-    request=UUIDSerializer,
-    responses={200: EventUserSerializer}
+    request=UserListSerializer,
+    responses={204: {}}
 )
 @api_view(['POST'])
 def invite_to_event(request: Request, event_id):
     """
     Invite one user to an event (in-app method).
-
     """
     try:
         # Get the event
         event = Event.objects.get(event_id=event_id)
 
         # Check if the request has multiple user_ids or a single user_id
-        user_id = request.data.get('user_id')
+        user_ids = request.data.get('user_ids')
 
-        event_user, _ = EventUser.objects.get_or_create(event_id=event_id, user_id=user_id)
+        print(user_ids)
 
-        event_user.accepted = True
-        event_user.save()
+        for user_id in user_ids:
+            try:
+                event_user, _ = EventUser.objects.get_or_create(event_id=event_id, user_id=user_id)
+            except:
+                pass
+            event_user.accepted = True
+            event_user.save()
 
-        print(f'{event_user.event.event_id}: {event_user.user.user_id}: {event_user.accepted}')
-
-        return Response(EventUserSerializer(event_user).data, status=status.HTTP_200_OK)
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_204_NO_CONTENT)
     except Event.DoesNotExist:
         return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
