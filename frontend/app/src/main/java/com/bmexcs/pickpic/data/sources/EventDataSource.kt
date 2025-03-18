@@ -61,7 +61,7 @@ class EventDataSource @Inject constructor(
         return user
     }
 
-    suspend fun getEventsPending(): List<EventMember> {
+    suspend fun getEventsPending(): List<EventInfo> {
         val userId = userDataSource.getUser().user_id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 

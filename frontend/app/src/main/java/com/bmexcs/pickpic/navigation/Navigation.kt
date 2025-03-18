@@ -61,7 +61,9 @@ fun Navigation(
 
         // Event Invitation Accept Screen
         composable(Route.EventInvitation.route) {
-            EventInvitationScreenView(navController)
+            PickPicScaffold("Pending Invites", navController) {
+                EventInvitationScreenView(navController)
+            }
         }
 
         // Create Event Screen

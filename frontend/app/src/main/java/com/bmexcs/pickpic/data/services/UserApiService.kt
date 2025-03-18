@@ -1,6 +1,7 @@
 package com.bmexcs.pickpic.data.services
 
 import android.util.Log
+import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.UserEventList
 import com.bmexcs.pickpic.data.models.User
@@ -276,9 +277,9 @@ class UserApiService {
      *
      * **Response**: `List<models.EventMember>`
      */
-    suspend fun getPendingEvents(userId: String, token: String): List<EventMember> =
+    suspend fun getPendingEvents(userId: String, token: String): List<EventInfo> =
         withContext(Dispatchers.IO) {
-            val endpoint = "user/$userId/pending_events_full/"
+            val endpoint = "user/$userId/pending_event_invitations/"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "GET: $url")
@@ -295,8 +296,8 @@ class UserApiService {
                 val body = response.body?.string()
                     ?: throw HttpException(response.code, "Empty response body")
 
-                val resultType = object : TypeToken<List<EventMember>>() {}.type
-                val result: List<EventMember> = gson.fromJson(body, resultType)
+                val resultType = object : TypeToken<List<EventInfo>>() {}.type
+                val result: List<EventInfo> = gson.fromJson(body, resultType)
 
                 return@withContext result
             }
