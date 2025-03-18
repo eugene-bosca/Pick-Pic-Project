@@ -56,13 +56,6 @@ class EventsViewModel @Inject constructor(
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        viewModelScope.launch {
-            eventRepository.clearUnrankedQueue()
-        }
-    }
-
     fun refresh() {
         viewModelScope.launch {
             refreshInternal()
@@ -148,7 +141,7 @@ class EventsViewModel @Inject constructor(
     private suspend fun getImagesByEventId(eventId: String) {
         _isLoading.value = true
 
-        val images = eventRepository.getImages(eventId)
+        val images = eventRepository.getAllImageInfo(eventId)
 
         val imageBitmapList = mutableMapOf<ImageInfo, ByteArray?>()
 

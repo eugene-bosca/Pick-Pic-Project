@@ -140,12 +140,12 @@ class EventDataSource @Inject constructor(
         eventApi.addUser(eventId, userId, token)
     }
 
-    suspend fun getImageInfo(eventId: String): List<ImageInfo> {
+    suspend fun getAllImageInfo(eventId: String): List<ImageInfo> {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         // This should call 'event/<str:event_id>/content/' endpoint
         val eventContentList = try {
-            val response = eventApi.getImageInfo(eventId, token)
+            val response = eventApi.getAllImageInfo(eventId, token)
             response.toMutableList()
         } catch (e: NotFoundException) {
             emptyList()
@@ -154,17 +154,18 @@ class EventDataSource @Inject constructor(
         return eventContentList
     }
 
-    suspend fun getUnrankedImages(eventId: String, count: Int): List<ImageInfo> {
+    suspend fun getUnrankedImageInfo(eventId: String): List<ImageInfo> {
         val userId = userDataSource.getUser().user_id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
-        return eventApi.getUnrankedImages(eventId, userId, token).take(count)
+        return eventApi.getUnrankedImages(eventId, userId, token)
     }
 
     suspend fun voteOnImage(eventId: String, imageId: String, vote: Vote) {
         val userId = userDataSource.getUser().user_id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
+        Log.d(TAG, "voteOnImage")
         eventApi.vote(eventId, imageId, userId, vote, token)
     }
 

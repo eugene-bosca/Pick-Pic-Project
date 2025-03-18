@@ -114,7 +114,7 @@ class EventApiService {
      *
      * **Response Body**: `List<models.ImageInfo>`
      */
-    suspend fun getImageInfo(eventId: String, token: String): List<ImageInfo> =
+    suspend fun getAllImageInfo(eventId: String, token: String): List<ImageInfo> =
         withContext(Dispatchers.IO) {
             val endpoint = "event/$eventId/content/"
             val url = Api.url(endpoint)

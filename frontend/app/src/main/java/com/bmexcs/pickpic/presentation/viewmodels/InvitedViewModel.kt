@@ -74,7 +74,7 @@ class InvitedViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val images = eventRepository.getImages(eventId)
+                val images = eventRepository.getAllImageInfo(eventId)
                 _images.value = images
             } catch (e: Exception) {
                 _images.value = emptyList()
