@@ -21,7 +21,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.draw.alpha
 import com.bmexcs.pickpic.presentation.viewmodels.InviteViewModel
+import androidx.compose.material.icons.filled.ArrowBack
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InviteScreenView(
     navController: NavHostController,
@@ -40,54 +42,71 @@ fun InviteScreenView(
 
     val isEventOwner = viewModel.isCurrentUserOwner(ownerId)
 
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxSize()
-    ) {
-        // Error message if any
-        error?.let {
-            Text(
-                text = it,
-                color = Color.Red,
-                modifier = Modifier.padding(8.dp)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Invite Friends") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
             )
         }
-
-        // Loading indicator
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        }
-
-        // Email input field
-        EditableEmailField(
-            eventId = eventId,
-            viewModel = viewModel
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // QR Code navigation button
-        Button(
-            onClick = {
-                navController.navigate("qrInviteView/$eventId")
-            },
-            modifier = Modifier.fillMaxWidth()
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
-            Text("Generate QR Code")
+            // Error message if any
+            error?.let {
+                Text(
+                    text = it,
+                    color = Color.Red,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+
+            // Loading indicator
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            // Email input field
+            EditableEmailField(
+                eventId = eventId,
+                viewModel = viewModel
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // QR Code navigation button
+            Button(
+                onClick = {
+                    navController.navigate("qrInviteView/$eventId")
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Generate QR Code")
+            }
+
+            Spacer(modifier = Modifier.height(25.dp))
+
+            InvitedUsersList(
+                invitedUsers = invitedUsers,
+                eventId = eventId,
+                ownerId = ownerId,
+                isEventOwner = isEventOwner,
+                onKickUser = { eventId, userId -> viewModel.kickUser(eventId, userId) }
+            )
         }
-
-        Spacer(modifier = Modifier.height(25.dp))
-
-        InvitedUsersList(
-            invitedUsers = invitedUsers,
-            eventId = eventId,
-            ownerId = ownerId,
-            isEventOwner = isEventOwner,
-            onKickUser = { eventId, userId -> viewModel.kickUser(eventId, userId) }
-        )
     }
 }
 
