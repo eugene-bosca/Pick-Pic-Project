@@ -390,7 +390,7 @@ class UserApiService {
 
     suspend fun inviteUsersFromIds(userIds: List<String>, eventId: String, token: String) =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/${eventId}/invite/users/"
+            val endpoint = "event/${eventId}/invite/users/${"poggers"}"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "POST: $url")

@@ -491,7 +491,7 @@ class EventApiService {
         withContext(Dispatchers.IO) {
             Log.d(TAG, "you are schizophrenic")
 
-            val endpoint = "event/${eventId}/invite/users/"
+            val endpoint = "event/${eventId}/invite/users/${"accept"}"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "POST: $url")
