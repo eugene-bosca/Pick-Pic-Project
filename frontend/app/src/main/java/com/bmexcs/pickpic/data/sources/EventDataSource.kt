@@ -3,7 +3,6 @@ package com.bmexcs.pickpic.data.sources
 import android.util.Log
 import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.data.models.EventCreation
-import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.models.InvitedUser
 import com.bmexcs.pickpic.data.models.User
@@ -160,12 +159,13 @@ class EventDataSource @Inject constructor(
         eventApi.removeUser(eventId, userId, token)
     }
 
-    suspend fun getImageInfo(eventId: String): List<ImageInfo> {
+
+    suspend fun getAllImageInfo(eventId: String): List<ImageInfo> {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         // This should call 'event/<str:event_id>/content/' endpoint
         val eventContentList = try {
-            val response = eventApi.getImageInfo(eventId, token)
+            val response = eventApi.getAllImageInfo(eventId, token)
             response.toMutableList()
         } catch (e: NotFoundException) {
             emptyList()
@@ -174,17 +174,18 @@ class EventDataSource @Inject constructor(
         return eventContentList
     }
 
-    suspend fun getUnrankedImages(eventId: String, count: Int): List<ImageInfo> {
+    suspend fun getUnrankedImageInfo(eventId: String): List<ImageInfo> {
         val userId = userDataSource.getUser().user_id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
-        return eventApi.getUnrankedImages(eventId, userId, token).take(count)
+        return eventApi.getUnrankedImages(eventId, userId, token)
     }
 
     suspend fun voteOnImage(eventId: String, imageId: String, vote: Vote) {
         val userId = userDataSource.getUser().user_id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
+        Log.d(TAG, "voteOnImage")
         eventApi.vote(eventId, imageId, userId, vote, token)
     }
 
