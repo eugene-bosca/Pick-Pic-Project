@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,13 +31,14 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.navigation.Route
-import com.bmexcs.pickpic.presentation.shared.ImageFull
 import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 import androidx.compose.material3.Icon
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.bmexcs.pickpic.data.models.ImageInfo
 
 private data class ButtonInfo (
@@ -267,51 +267,26 @@ fun EventScreenView(
         fullScreenImage?.let { image ->
             ImageFull(
                 image = image.request,
+                title = image.info.image.user.display_name,
+                isDeleteButtonVisible = viewModel.isCurrentUserOwner(eventInfo.owner.user_id) ||
+                        viewModel.isUserPhotoUploader(image.info),
                 onDismiss = {
                     fullScreenImage = null
-                }
-            ) {
-                NavigationBar {
-                    if (viewModel.isCurrentUserOwner(eventInfo.owner.user_id) ||
-                        viewModel.isUserPhotoUploader(image.info)) {
-                        NavigationBarItem(
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.trash_can),
-                                    contentDescription = "Delete Photo"
-                                )
-                            },
-                            label = { Text("Delete Photo", fontSize = 16.sp) },
-                            selected = false,
-                            onClick = {
-                                image.uuid().let {
-                                    viewModel.deleteImage(
-                                        viewModel.event.value.event_id,
-                                        it
-                                    )
-                                    fullScreenImage = null
-                                }
-                            },
-                        )
-                    }
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                painter = painterResource(R.drawable.download_box),
-                                contentDescription = "Download Photo"
-                            )
-                        },
-                        label = { Text("Download Photo", fontSize = 16.sp) },
-                        selected = false,
-                        onClick = {
-                            viewModel.saved.value =
-                                viewModel.saveImageFromByteArrayToGallery(
-                                    context, image.data, image.uuid()
-                                )
-                        },
+                },
+                onDelete = {
+                    viewModel.deleteImage(
+                        viewModel.event.value.event_id,
+                        image.uuid()
                     )
+                    fullScreenImage = null
+                },
+                onDownload = {
+                    viewModel.saved.value =
+                        viewModel.saveImageFromByteArrayToGallery(
+                            context, image.data, image.uuid()
+                        )
                 }
-            }
+            )
         }
     }
 }
@@ -334,5 +309,77 @@ fun ImageTile(imageRequest: ImageRequest, onClick: () -> Unit) {
                 .padding(all = 15.dp)
                 .border(width = 1.dp, color = Color.Black)
         )
+    }
+}
+
+@Composable
+fun ImageFull(
+    image: ImageRequest,
+    title: String,
+    isDeleteButtonVisible: Boolean,
+    onDismiss: () -> Unit,
+    onDelete: () -> Unit,
+    onDownload: () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false, // Allow full-screen width
+            dismissOnBackPress = true, // Dismiss on back press
+            dismissOnClickOutside = true // Dismiss on outside click
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable {
+                    onDismiss()
+                }
+        ) {
+            Text(
+                title,
+                fontSize = 24.sp,
+                color = Color.White,
+                modifier = Modifier.padding(10.dp)
+            )
+
+            AsyncImage(
+                model = image,
+                contentDescription = "Full Screen Image",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize().weight(1f)
+            )
+
+            Box(
+                modifier = Modifier.fillMaxWidth().weight(0.2f)
+            ) {
+                NavigationBar {
+                    if (isDeleteButtonVisible) {
+                        NavigationBarItem(
+                            icon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.trash_can),
+                                    contentDescription = "Delete Photo"
+                                )
+                            },
+                            label = { Text("Delete Photo", fontSize = 16.sp) },
+                            selected = false,
+                            onClick = onDelete,
+                        )
+                    }
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.download_box),
+                                contentDescription = "Download Photo"
+                            )
+                        },
+                        label = { Text("Download Photo", fontSize = 16.sp) },
+                        selected = false,
+                        onClick = onDownload,
+                    )
+                }
+            }
+        }
     }
 }
