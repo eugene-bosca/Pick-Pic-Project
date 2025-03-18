@@ -2,6 +2,7 @@ package com.bmexcs.pickpic.presentation.viewmodels
 
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -46,6 +48,9 @@ class EventsViewModel @Inject constructor(
 
     private val _eventInfo = MutableStateFlow(EventInfo())
     val event = _eventInfo
+
+    private val _snackbarMessage = MutableStateFlow<String?>(null)
+    val snackbarMessage: StateFlow<String?> = _snackbarMessage
 
     init {
         _eventInfo.value = eventRepository.event.value
@@ -112,32 +117,6 @@ class EventsViewModel @Inject constructor(
         return byteArray
     }
 
-    fun saveImageFromByteArrayToGallery(context: Context, byteArray: ByteArray, imageName: String): Boolean {
-        // Convert byteArray to Bitmap
-        val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-
-        // Prepare ContentValues to specify where to store the image
-        val values = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, imageName) // Image name
-            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg") // Image type (could be "image/png")
-            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures") // Location to save (e.g., Pictures folder)
-        }
-
-        // Get content resolver to insert image into MediaStore
-        val resolver = context.contentResolver
-        val imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-
-        return if (imageUri != null) {
-            // Open output stream to write the image file
-            resolver.openOutputStream(imageUri)?.use { outputStream ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream) // Save as JPEG
-            }
-            true // Image saved successfully
-        } else {
-            false // Failed to insert into MediaStore
-        }
-    }
-
     private suspend fun getImagesByEventId(eventId: String) {
         _isLoading.value = true
 
@@ -171,14 +150,66 @@ class EventsViewModel @Inject constructor(
         getImagesByEventId(event.value.event_id)
     }
 
+    fun saveImageFromByteArrayToGallery(context: Context, byteArray: ByteArray, imageName: String): Boolean {
+        // Convert byteArray to Bitmap
+        val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+
+        // Prepare ContentValues to specify where to store the image
+        val values = ContentValues().apply {
+            put(MediaStore.Downloads.DISPLAY_NAME, imageName) // Image name
+            put(MediaStore.Downloads.MIME_TYPE, "image/jpeg") // Image type
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                put(MediaStore.Downloads.RELATIVE_PATH, "Download") // Save to Downloads/PickPic
+            }
+        }
+
+        // Get content resolver to insert image into MediaStore
+        val resolver = context.contentResolver
+        val imageUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+
+        return if (imageUri != null) {
+            // Open output stream to write the image file
+            resolver.openOutputStream(imageUri)?.use { outputStream ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream) // Save as JPEG
+            }
+            // Notify the media scanner
+            val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+            mediaScanIntent.data = imageUri
+            context.sendBroadcast(mediaScanIntent)
+            true // Image saved successfully
+        } else {
+            false // Failed to insert into MediaStore
+        }
+    }
+
     fun downloadAlbum(context: Context, images: List<Pair<ImageInfo, ByteArray?>>) {
+        Log.d(TAG, "Downloading album...")
         viewModelScope.launch(Dispatchers.IO) {
+            var successCount = 0
+            var failureCount = 0
+
             images.forEach { (imageInfo, byteArray) ->
                 byteArray?.let {
                     val imageName = "event_${event.value.event_id}_${imageInfo.image.image_id}.jpg"
-                    saveImageFromByteArrayToGallery(context, it, imageName)
+                    val isSaved = saveImageFromByteArrayToGallery(context, it, imageName)
+                    if (isSaved) {
+                        successCount++
+                    } else {
+                        failureCount++
+                    }
                 }
             }
+
+            // Show a confirmation message
+            val message = when {
+                successCount > 0 && failureCount == 0 -> "All $successCount images saved to Downloads/PickPic!"
+                successCount > 0 && failureCount > 0 -> "$successCount images saved, $failureCount failed."
+                else -> "Failed to save any images."
+            }
+            withContext(Dispatchers.Main) {
+                _snackbarMessage.value = message
+            }
         }
+        Log.d(TAG, "Download album finished.")
     }
 }
