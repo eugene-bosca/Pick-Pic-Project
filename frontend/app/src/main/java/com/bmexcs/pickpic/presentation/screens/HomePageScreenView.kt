@@ -117,7 +117,7 @@ fun InvitesButton(navController: NavHostController) {
                 .size(36.dp)
                 .padding(end = 8.dp)
         )
-        Text("Invites")
+        Text(" Pending Invites")
     }
 }
 
