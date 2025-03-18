@@ -16,9 +16,12 @@ class InviteLinkActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val eventId: String? = parseDeepLink(intent)
+        val intentEventId = intent.getStringExtra("EVENT_ID")
 
         setContent {
-            if (eventId != null) {
+            if (intentEventId != null) {
+                InvitedQRView(eventId = intentEventId)
+            } else if (eventId != null) {
                 InvitedQRView(eventId = eventId)
             }
         }

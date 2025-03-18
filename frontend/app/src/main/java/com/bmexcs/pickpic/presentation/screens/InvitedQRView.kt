@@ -1,4 +1,3 @@
-import android.app.Activity
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,9 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.MainActivity
 import com.bmexcs.pickpic.presentation.viewmodels.InvitedViewModel
 
@@ -44,6 +41,8 @@ fun InvitedQRView(
 
     // Fetch event info when the composable is first launched
     LaunchedEffect(Unit) {
+        viewModel.setEventId(eventId)
+        viewModel.checkUserLoggedIn(context)
         viewModel.getEvent(eventId)
         viewModel.getEventContentInfo(eventId)
     }
@@ -83,56 +82,10 @@ fun InvitedQRView(
                         modifier = Modifier
                             .padding(16.dp)
                     ) {
-                        // Event Name
-                        Text(
-                            text = "Event Name",
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
-                        Text(
-                            text = eventInfo.event_name,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-
-                        // Owner
-                        Text(
-                            text = "Owner",
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
-                        Text(
-                            text = ownerInfo?.display_name ?: "Unknown",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-
-                        // Email
-                        Text(
-                            text = "Email",
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
-                        Text(
-                            text = ownerInfo?.email ?: "Unknown",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-
-                        // Images
-                        Text(
-                            text = "Images",
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
-                        Text(
-                            text = images.count().toString(),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
+                        DisplayEntry("Event Name", eventInfo.event_name)
+                        DisplayEntry("Owner Name", ownerInfo?.display_name ?: "Unknown")
+                        DisplayEntry("Email", ownerInfo?.email ?: "Unknown")
+                        DisplayEntry("Images", images.count().toString())
                     }
 
                     Row(
@@ -143,14 +96,7 @@ fun InvitedQRView(
                         verticalAlignment = Alignment.CenterVertically // Align buttons vertically
                     ) {
                         Button(
-                            onClick = {
-                                // Create an Intent to start MainActivity
-                                val intent = Intent(context, MainActivity::class.java)
-                                context.startActivity(intent)
-
-                                // Finish the current activity (user cannot go back)
-                                (context as? Activity)?.finish()
-                            },
+                            onClick = { viewModel.handleAcceptInvite(context) },
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(end = 8.dp)
@@ -162,7 +108,7 @@ fun InvitedQRView(
 
                         Button(
                             onClick = {
-                                // Handle decline action
+                                viewModel.handleDeclineInvite(context)
                             },
                             modifier = Modifier
                                 .weight(1f)
@@ -181,4 +127,20 @@ fun InvitedQRView(
             }
         }
     }
+}
+
+@Composable
+fun DisplayEntry(title: String, value: String) {
+    // Event Name
+    Text(
+        text = title,
+        fontSize = 14.sp,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+    )
+    Text(
+        text = value,
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
 }

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, UserSettings, Event, EventUser, Image, EventContent, ScoredBy
+from .models import *
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -59,4 +59,4 @@ class EmailSerializer(serializers.Serializer):
     emails = serializers.ListField()
 
 class UUIDSerializer(serializers.Serializer):
-    ids = serializers.UUIDField()
+    id = serializers.UUIDField()

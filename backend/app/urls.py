@@ -19,7 +19,6 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-from django.http import JsonResponse
 
 from . import views
 
@@ -49,7 +48,7 @@ urlpatterns = [
     
     # upvote/downvote
     path('event/<str:event_id>/image/<str:image_id>/vote/', views.vote_image, name='Upvote/Downvote Image'),
-
+ 
     # event
     path('event/create/', views.create_new_event, name='Create New Event'),
     path('event/<str:event_id>/', views.event_info, name='Event Info'),

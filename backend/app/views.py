@@ -5,17 +5,12 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
-import base64
 
 from .models import User
 
 from django.http import FileResponse
-from django.contrib.auth.hashers import check_password
 from django.conf import settings
-from django.db.models import Subquery
 from rest_framework.request import Request
-from rest_framework import serializers
-
 
 import uuid
 import jwt
@@ -113,42 +108,6 @@ def event_info(request: Request, event_id):
     event = Event.objects.get(event_id=event_id)
     return Response(data=EventSerializer(event).data, status=status.HTTP_200_OK)
 
-# Authenticate a user
-@api_view(['POST'])
-def authenticate(request: Request):
-    username = request.data.get('username')
-    password = request.data.get('password')
-
-    if not username or not password:
-        return Response({"error": "Username and password are required"}, status=400)
-
-    try:
-        user = User.objects.get(username=username)
-        
-        # Validate password securely
-        if check_password(password, user.password):
-            # Generate JWT token
-            payload = {
-                "id": user.id,
-                "username": user.username,
-                "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),  # Token expires in 1 hour
-                "iat": datetime.datetime.utcnow(),
-            }
-            token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
-
-            return Response({
-                "exists": True,
-                "token": token,
-                "comment": "Authentication successful"
-            })
-        else:
-            return Response({"exists": False, "comment": "Incorrect password"}, status=401)
-
-    except User.DoesNotExist:
-        return Response({"exists": False, "comment": "User does not exist"}, status=404)
-    except User.MultipleObjectsReturned:
-        return Response({"exists": False, "comment": "Multiple users with the same username exist???"}, status=500)
-
 # Get or delete an image from an event
 @api_view(['GET', 'DELETE'])
 def get_delete_image(request: Request, event_id=None, image_id=None):
@@ -201,25 +160,28 @@ def create_image(request: Request, event_id=None, user_id=None):
             return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"user not found" })  
 
         file_bytes = request.body
-        content_type = request.headers.get('Content-Type') 
-        unique_name = datetime.now().strftime("%Y%m%d%H%M%S%f")
+        content_type = request.headers.get('Content-Type')
 
-        if content_type == 'image/jpeg':
-            unique_name += '.jpeg'
-        elif content_type == 'image/png':
-            unique_name += '.png'
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST, data={ "error": "no header - Content-Type" })
+        if not content_type or not content_type.startswith("image/"):
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"error": "Unsupported or missing Content-Type header"}
+            )
+
+        # Extract the extension from the content type (e.g., "image/jpeg" -> ".jpeg")
+        file_extension = "." + content_type.split("/")[-1]
+        unique_name = datetime.now().strftime("%Y%m%d%H%M%S%f") + file_extension
 
         upload_to_gcs('pick-pic', file_bytes, unique_name, content_type)
 
-        new_image = Image.objects.create(file_name=unique_name)
+        new_image = Image.objects.create(file_name=unique_name, user_id=user_id)
         
         event_content = EventContent.objects.create(
             event_id=event_id,
-            user_id=user_id,
-            image_id=(new_image.image_id)
+            image_id=new_image.image_id
         )
+
+        print(event_content)
 
         return Response(status=status.HTTP_201_CREATED, data=EventContentSerializer(event_content).data)
     except Exception as e:
@@ -533,52 +495,34 @@ def remove_user_from_event(request, event_id, user_id):
     except EventUser.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND, data={ "error":"event does not exist or user is not part of this event" })
 
-# Invite one or more users to an event
+
+@extend_schema(
+    request=UUIDSerializer,
+    responses={200: EventUserSerializer}
+)
 @api_view(['POST'])
-def invite_to_event(request, event_id):
+def invite_to_event(request: Request, event_id):
     """
-    Invite one or more users to an event (in-app method).
-    Expects a payload with:
-    {
-        "user_id": ["uuid1", "uuid2", ...] or "user_id": "uuid"
-    }
+    Invite one user to an event (in-app method).
+
     """
     try:
         # Get the event
         event = Event.objects.get(event_id=event_id)
 
         # Check if the request has multiple user_ids or a single user_id
-        user_ids = request.data.get('user_id', [])
+        user_id = request.data.get('user_id')
 
-        if isinstance(user_ids, dict):
-            user_ids = []
-        elif isinstance(user_ids, str):
-            user_ids = [user_ids]
-        elif not isinstance(user_ids, list):
-            user_ids = []
+        event_user, _ = EventUser.objects.get_or_create(event_id=event_id, user_id=user_id)
 
-        if not user_ids:
-            return Response({'error': 'No user_ids provided'}, status=status.HTTP_400_BAD_REQUEST)
+        event_user.accepted = True
+        event_user.save()
 
-        invited_users = []
+        print(f'{event_user.event.event_id}: {event_user.user.user_id}: {event_user.accepted}')
 
-        for user_id in user_ids:
-            if User.objects.filter(user_id=user_id).exists():
-                # Create an EventUser with accepted=False
-                _, created = EventUser.objects.get_or_create(
-                    event_id=event_id,
-                    user_id=user_id,
-                    defaults={'accepted': False}
-                )
-
-            if created:
-                invited_users.append(user_id)
-
-        return Response({
-            'message': f'Successfully invited {len(invited_users)} users',
-            'invited_users': UserSerializer(invited_users).data
-        }, status=status.HTTP_201_CREATED)
-
+        return Response(EventUserSerializer(event_user).data, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     except Event.DoesNotExist:
         return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
@@ -738,6 +682,8 @@ def vote_image(request: Request, event_id, image_id):
         scoreBy.score += 1
     elif vote == 'downvote' and scoreBy.score > -1:
         scoreBy.score -= 1
+
+    scoreBy.save()
 
     return Response(status=status.HTTP_204_NO_CONTENT)
 

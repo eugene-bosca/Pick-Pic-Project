@@ -112,7 +112,7 @@ fun EditableEmailField(viewModel: InviteViewModel = hiltViewModel()) {
                         modifier = Modifier
                             .padding(4.dp)
                             .clickable {
-                                viewModel.removeEmail(email) // Use ViewModel function
+                                viewModel.removeEmail(email)
                             }
                     )
                 }

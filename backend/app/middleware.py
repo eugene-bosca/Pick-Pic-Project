@@ -1,7 +1,5 @@
 from django.conf import settings
 from django.http import JsonResponse
-from django.core.exceptions import ValidationError, PermissionDenied
-from django.db import IntegrityError
 
 from firebase_admin import auth
 import jwt
@@ -24,7 +22,7 @@ class AuthMiddleware:
 
     def __call__(self, request):
         
-        if request.path in ["/authenticate", "/swagger", "/swagger/", "/schema", "/schema/"]:
+        if request.path in ["/swagger", "/swagger/", "/schema", "/schema/"]:
             return self.get_response(request)
 
         auth_header = request.headers.get("Authorization")
