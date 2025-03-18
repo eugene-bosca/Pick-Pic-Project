@@ -2,8 +2,8 @@ package com.bmexcs.pickpic.data.repositories
 
 import android.util.Log
 import com.bmexcs.pickpic.data.models.EventInfo
-import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.ImageInfo
+import com.bmexcs.pickpic.data.models.InvitedUser
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.sources.EventDataSource
 import com.bmexcs.pickpic.data.utils.Vote
@@ -34,6 +34,10 @@ class EventRepository @Inject constructor(
         return eventDataSource.getEventOwnerInfo(ownerId)
     }
 
+    suspend fun getEventUsers(eventId: String): List<InvitedUser> {
+        return eventDataSource.getEventUsers(eventId)
+    }
+
     suspend fun getAllImageInfo(eventId: String): List<ImageInfo> {
         return eventDataSource.getAllImageInfo(eventId)
     }
@@ -62,12 +66,12 @@ class EventRepository @Inject constructor(
         return eventDataSource.createEvent(name)
     }
 
-    suspend fun deleteEvent(id: String) {
-        eventDataSource.deleteEvent(id)
+    suspend fun getUserEventsPending(): List<EventInfo> {
+        return eventDataSource.getEventsPending()
     }
 
-    suspend fun getUserEventsPending(): List<EventMember> {
-        return eventDataSource.getEventsPending()
+    suspend fun deleteEvent(id: String) {
+        eventDataSource.deleteEvent(id)
     }
 
     suspend fun acceptEvent(eventId: String) {
@@ -80,6 +84,10 @@ class EventRepository @Inject constructor(
 
     suspend fun addUserToEvent(eventId: String, userId: String) {
         eventDataSource.addUserToEvent(eventId, userId)
+    }
+
+    suspend fun removeUserFromEvent(eventId: String, userId: String) {
+        eventDataSource.removeUserFromEvent(eventId, userId)
     }
 
     fun setCurrentEvent(eventInfo: EventInfo) {
