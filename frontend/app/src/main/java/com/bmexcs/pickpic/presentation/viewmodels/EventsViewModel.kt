@@ -212,4 +212,8 @@ class EventsViewModel @Inject constructor(
         }
         Log.d(TAG, "Download album finished.")
     }
+
+    fun clearSnackbarMessage() {
+        _snackbarMessage.value = null
+    }
 }
