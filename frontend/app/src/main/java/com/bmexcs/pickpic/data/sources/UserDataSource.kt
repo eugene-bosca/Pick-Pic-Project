@@ -1,6 +1,7 @@
 package com.bmexcs.pickpic.data.sources
 
 import android.util.Log
+import com.bmexcs.pickpic.data.models.Email
 import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.models.UserCreation
 import com.bmexcs.pickpic.data.services.UserApiService
@@ -63,7 +64,7 @@ class UserDataSource @Inject constructor(
         }
     }
 
-    suspend fun getUsersFromEmails(emails: List<String>): List<User> {
+    suspend fun getUsersFromEmails(emails: List<String>): List<String> {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         Log.d(TAG, "Getting users from $emails")

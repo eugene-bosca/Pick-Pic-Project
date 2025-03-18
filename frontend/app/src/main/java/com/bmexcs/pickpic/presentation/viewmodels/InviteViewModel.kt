@@ -3,29 +3,31 @@ package com.bmexcs.pickpic.presentation.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.UserInfo
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.bmexcs.pickpic.data.models.Email
+import com.bmexcs.pickpic.data.models.User
 import com.bmexcs.pickpic.data.repositories.EventRepository
+import com.bmexcs.pickpic.data.repositories.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-
-
 @HiltViewModel
-class InviteViewModel @Inject constructor(private val eventRepository: EventRepository) : ViewModel() {
+class InviteViewModel @Inject constructor(
+    private val userRepository: UserRepository,
+    private val eventRepository: EventRepository
+) : ViewModel() {
     private val _emailList = MutableStateFlow<List<String>>(emptyList())
     val emailList: StateFlow<List<String>> = _emailList
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
-
-    private val _invitedUsers = MutableStateFlow<List<UserInfo>>(emptyList())
-    val invitedUsers: StateFlow<List<UserInfo>> = _invitedUsers
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
 
     fun addEmail(email: String) {
         _emailList.value += email
@@ -35,37 +37,27 @@ class InviteViewModel @Inject constructor(private val eventRepository: EventRepo
         _emailList.value -= email
     }
 
-    fun confirmInvites(emails: List<String>, eventId: String) {
+    fun confirmInvites(emailList: List<String>) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                // This would call a repository method to send invites
-                // Example: eventRepository.inviteUsers(eventId, emails)
-                // THis stuff isn't done so u can prob trash it in a merge
+                // Loop through each email to fetch the userId one by one on the IO dispatcher.
+                val userIds = withContext(Dispatchers.IO) {
+                    val ids = mutableListOf<String>()
+                    ids.addAll(userRepository.getUsersFromEmails(emailList))
+                    ids
+                }
+                // Get event id from repository (assuming it has been set)
+                val eventId = eventRepository.event.value.event_id
 
-                // After successful invite, refresh the invited users list
-                loadInvitedUsers(eventId)
-
-                // Clear the email list after successful invite
-                _emailList.value = emptyList()
+                // Send invite request on the IO dispatcher
+                withContext(Dispatchers.IO) {
+                    eventRepository.inviteUsersWithId(userIds, eventId)
+                }
+                _errorMessage.value = null
             } catch (e: Exception) {
-                _error.value = "Failed to send invites: ${e.message}"
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
-
-    fun loadInvitedUsers(eventId: String) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            try {
-                // Use the existing getUsers method from EventRepository
-                val users = eventRepository.getEventUsers(eventId)
-                Log.d("InviteViewModel", "Loaded invited users: $users")
-                _invitedUsers.value = users
-            } catch (e: Exception) {
-                _error.value = "Failed to load invited users: ${e.message}"
+                _errorMessage.value = e.localizedMessage ?: "An unknown error occurred"
+                Log.e("InviteViewModel", "Error inviting users", e)
             } finally {
                 _isLoading.value = false
             }

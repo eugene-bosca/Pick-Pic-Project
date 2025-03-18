@@ -6,4 +6,4 @@ class AppConfig(AppConfig):
     name = 'app'
 
     def ready(self):
-        from . import signals  # Import signals when app is ready
+        from . import signals

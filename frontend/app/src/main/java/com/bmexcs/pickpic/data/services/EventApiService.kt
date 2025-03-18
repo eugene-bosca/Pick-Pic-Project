@@ -68,10 +68,8 @@ class EventApiService {
                 return@withContext result
             }
         }
-
     /**
-     * TODO: remove
-     * Retrieves the user data for the owner of an event.
+     * Retrieves a user data.
      *
      * **Endpoint**: `GET /user/{userId}/`
      *
@@ -79,7 +77,7 @@ class EventApiService {
      *
      * **Request Content-Type**: None
      *
-     * **Response**: `models.User`
+     * **Response**: `models.User
      */
     suspend fun getEventOwner(userId: String, token: String): User =
         withContext(Dispatchers.IO) {
@@ -104,7 +102,6 @@ class EventApiService {
                 return@withContext result
             }
         }
-
     /**
      * Retrieves metadata for all images associated with the specified event.
      *
@@ -248,7 +245,7 @@ class EventApiService {
      *
      * **Endpoint**: `PUT /event/{event_id}/image/{image_id}/vote/`
      *
-     * **Request Body**: `models.ImageVote`
+     * **Request Body**: models.ImageVote
      *
      * **Request Content-Type**: JSON
      *
@@ -434,7 +431,6 @@ class EventApiService {
                 return@withContext false
             }
         }
-
     /**
      * Generates an obfuscated invitation link for the specified event.
      *
@@ -473,6 +469,50 @@ class EventApiService {
                 Log.d(TAG, "Generated invite link: ${result.invite_link}")
 
                 return@withContext result.invite_link
+            }
+        }
+
+    /**
+     * TODO: endpoint not working as intended
+     *
+     * Adds a user to the specified event.
+     *
+     * **Endpoint**: `POST /event/{event_id}/user`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: JSON
+     *
+     * **Response**: Empty
+     *
+     */
+    suspend fun addUser(eventId: String, userId: String, token: String) =
+        withContext(Dispatchers.IO) {
+            val endpoint = "event/${eventId}/invite/user/"
+            val url = Api.url(endpoint)
+
+            Log.d(TAG, "POST: $url")
+
+            // Create a JSON body with the user_id
+            val jsonBody = JSONObject().apply {
+                put("user_id", userId)
+            }.toString()
+
+            Log.d(TAG, "JSON body: $jsonBody")
+
+            val requestBody = jsonBody.toRequestBody("application/json".toMediaType())
+
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .addHeader("Content-Type", "application/json")
+                .post(requestBody)
+                .build()
+            Log.d(TAG, "Request: $request")
+
+            client.newCall(request).execute().use { response ->
+                Log.d(TAG, "Response: $response")
+                Api.handleResponseStatus(response)
             }
         }
 
@@ -568,7 +608,7 @@ class EventApiService {
      */
     suspend fun getUsers(eventId: String, token: String): List<UserInfo> =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/users/"
+            val endpoint = "event/$eventId/users/" // Fixed endpoint path to match Django URL
             val url = Api.url(endpoint)
 
             Log.d(TAG, "GET: $url")
@@ -646,7 +686,7 @@ class EventApiService {
      *
      * **Request Content-Type**: None
      *
-     * **Response**: `models.EventId` as `String`
+     * **Response**: `models.EventId` as String
      */
     suspend fun resolveInviteLink(inviteLink: String, token: String): String =
         withContext(Dispatchers.IO) {

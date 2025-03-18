@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, UserSettings, Event, EventUser, Image, EventContent, ScoredBy
+from .models import *
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
