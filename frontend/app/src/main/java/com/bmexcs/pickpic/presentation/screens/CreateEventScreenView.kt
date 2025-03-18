@@ -75,10 +75,6 @@ fun CreateEventScreenView(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                EditableInviteeNameField()
-
-                Spacer(modifier = Modifier.height(16.dp))
-
                 ElevatedButton(
                     onClick = {
                         viewModel.onCreate(
@@ -131,29 +127,5 @@ fun EditableEventNameField(viewModel: CreateEventViewModel = hiltViewModel()) {
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
         placeholder = { Text("Name") }
-    )
-}
-
-@Composable
-fun EditableInviteeNameField() {
-    var email by remember { mutableStateOf("") }
-
-    Text(
-        text = "Invite Users",
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(start = 8.dp)
-    )
-
-    Spacer(modifier = Modifier.height(4.dp))
-
-    OutlinedTextField(
-        value = email,
-        onValueChange = { newValue ->
-            email = newValue },
-        shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth(),
-        singleLine = true,
-        placeholder = { Text("Enter email address") }
     )
 }
