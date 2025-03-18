@@ -3,13 +3,10 @@ package com.bmexcs.pickpic.data.repositories
 import android.graphics.BitmapFactory
 import android.util.Log
 import com.bmexcs.pickpic.data.models.EventInfo
-import com.bmexcs.pickpic.data.models.EventMember
 import com.bmexcs.pickpic.data.models.ImageInfo
 import com.bmexcs.pickpic.data.models.BitmapRanked
-import com.bmexcs.pickpic.data.models.Email
 import com.bmexcs.pickpic.data.models.InvitedUser
 import com.bmexcs.pickpic.data.models.User
-import com.bmexcs.pickpic.data.models.UserInfo
 import com.bmexcs.pickpic.data.sources.EventDataSource
 import com.bmexcs.pickpic.data.sources.ImageDataSource
 import com.bmexcs.pickpic.data.utils.Vote
@@ -21,8 +18,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.text.SimpleDateFormat
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -60,11 +55,6 @@ class EventRepository @Inject constructor(
         return eventDataSource.getEventOwnerInfo(ownerId)
     }
 
-    /**
-     * Retrieves the list of users for a specific event
-     * @param eventId The ID of the event
-     * @return List of UserInfo objects representing the users in the event
-     */
     suspend fun getEventUsers(eventId: String): List<InvitedUser> {
         return eventDataSource.getEventUsers(eventId)
     }
@@ -86,6 +76,10 @@ class EventRepository @Inject constructor(
 
     suspend fun getUserEventsPending(): List<EventInfo> {
         return eventDataSource.getEventsPending()
+    }
+
+    suspend fun deleteEvent(id: String) {
+        eventDataSource.deleteEvent(id)
     }
 
     suspend fun acceptEvent(eventId: String) {

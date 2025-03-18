@@ -267,6 +267,34 @@ class UserApiService {
         }
 
     /**
+     * Deletes the specified event.
+     *
+     * **Endpoint**: `DELETE /user/{user_id}/events/{event_id}/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: Empty
+     */
+    suspend fun deleteEvent(userId: String, eventId: String, token: String) = withContext(Dispatchers.IO) {
+        val endpoint = "user/$userId/events/$eventId/"
+        val url = Api.url(endpoint)
+
+        Log.d(TAG, "DELETE: $url")
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .delete()
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            Api.handleResponseStatus(response)
+        }
+    }
+
+    /**
      * Retrieves the list of pending event invitations.
      *
      * **Endpoint**: `GET /user/{user_id}/pending_events_full/`

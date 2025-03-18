@@ -97,6 +97,13 @@ class EventDataSource @Inject constructor(
         return newEvent
     }
 
+    suspend fun deleteEvent(eventId: String) {
+        val userId = userDataSource.getUser().user_id
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        userApi.deleteEvent(userId, eventId, token)
+    }
+
     suspend fun fetchObfuscatedEventId(eventId: String): Pair<String?, String?> {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
