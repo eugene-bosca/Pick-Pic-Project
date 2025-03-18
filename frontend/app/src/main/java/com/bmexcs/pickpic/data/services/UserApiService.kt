@@ -18,6 +18,8 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
+import org.json.JSONObject
 
 private const val TAG = "UserApiService"
 
@@ -388,13 +390,20 @@ class UserApiService {
 
     suspend fun inviteUsersFromIds(userIds: List<String>, eventId: String, token: String) =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/$eventId/invite/user/"
+            val endpoint = "event/${eventId}/invite/users/"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "POST: $url")
 
-            val requestBody = gson.toJson(userIds.first())
-                .toRequestBody("application/json".toMediaType())
+            // Create a JSON body with the user_id
+
+            val userIds: List<String> = userIds
+            val jsonBody = JSONObject().apply {
+                put("user_ids", JSONArray(userIds)) // Convert List<String> to JSONArray
+            }.toString()
+            Log.d(TAG, "JSON body: $jsonBody")
+
+            val requestBody = jsonBody.toRequestBody("application/json".toMediaType())
 
             val request = Request.Builder()
                 .url(url)
@@ -402,8 +411,10 @@ class UserApiService {
                 .addHeader("Content-Type", "application/json")
                 .post(requestBody)
                 .build()
+            Log.d(TAG, "Request: $request")
 
             client.newCall(request).execute().use { response ->
+                Log.d(TAG, "Response: $response")
                 Api.handleResponseStatus(response)
             }
         }
