@@ -30,6 +30,13 @@ import javax.inject.Inject
 
 private const val TAG = "EventsViewModel"
 
+enum class FilterType {
+    FilterDateDesc,
+    FilterDateAsc,
+    FilterRankDesc,
+    FilterRankAsc
+}
+
 @HiltViewModel
 class EventsViewModel @Inject constructor(
     private val eventRepository: EventRepository,
@@ -48,6 +55,9 @@ class EventsViewModel @Inject constructor(
 
     private val _event = MutableStateFlow(EventMetadata())
     val event = _event
+
+    private val _filterType = MutableStateFlow(FilterType.FilterDateDesc)
+    val filterType = _filterType
 
     private val _snackbarMessage = MutableStateFlow<String?>(null)
     val snackbarMessage: StateFlow<String?> = _snackbarMessage
@@ -117,7 +127,11 @@ class EventsViewModel @Inject constructor(
         return byteArray
     }
 
-    fun saveImageFromByteArrayToGallery(context: Context, byteArray: ByteArray, imageName: String): Boolean {
+    fun saveImageFromByteArrayToGallery(
+        context: Context,
+        byteArray: ByteArray,
+        imageName: String
+    ): Boolean {
         // Convert byteArray to Bitmap
         val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
 
@@ -196,8 +210,20 @@ class EventsViewModel @Inject constructor(
     }
 
     private suspend fun refreshInternal() {
+//        sortCachedImages()
         Log.d(TAG, "Refreshing events page...")
         getImagesByEventId(event.value.id)
+    }
+
+    private fun sortCachedImages() {
+        _images.value = sortImages(images.value)
+
+        Log.d(TAG, "Sorting by ${filterType.value}")
+
+        images.value.forEach { (metadata, byteArray) ->
+            Log.d(TAG, "  Metadata: ${metadata.score}")
+            Log.d(TAG, "  Metadata: ${metadata.dateUploaded}")
+        }
     }
 
     private suspend fun getImagesByEventId(eventId: String) {
@@ -212,8 +238,32 @@ class EventsViewModel @Inject constructor(
             imageBitmapList[image] = byteArray
         }
 
-        _images.value = imageBitmapList
+        val sortedList = sortImages(imageBitmapList)
+
+        sortedList.forEach { (metadata, byteArray) ->
+            Log.d(TAG, "  Metadata: ${metadata.score}")
+            Log.d(TAG, "  Metadata: ${metadata.dateUploaded}")
+        }
+
+        _images.value = sortedList
 
         _isLoading.value = false
+    }
+
+    /**
+     * Sorts the images based on the current filter type.
+     * Returns a new map with the sorted entries.
+     */
+    private fun sortImages(images: Map<ImageMetadata, ByteArray?>): Map<ImageMetadata, ByteArray?> {
+        val sortedList = when (filterType.value) {
+            FilterType.FilterDateDesc -> images.entries.sortedByDescending { it.key.dateUploaded }
+            FilterType.FilterDateAsc -> images.entries.sortedBy { it.key.dateUploaded }
+            FilterType.FilterRankDesc -> images.entries.sortedByDescending { it.key.score }
+            FilterType.FilterRankAsc -> images.entries.sortedBy { it.key.score }
+            else -> images.entries.sortedByDescending { it.key.score }
+        }
+
+        // Convert the sorted list back to a map
+        return sortedList.associate { it.toPair() }
     }
 }

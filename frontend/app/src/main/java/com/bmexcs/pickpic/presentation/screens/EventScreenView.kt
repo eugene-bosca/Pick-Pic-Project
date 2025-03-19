@@ -13,6 +13,8 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -40,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.bmexcs.pickpic.data.models.ImageMetadata
+import com.bmexcs.pickpic.presentation.viewmodels.FilterType
 import kotlinx.coroutines.launch
 
 private data class ButtonInfo (
@@ -77,6 +80,8 @@ fun EventScreenView(
 
     // Pagination state
     var pageSize by remember { mutableIntStateOf(8) }
+
+    val filterType by viewModel.filterType.collectAsState()
 
     val totalPages = if (images.size % pageSize == 0) {
         images.size / pageSize
@@ -264,13 +269,26 @@ fun EventScreenView(
                         expandFilter.value = !expandFilter.value
                     },
                     onFilterByDate = {
+                        if (viewModel.filterType.value == FilterType.FilterDateDesc) {
+                            viewModel.filterType.value = FilterType.FilterDateAsc
+                        } else {
+                            viewModel.filterType.value = FilterType.FilterDateDesc
+                        }
+                        viewModel.refresh()
                         // TODO: filter viewModel.getImagesByEventId(viewModel.event.value.event_id)
                         expandFilter.value = !expandFilter.value
                     },
                     onFilterByScore = {
+                        if (viewModel.filterType.value == FilterType.FilterRankDesc) {
+                            viewModel.filterType.value = FilterType.FilterRankAsc
+                        } else {
+                            viewModel.filterType.value = FilterType.FilterRankDesc
+                        }
+                        viewModel.refresh()
                         // TODO: filter viewModel.getImagesByEventId(viewModel.event.value.event_id)
                         expandFilter.value = !expandFilter.value
-                    }
+                    },
+                    filter = filterType
                 )
 
                 fullImage?.let { image ->
@@ -415,6 +433,7 @@ fun FilterOptionsDropdown(
     onDismiss: () -> Unit,
     onFilterByDate: () -> Unit,
     onFilterByScore: () -> Unit,
+    filter: FilterType
 ) {
     val filterButtonBox = remember { mutableStateOf(Offset.Zero) }
 
@@ -428,14 +447,64 @@ fun FilterOptionsDropdown(
             onDismissRequest = onDismiss,
             offset = DpOffset(100.dp, 0.dp)
         ) {
+            // Date Filter Option
             DropdownMenuItem(
-                text = { Text("Date") },
+                text = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Show the correct arrow for the Date filter
+                        when (filter) {
+                            FilterType.FilterDateAsc -> Icon(
+                                imageVector = Icons.Default.ArrowUpward,
+                                contentDescription = "Ascending"
+                            )
+                            FilterType.FilterDateDesc -> Icon(
+                                imageVector = Icons.Default.ArrowDownward,
+                                contentDescription = "Descending"
+                            )
+                            else -> {} // No icon for other filter types
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Date")
+                    }
+                },
                 onClick = onFilterByDate
             )
             DropdownMenuItem(
-                text = { Text("Score") },
+                text = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Show the correct arrow for the Score filter
+                        when (filter) {
+                            FilterType.FilterRankAsc -> Icon(
+                                imageVector = Icons.Default.ArrowUpward,
+                                contentDescription = "Ascending"
+                            )
+                            FilterType.FilterRankDesc -> Icon(
+                                imageVector = Icons.Default.ArrowDownward,
+                                contentDescription = "Descending"
+                            )
+                            else -> {} // No icon for other filter types
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Score")
+                    }
+                },
                 onClick = onFilterByScore
             )
         }
+    }
+}
+
+@Composable
+fun FilterIconUpDown(filterType: FilterType) {
+    if (filterType == FilterType.FilterDateDesc || filterType == FilterType.FilterRankDesc) {
+       Icon(
+           imageVector = Icons.Default.ArrowDownward,
+           contentDescription = "Descending"
+       )
+    } else if (filterType == FilterType.FilterDateAsc || filterType == FilterType.FilterRankAsc) {
+        Icon(
+            imageVector = Icons.Default.ArrowUpward,
+            contentDescription = "Ascending"
+        )
     }
 }

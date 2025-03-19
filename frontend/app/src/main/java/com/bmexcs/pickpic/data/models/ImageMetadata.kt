@@ -12,6 +12,6 @@ data class ImageMetadata(
         id = imageInfo.image.image_id,
         uploader = UserMetadata(imageInfo.image.user),
         score = imageInfo.image.score,
-        dateUploaded = ""
+        dateUploaded = imageInfo.image.file_name.substringBeforeLast('.')
     )
 }
