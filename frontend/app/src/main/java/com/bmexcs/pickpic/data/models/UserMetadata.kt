@@ -5,5 +5,5 @@ data class UserMetadata(
     val displayName: String = "",
     val email: String = "",
     val phone: String = "",
-    val profilePicture: String = ""
+    val profilePicture: String = "",
 )
