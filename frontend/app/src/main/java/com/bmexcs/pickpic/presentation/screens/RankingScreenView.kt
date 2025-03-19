@@ -27,6 +27,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -50,6 +51,11 @@ fun RankingScreenView(
 
     val eventInfo by viewModel.event.collectAsState()
     val eventName = eventInfo.event_name
+
+    // when the bitmap changes, refresh the offset
+    LaunchedEffect(currentBitmap) {
+        currentOffsetX = 0f;
+    }
 
     Column(
         modifier = Modifier
@@ -94,7 +100,7 @@ fun RankingScreenView(
 
                     val absTotalOffsetX = kotlin.math.abs(totalOffsetX)
 
-                    if (absTotalOffsetX > 50) {
+                    if (absTotalOffsetX > 100) {
                         if (totalOffsetX > 0) {
                             viewModel.onSwipe(RankingViewModel.SwipeDirection.RIGHT)
                             Log.d("SwipeView", "Swipe Detected: RIGHT")
@@ -121,11 +127,20 @@ fun RankingScreenView(
                     CircularProgressIndicator()
                 } else {
                     currentBitmap?.let { image ->
-                        Image(
-                            bitmap = image.bitmap.asImageBitmap(),
-                            contentDescription = "Current Image",
-                            modifier = Modifier.fillMaxSize()
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    translationX = currentOffsetX
+                                    rotationZ = currentOffsetX * 0.1f
+                                }
+                        ) {
+                            Image(
+                                bitmap = image.bitmap.asImageBitmap(),
+                                contentDescription = "Current Image",
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
                     } ?: Text(
                         "All images ranked!",
                         fontSize = 18.sp

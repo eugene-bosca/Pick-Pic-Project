@@ -30,7 +30,7 @@ class EventDataSource @Inject constructor(
         Log.d(TAG, "getEvents for $userId")
 
         val eventResponse = userApi.getEvents(userId, token)
-        return eventResponse.owned_events + eventResponse.invited_events
+        return eventResponse.invited_events
     }
 
     suspend fun getEventInfo(eventId: String): EventInfo {
