@@ -72,7 +72,7 @@ class EventsViewModel @Inject constructor(
     }
 
     fun isUserPhotoUploader(imageMetadata: ImageMetadata): Boolean {
-        return userRepository.getUser().id == imageMetadata.id
+        return userRepository.getUser().id == imageMetadata.uploader.id
     }
 
     fun addImage(imageByte: ByteArray) {
