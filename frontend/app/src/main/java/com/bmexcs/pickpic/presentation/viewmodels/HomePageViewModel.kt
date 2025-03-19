@@ -37,6 +37,8 @@ class HomePageViewModel @Inject constructor(
         viewModelScope.launch {
             eventRepository.deleteEvent(eventId)
         }
+        // delete the event locally without needing to make a new network call
+        _events.value = _events.value.filter { it.id != eventId }
     }
 
     fun fetchEvents() {
