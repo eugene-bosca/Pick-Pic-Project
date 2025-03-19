@@ -254,10 +254,6 @@ class EventsViewModel @Inject constructor(
         _isLoading.value = false
     }
 
-    /**
-     * Sorts the images based on the current filter type.
-     * Returns a new map with the sorted entries.
-     */
     private fun sortImages(image: List<Image>, filterType: FilterType): List<Image> {
         return when (filterType) {
             FilterType.FilterDateDesc -> image.sortedByDescending { it.metadata.dateUploaded }
@@ -265,11 +261,6 @@ class EventsViewModel @Inject constructor(
             FilterType.FilterRankDesc -> image.sortedByDescending { it.metadata.score }
             FilterType.FilterRankAsc -> image.sortedBy { it.metadata.score }
         }
-    }
-
-    private fun createTopSubset() {
-        val topSubset = images.value.take(10)
-        _images.value = topSubset
     }
 
     fun sortCachedImages() {
