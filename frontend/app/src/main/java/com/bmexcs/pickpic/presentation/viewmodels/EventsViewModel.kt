@@ -41,7 +41,7 @@ enum class FilterType {
 enum class DownloadAmount {
     All,
     TopTen,
-    TopTwenty,
+    TopTwenty
 }
 
 @HiltViewModel
@@ -180,12 +180,12 @@ class EventsViewModel @Inject constructor(
             var failureCount = 0
 
             // default all
-            val topSubset = sortImages(images, filterType.value)
+            var topSubset = sortImages(images, filterType.value)
 
             if (downloadAmount.value == DownloadAmount.TopTen) {
-                topSubset.take(10)
+                topSubset = topSubset.take(10)
             } else if (downloadAmount.value == DownloadAmount.TopTwenty) {
-                topSubset.take(20)
+                topSubset = topSubset.take(20)
             }
 
             topSubset.forEach { image ->
