@@ -38,6 +38,12 @@ enum class FilterType {
     FilterRankAsc
 }
 
+enum class DownloadAmount {
+    All,
+    TopTen,
+    TopTwenty
+}
+
 @HiltViewModel
 class EventsViewModel @Inject constructor(
     private val eventRepository: EventRepository,
@@ -59,6 +65,9 @@ class EventsViewModel @Inject constructor(
 
     private val _filterType = MutableStateFlow(FilterType.FilterDateDesc)
     val filterType = _filterType
+
+    private val _downloadAmount = MutableStateFlow(DownloadAmount.All)
+    val downloadAmount = _downloadAmount
 
     private val _snackbarMessage = MutableStateFlow<String?>(null)
     val snackbarMessage: StateFlow<String?> = _snackbarMessage
@@ -170,7 +179,16 @@ class EventsViewModel @Inject constructor(
             var successCount = 0
             var failureCount = 0
 
-            images.forEach { image ->
+            // default all
+            var topSubset = sortImages(images, filterType.value)
+
+            if (downloadAmount.value == DownloadAmount.TopTen) {
+                topSubset = topSubset.take(10)
+            } else if (downloadAmount.value == DownloadAmount.TopTwenty) {
+                topSubset = topSubset.take(20)
+            }
+
+            topSubset.forEach { image ->
                 image.data.let {
                     val imageName = "event_${event.value.id}_${image.metadata.id}.jpg"
                     val isSaved = saveImageFromByteArrayToGallery(context, it, imageName)
@@ -231,17 +249,13 @@ class EventsViewModel @Inject constructor(
             }
         }
 
-        _images.value = sortImages(imageList)
+        _images.value = sortImages(imageList, filterType.value)
 
         _isLoading.value = false
     }
 
-    /**
-     * Sorts the images based on the current filter type.
-     * Returns a new map with the sorted entries.
-     */
-    private fun sortImages(image: List<Image>): List<Image> {
-        return when (filterType.value) {
+    private fun sortImages(image: List<Image>, filterType: FilterType): List<Image> {
+        return when (filterType) {
             FilterType.FilterDateDesc -> image.sortedByDescending { it.metadata.dateUploaded }
             FilterType.FilterDateAsc -> image.sortedBy { it.metadata.dateUploaded }
             FilterType.FilterRankDesc -> image.sortedByDescending { it.metadata.score }
@@ -250,7 +264,7 @@ class EventsViewModel @Inject constructor(
     }
 
     fun sortCachedImages() {
-        _images.value = sortImages(images.value)
+        _images.value = sortImages(images.value, filterType.value)
     }
 
 }
