@@ -1,55 +1,22 @@
 package com.bmexcs.pickpic.data.repositories
 
-import android.util.Log
-import com.bmexcs.pickpic.data.models.EventInfo
-import com.bmexcs.pickpic.data.models.ImageInfo
-import com.bmexcs.pickpic.data.models.InvitedUser
-import com.bmexcs.pickpic.data.models.User
+import com.bmexcs.pickpic.data.models.EventMetadata
+import com.bmexcs.pickpic.data.models.ImageMetadata
+import com.bmexcs.pickpic.data.models.UserMetadata
 import com.bmexcs.pickpic.data.sources.EventDataSource
-import com.bmexcs.pickpic.data.utils.Vote
+import com.bmexcs.pickpic.data.models.VoteKind
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
-
-private const val TAG = "EventRepository"
 
 @Singleton
 class EventRepository @Inject constructor(
     private val eventDataSource: EventDataSource
 ) {
-    private val _eventInfo = MutableStateFlow(EventInfo())
+    private val _eventInfo = MutableStateFlow(EventMetadata())
     val event = _eventInfo
 
     private var timestamp: Long = 0
-
-    suspend fun getEvents(): List<EventInfo> {
-        return eventDataSource.getEvents()
-    }
-
-    suspend fun getEventInfo(eventId: String): EventInfo {
-        return eventDataSource.getEventInfo(eventId)
-    }
-
-    suspend fun getEventOwnerInfo(ownerId: String): User {
-        return eventDataSource.getEventOwnerInfo(ownerId)
-    }
-
-    suspend fun getEventUsers(eventId: String): List<InvitedUser> {
-        return eventDataSource.getEventUsers(eventId)
-    }
-
-    suspend fun getAllImageInfo(eventId: String): List<ImageInfo> {
-        return eventDataSource.getAllImageInfo(eventId)
-    }
-
-    suspend fun getUnrankedImageInfo(): List<ImageInfo> {
-        return eventDataSource.getUnrankedImageInfo(event.value.event_id)
-    }
-
-    suspend fun voteOnImage(imageId: String, vote: Vote) {
-        Log.d(TAG, "voteOnImage")
-        eventDataSource.voteOnImage(event.value.event_id, imageId, vote)
-    }
 
     suspend fun isUpdated(eventId: String): Boolean {
         val lastModified =  eventDataSource.getEventLastModified(eventId)
@@ -62,12 +29,44 @@ class EventRepository @Inject constructor(
         }
     }
 
-    suspend fun createEvent(name: String): EventInfo {
+    fun setCurrentEvent(eventInfo: EventMetadata) {
+        event.value = eventInfo
+    }
+
+    suspend fun getAllEventsMetadata(): List<EventMetadata> {
+        return eventDataSource.getAllEventsMetadata()
+    }
+
+    suspend fun getEventMetadata(eventId: String): EventMetadata {
+        return eventDataSource.getEventMetadata(eventId)
+    }
+
+    suspend fun getEventOwnerMetadata(ownerId: String): UserMetadata {
+        return eventDataSource.getEventOwnerMetadata(ownerId)
+    }
+
+    suspend fun getEventUsersMetadata(eventId: String): List<UserMetadata> {
+        return eventDataSource.getEventUsersMetadata(eventId)
+    }
+
+    suspend fun getAllImagesMetadata(eventId: String): List<ImageMetadata> {
+        return eventDataSource.getAllImagesMetadata(eventId)
+    }
+
+    suspend fun getUnrankedImagesMetadata(): List<ImageMetadata> {
+        return eventDataSource.getUnrankedImagesMetadata(event.value.id)
+    }
+
+    suspend fun voteOnImage(imageId: String, voteKind: VoteKind) {
+        eventDataSource.voteOnImage(event.value.id, imageId, voteKind)
+    }
+
+    suspend fun createEvent(name: String): EventMetadata {
         return eventDataSource.createEvent(name)
     }
 
-    suspend fun getUserEventsPending(): List<EventInfo> {
-        return eventDataSource.getEventsPending()
+    suspend fun getPendingEventsMetadata(): List<EventMetadata> {
+        return eventDataSource.getPendingEventsMetadata()
     }
 
     suspend fun deleteEvent(id: String) {
@@ -90,11 +89,7 @@ class EventRepository @Inject constructor(
         eventDataSource.removeUserFromEvent(eventId, userId)
     }
 
-    fun setCurrentEvent(eventInfo: EventInfo) {
-        event.value = eventInfo
-    }
-
-    suspend fun inviteUsersWithId(userIds: List<String>, eventId: String)  {
+    suspend fun inviteUsersFromEmail(userIds: List<String>, eventId: String)  {
         return eventDataSource.inviteUsersFromEmail(userIds, eventId)
     }
 }

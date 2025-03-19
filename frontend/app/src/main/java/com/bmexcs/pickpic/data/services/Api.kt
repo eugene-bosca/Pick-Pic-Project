@@ -1,19 +1,19 @@
-package com.bmexcs.pickpic.data.utils
+package com.bmexcs.pickpic.data.services
 
 import android.util.Log
 import okhttp3.Response
 import java.net.URL
 
-private const val TAG = "ApiUtils"
-
 object Api {
     private const val BASE_URL = "https://pick-pic-service-627889116714.northamerica-northeast2.run.app"
+
+    private const val TAG = "ApiUtils"
 
     fun handleResponseStatus(response: Response): Boolean {
         val code = response.code
 
-        if (code == 200 || code == 201 || code == 202) {
-            Log.i(TAG, "Response code: $code")
+        if (code in 200..204) {
+            Log.i(TAG, "SUCCESS with code: $code")
             return true
         }
 

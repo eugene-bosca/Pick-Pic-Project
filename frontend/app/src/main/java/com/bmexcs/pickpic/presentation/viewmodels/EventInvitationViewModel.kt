@@ -3,7 +3,7 @@ package com.bmexcs.pickpic.presentation.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.EventInfo
+import com.bmexcs.pickpic.data.models.EventMetadata
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,8 +20,8 @@ class EventInvitationViewModel @Inject constructor(
     private val userRepository: UserRepository,
 ) : ViewModel() {
 
-    private val _events = MutableStateFlow<List<EventInfo>>(emptyList())
-    val events: StateFlow<List<EventInfo>> = _events
+    private val _events = MutableStateFlow<List<EventMetadata>>(emptyList())
+    val events: StateFlow<List<EventMetadata>> = _events
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -62,9 +62,9 @@ class EventInvitationViewModel @Inject constructor(
     private suspend fun fetchEvents() {
         _isLoading.value = true
         try {
-            Log.d(TAG, "Fetching events for user: ${userRepository.getUser().user_id}")
+            Log.d(TAG, "Fetching events for user: ${userRepository.getUser().id}")
 
-            val eventItems = eventRepository.getUserEventsPending()
+            val eventItems = eventRepository.getPendingEventsMetadata()
 
             _events.value = eventItems
             _errorMessage.value = null

@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.User
+import com.bmexcs.pickpic.data.models.UserMetadata
 import com.bmexcs.pickpic.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -24,8 +24,8 @@ class ProfileViewModel @Inject constructor(
 ) : ViewModel() {
 
     // UI state for the profile (use StateFlow to observe profile data in the UI)
-    private val _user = MutableStateFlow<User?>(null)
-    val user: StateFlow<User?> = _user
+    private val _user = MutableStateFlow<UserMetadata?>(null)
+    val user: StateFlow<UserMetadata?> = _user
 
     private var emailInput by mutableStateOf("")
     private var phoneInput by mutableStateOf("")
@@ -55,7 +55,7 @@ class ProfileViewModel @Inject constructor(
     // Updates the display name field.
     fun updateDisplayName(displayName: String) {
         _user.update { currentProfile ->
-            currentProfile?.copy(display_name = displayName)
+            currentProfile?.copy(name = displayName)
         }
     }
 

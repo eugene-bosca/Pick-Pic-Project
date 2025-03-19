@@ -6,9 +6,9 @@ import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.EventInfo
-import com.bmexcs.pickpic.data.models.ImageInfo
-import com.bmexcs.pickpic.data.models.User
+import com.bmexcs.pickpic.data.models.EventMetadata
+import com.bmexcs.pickpic.data.models.ImageMetadata
+import com.bmexcs.pickpic.data.models.UserMetadata
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
 import com.bmexcs.pickpic.presentation.MainActivity
@@ -35,48 +35,48 @@ class InvitedViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    private val _eventInfo = MutableStateFlow<EventInfo?>(null)
-    val eventInfo: StateFlow<EventInfo?> = _eventInfo
+    private val _event = MutableStateFlow<EventMetadata?>(null)
+    val event: StateFlow<EventMetadata?> = _event
 
-    private val _ownerInfo = MutableStateFlow<User?>(null)
-    val ownerInfo: StateFlow<User?> = _ownerInfo
+    private val _owner = MutableStateFlow<UserMetadata?>(null)
+    val owner: StateFlow<UserMetadata?> = _owner
 
-    private val _images = MutableStateFlow<List<ImageInfo>>(emptyList())
-    val images: StateFlow<List<ImageInfo>> = _images
+    private val _images = MutableStateFlow<List<ImageMetadata>>(emptyList())
+    val images: StateFlow<List<ImageMetadata>> = _images
 
     fun getEvent(eventId: String) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val eventInfo = eventRepository.getEventInfo(eventId)
-                _eventInfo.value = eventInfo
+                val event = eventRepository.getEventMetadata(eventId)
+                _event.value = event
             } catch (e: Exception) {
-                _eventInfo.value = null
+                _event.value = null
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    fun getEventOwnerInfo(userId: String) {
+    fun getEventOwnerMetadata(userId: String) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val ownerInfo = eventRepository.getEventOwnerInfo(userId)
-                _ownerInfo.value = ownerInfo
+                val owner = eventRepository.getEventOwnerMetadata(userId)
+                _owner.value = owner
             } catch (e: Exception) {
-                _ownerInfo.value = null
+                _owner.value = null
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    fun getEventContentInfo(eventId: String) {
+    fun getAllImagesMetadata(eventId: String) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val images = eventRepository.getAllImageInfo(eventId)
+                val images = eventRepository.getAllImagesMetadata(eventId)
                 _images.value = images
             } catch (e: Exception) {
                 _images.value = emptyList()
@@ -100,7 +100,7 @@ class InvitedViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                eventRepository.addUserToEvent(eventId, userRepository.getUser().user_id)
+                eventRepository.addUserToEvent(eventId, userRepository.getUser().id)
             } catch (e: Exception) {
                 Log.d(TAG, e.toString())
             } finally {
@@ -109,6 +109,7 @@ class InvitedViewModel @Inject constructor(
             }
         }
     }
+
     fun handleDeclineInvite(context: Context) {
         toMainActivity(context)
     }

@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.data.models
+package com.bmexcs.pickpic.data.dtos
 
 import kotlinx.serialization.Serializable
 

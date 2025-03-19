@@ -1,7 +1,7 @@
 package com.bmexcs.pickpic.presentation.viewmodels;
 
 import android.graphics.Bitmap
-import android.graphics.Color;
+import android.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.sources.EventDataSource

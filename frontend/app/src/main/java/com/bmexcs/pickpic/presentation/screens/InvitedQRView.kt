@@ -35,22 +35,22 @@ fun InvitedQRView(
     val context = LocalContext.current
 
     val isLoading = viewModel.isLoading.collectAsState().value
-    val eventInfo = viewModel.eventInfo.collectAsState().value
+    val event = viewModel.event.collectAsState().value
     val images = viewModel.images.collectAsState().value
-    val ownerInfo = viewModel.ownerInfo.collectAsState().value
+    val owner = viewModel.owner.collectAsState().value
 
-    // Fetch event info when the composable is first launched.
+    // Fetch event metadata when the composable is first launched.
     LaunchedEffect(Unit) {
         viewModel.setEventId(eventId)
         viewModel.checkUserLoggedIn(context)
         viewModel.getEvent(eventId)
-        viewModel.getEventContentInfo(eventId)
+        viewModel.getAllImagesMetadata(eventId)
     }
 
-    // Fetch event owner info only after eventInfo is available.
-    LaunchedEffect(eventInfo) {
-        if (eventInfo != null) {
-            viewModel.getEventOwnerInfo(eventInfo.owner.user_id)
+    // Fetch event owner metadata only after event is available.
+    LaunchedEffect(event) {
+        if (event != null) {
+            viewModel.getEventOwnerMetadata(event.owner.id)
         }
     }
 
@@ -64,7 +64,7 @@ fun InvitedQRView(
         if (isLoading) {
             CircularProgressIndicator()
         } else {
-            if (eventInfo != null) {
+            if (event != null) {
                 Text(
                     text = "You've been invited to an album!",
                     fontSize = 24.sp,
@@ -83,9 +83,9 @@ fun InvitedQRView(
                         modifier = Modifier
                             .padding(16.dp)
                     ) {
-                        DisplayEntry("Event Name", eventInfo.event_name)
-                        DisplayEntry("Owner Name", ownerInfo?.display_name ?: "Unknown")
-                        DisplayEntry("Email", ownerInfo?.email ?: "Unknown")
+                        DisplayEntry("Event Name", event.name)
+                        DisplayEntry("Owner Name", owner?.name ?: "Unknown")
+                        DisplayEntry("Email", owner?.email ?: "Unknown")
                         DisplayEntry("Images", images.count().toString())
                     }
 

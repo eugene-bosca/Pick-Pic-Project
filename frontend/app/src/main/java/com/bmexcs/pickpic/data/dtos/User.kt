@@ -1,9 +1,11 @@
-package com.bmexcs.pickpic.data.models
+package com.bmexcs.pickpic.data.dtos
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UserInfo(
+data class User(
+    val user_id: String = "",
+    val firebase_id: String = "",
     val display_name: String = "",
     val email: String = "",
     val phone: String = "",

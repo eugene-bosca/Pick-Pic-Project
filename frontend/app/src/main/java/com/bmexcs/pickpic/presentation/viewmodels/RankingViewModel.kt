@@ -5,11 +5,11 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.EventInfo
-import com.bmexcs.pickpic.data.models.ImageInfo
+import com.bmexcs.pickpic.data.models.EventMetadata
+import com.bmexcs.pickpic.data.models.ImageMetadata
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
-import com.bmexcs.pickpic.data.utils.Vote
+import com.bmexcs.pickpic.data.models.VoteKind
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -28,8 +28,8 @@ class RankingViewModel @Inject constructor(
     private val imageRepository: ImageRepository
 ) : ViewModel() {
 
-    private val _eventInfo = MutableStateFlow(EventInfo())
-    val event = _eventInfo
+    private val _event = MutableStateFlow(EventMetadata())
+    val event = _event
 
     private val _currentImage = MutableStateFlow<BitmapWithID?>(null)
     val currentImage = _currentImage
@@ -37,7 +37,7 @@ class RankingViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading
 
-    private val unrankedImageInfo = MutableStateFlow<ArrayDeque<ImageInfo>>(ArrayDeque())
+    private val unrankedImageInfo = MutableStateFlow<ArrayDeque<ImageMetadata>>(ArrayDeque())
 
     enum class SwipeDirection {
         LEFT,
@@ -45,10 +45,10 @@ class RankingViewModel @Inject constructor(
     }
 
     init {
-        _eventInfo.value = eventRepository.event.value
+        _event.value = eventRepository.event.value
         viewModelScope.launch {
             Log.d(TAG, "Creating unranked image queue, size = ${unrankedImageInfo.value.size}")
-            unrankedImageInfo.value = ArrayDeque(eventRepository.getUnrankedImageInfo())
+            unrankedImageInfo.value = ArrayDeque(eventRepository.getUnrankedImagesMetadata())
         }.invokeOnCompletion {
             loadFirstImage()
         }
@@ -63,14 +63,14 @@ class RankingViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
 
-            val vote = if (direction == SwipeDirection.LEFT) {
-                Vote.UPVOTE
+            val voteKind = if (direction == SwipeDirection.LEFT) {
+                VoteKind.UPVOTE
             } else {
-                Vote.DOWNVOTE
+                VoteKind.DOWNVOTE
             }
 
-            Log.d(TAG, "Voting on imageId = ${_currentImage.value!!.id} with vote = $vote")
-            eventRepository.voteOnImage(_currentImage.value!!.id, vote)
+            Log.d(TAG, "Voting on imageId = ${_currentImage.value!!.id} with vote = $voteKind")
+            eventRepository.voteOnImage(_currentImage.value!!.id, voteKind)
 
             val next = unrankedImageInfo.value.removeFirstOrNull() ?: run {
                 Log.d(TAG, "Unranked image queue empty")
@@ -80,10 +80,10 @@ class RankingViewModel @Inject constructor(
             }
 
             Log.d(TAG, "Loading next image")
-            val imageId = next.image.image_id
+            val imageId = next.id
 
-            val byteArray = imageRepository.getImageByImageId(
-                _eventInfo.value.event_id,
+            val byteArray = imageRepository.getImage(
+                _event.value.id,
                 imageId
             ) ?: throw Exception("Image does not exist")
 
@@ -107,10 +107,10 @@ class RankingViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
 
-            val imageId = next.image.image_id
+            val imageId = next.id
 
-            val byteArray = imageRepository.getImageByImageId(
-                _eventInfo.value.event_id,
+            val byteArray = imageRepository.getImage(
+                _event.value.id,
                 imageId
             ) ?: throw Exception("Image does not exist")
 

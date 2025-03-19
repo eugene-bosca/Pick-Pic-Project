@@ -49,8 +49,8 @@ fun RankingScreenView(
 
     val isLoading by viewModel.isLoading.collectAsState()
 
-    val eventInfo by viewModel.event.collectAsState()
-    val eventName = eventInfo.event_name
+    val event by viewModel.event.collectAsState()
+    val eventName = event.name
 
     // when the bitmap changes, refresh the offset
     LaunchedEffect(currentBitmap) {

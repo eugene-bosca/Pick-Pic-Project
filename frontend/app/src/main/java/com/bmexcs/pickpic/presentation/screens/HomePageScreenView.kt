@@ -22,7 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.R
 import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.data.models.EventInfo
+import com.bmexcs.pickpic.data.models.EventMetadata
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.viewmodels.HomePageViewModel
 
@@ -94,16 +94,16 @@ fun HomePageScreenView(
                         .weight(1f),
                     contentPadding = PaddingValues(horizontal = 16.dp)
                 ) {
-                    items(events) { eventItem: EventInfo ->
+                    items(events) { eventItem: EventMetadata ->
                         EventListing(
-                            isOwner = viewModel.isCurrentUserOwner(eventItem.owner.user_id),
+                            isOwner = viewModel.isCurrentUserOwner(eventItem.owner.id),
                             eventItem = eventItem,
                             onEnter = {
                                 viewModel.setEvent(eventItem)
                                 navController.navigate(Route.Event.route)
                             },
                             onDelete = {
-                                viewModel.deleteEvent(eventItem.event_id)
+                                viewModel.deleteEvent(eventItem.id)
                             }
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -153,7 +153,7 @@ fun CreateEventButton(navController: NavHostController) {
 @Composable
 fun EventListing(
     isOwner: Boolean,
-    eventItem: EventInfo,
+    eventItem: EventMetadata,
     onEnter: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -165,10 +165,10 @@ fun EventListing(
     ) {
         ListItem(
             headlineContent = {
-                Text(eventItem.event_name)
+                Text(eventItem.name)
             },
             supportingContent = {
-                Text(text = "Host: ${eventItem.owner.display_name}")
+                Text(text = "Host: ${eventItem.owner.name}")
             },
             trailingContent = {
                 Row(
