@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.bmexcs.pickpic.data.dtos.ImageInfo
+import com.bmexcs.pickpic.data.models.ImageMetadata
 import kotlinx.coroutines.launch
 
 private data class ButtonInfo (
@@ -48,10 +48,10 @@ private data class ButtonInfo (
     val onClick: () -> Unit
 )
 
-private data class FullImageInfo (
+private data class FullImage (
     val request: ImageRequest,
     val data: ByteArray,
-    val info: ImageInfo
+    val metadata: ImageMetadata
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,9 +65,9 @@ fun EventScreenView(
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Current event info
-    val eventInfo by viewModel.event.collectAsState()
-    val eventId = eventInfo.event_id
-    val eventName = eventInfo.event_name
+    val event by viewModel.event.collectAsState()
+    val eventId = event.id
+    val eventName = event.name
 
     // Images
     val images by viewModel.images.collectAsState()
@@ -107,7 +107,7 @@ fun EventScreenView(
     val expandFilter = remember { mutableStateOf(false) }
 
     // Fullscreen image
-    var fullImage by remember { mutableStateOf<FullImageInfo?>(null) }
+    var fullImage by remember { mutableStateOf<FullImage?>(null) }
 
     // Observe the snackbar message
     val snackbarMessage by viewModel.snackbarMessage.collectAsState()
@@ -134,7 +134,7 @@ fun EventScreenView(
         ButtonInfo(
             "Invite",
             R.drawable.group_add_24px,
-            onClick = { navController.navigate("invite/$eventId/${eventInfo.owner.user_id}") }
+            onClick = { navController.navigate("invite/$eventId/${event.owner.id}") }
 
         ),
         ButtonInfo(
@@ -216,7 +216,7 @@ fun EventScreenView(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp),
                             ) {
-                                items(images.entries.toList()) { (imageInfo, stream) ->
+                                items(images.entries.toList()) { (imageMetadata, stream) ->
                                     stream?.let {
                                         val imageRequest = ImageRequest.Builder(context)
                                             .data(it)
@@ -228,10 +228,10 @@ fun EventScreenView(
                                         ImageTile(
                                             imageRequest = imageRequest,
                                             onClick = {
-                                                fullImage = FullImageInfo(
+                                                fullImage = FullImage(
                                                     request = imageRequest,
                                                     data = it,
-                                                    info = imageInfo
+                                                    metadata = imageMetadata
                                                 )
                                             },
                                         )
@@ -276,24 +276,24 @@ fun EventScreenView(
                 fullImage?.let { image ->
                     ImageFull(
                         image = image.request,
-                        title = image.info.image.user.display_name,
-                        score = image.info.image.score,
-                        isDeleteButtonVisible = viewModel.isCurrentUserOwner(eventInfo.owner.user_id) ||
-                                viewModel.isUserPhotoUploader(image.info),
+                        title = image.metadata.uploader.name,
+                        score = image.metadata.score,
+                        isDeleteButtonVisible = viewModel.isCurrentUserOwner(event.owner.id) ||
+                                viewModel.isUserPhotoUploader(image.metadata),
                         onDismiss = {
                             fullImage = null
                         },
                         onDelete = {
                             viewModel.deleteImage(
-                                viewModel.event.value.event_id,
-                                image.info.image.image_id
+                                viewModel.event.value.id,
+                                image.metadata.id
                             )
                             fullImage = null
                         },
                         onDownload = {
                             viewModel.saved.value =
                                 viewModel.saveImageFromByteArrayToGallery(
-                                    context, image.data, image.info.image.image_id
+                                    context, image.data, image.metadata.id
                                 )
                         }
                     )

@@ -8,6 +8,9 @@ import com.bmexcs.pickpic.data.dtos.UserCreation
 import com.bmexcs.pickpic.data.dtos.UserEmails
 import com.bmexcs.pickpic.data.dtos.UserFirebaseId
 import com.bmexcs.pickpic.data.dtos.UserIds
+import com.bmexcs.pickpic.data.models.EventMetadata
+import com.bmexcs.pickpic.data.models.EventMetadataList
+import com.bmexcs.pickpic.data.models.UserMetadata
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -30,27 +33,78 @@ class UserApiService {
      *
      * **Endpoint**: `POST /user/`
      *
-     * **Request Body**: `models.UserCreation`
+     * **Request Body**: `dtos.UserCreation`
      *
      * **Request Content-Type**: JSON
      *
-     * **Response Type**: `models.User`
+     * **Response Type**: `dtos.User`
+     *
+     * **Return Type**: `models.UserMetadata`
      */
-    suspend fun create(userCreation: UserCreation, token: String): User =
-        withContext(Dispatchers.IO) {
-            val endpoint = "user/"
+    suspend fun create(
+        firebaseId: String,
+        name: String,
+        email: String,
+        token: String): UserMetadata
+    = withContext(Dispatchers.IO) {
+        val endpoint = "user/"
+        val url = Api.url(endpoint)
+
+        Log.d(TAG, "POST: $url")
+
+        val userCreation = UserCreation(
+            firebase_id = firebaseId,
+            display_name = name,
+            email = email
+        )
+
+        val requestBody = gson.toJson(userCreation)
+            .toRequestBody("application/json".toMediaType())
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $token")
+            .addHeader("Content-Type", "application/json")
+            .post(requestBody)
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            Api.handleResponseStatus(response)
+
+            val body = response.body?.string()
+                ?: throw HttpException(response.code, "Empty response body")
+
+            val resultType = object : TypeToken<User>() {}.type
+            val result: User = gson.fromJson(body, resultType)
+
+            return@withContext UserMetadata(result)
+        }
+    }
+
+    /**
+     * Retrieves information about the specified user.
+     *
+     * **Endpoint**: `GET /user/{user_id}/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: `dtos.User`
+     *
+     * **Return Type**: `models.UserMetadata`
+     */
+    suspend fun get(userId: String, token: String): UserMetadata
+        = withContext(Dispatchers.IO) {
+            val endpoint = "user/$userId/"
             val url = Api.url(endpoint)
 
-            Log.d(TAG, "POST: $url")
-
-            val requestBody = gson.toJson(userCreation)
-                .toRequestBody("application/json".toMediaType())
+            Log.d(TAG, "GET: $url")
 
             val request = Request.Builder()
                 .url(url)
                 .addHeader("Authorization", "Bearer $token")
-                .addHeader("Content-Type", "application/json")
-                .post(requestBody)
+                .get()
                 .build()
 
             client.newCall(request).execute().use { response ->
@@ -62,93 +116,60 @@ class UserApiService {
                 val resultType = object : TypeToken<User>() {}.type
                 val result: User = gson.fromJson(body, resultType)
 
-                return@withContext result
+                return@withContext UserMetadata(result)
             }
         }
-
-    /**
-     * Retrieves information about the specified user.
-     *
-     * **Endpoint**: `GET /user/{user_id}/`
-     *
-     * **Request Body**: Empty
-     *
-     * **Request Content-Type**: None
-     *
-     * **Response**: `models.User`
-     */
-    suspend fun get(userId: String, token: String): User = withContext(Dispatchers.IO) {
-        val endpoint = "user/$userId/"
-        val url = Api.url(endpoint)
-
-        Log.d(TAG, "GET: $url")
-
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "Bearer $token")
-            .get()
-            .build()
-
-        client.newCall(request).execute().use { response ->
-            Api.handleResponseStatus(response)
-
-            val body = response.body?.string()
-                ?: throw HttpException(response.code, "Empty response body")
-
-            val resultType = object : TypeToken<User>() {}.type
-            val result: User = gson.fromJson(body, resultType)
-
-            return@withContext result
-        }
-    }
 
     /**
      * Updates information about the specified user.
      *
      * **Endpoint**: `PUT /user/{user_id}/`
      *
-     * **Request Body**: `models.User`
+     * **Request Body**: `dtos.User`
      *
      * **Request Content-Type**: JSON
      *
-     * **Response Type**: `models.User`
+     * **Response Type**: `dtos.User`
+     *
+     * **Return Type**: `models.UserMetadata`
      */
-    suspend fun update(user: User, token: String): User = withContext(Dispatchers.IO) {
-        val endpoint = "user/${user.user_id}/"
-        val url = Api.url(endpoint)
+    suspend fun update(firebaseId: String, user: UserMetadata, token: String): UserMetadata
+        = withContext(Dispatchers.IO) {
+            val endpoint = "user/${user.id}/"
+            val url = Api.url(endpoint)
 
-        Log.d(TAG, "PUT: $url")
+            Log.d(TAG, "PUT: $url")
 
-        val userUpdate = UserCreation(
-            firebase_id = user.firebase_id,
-            display_name = user.display_name,
-            email = user.email,
-            phone = user.phone,
-            profile_picture = user.profile_picture
-        )
+            val userUpdate = UserCreation(
+                firebase_id = firebaseId,
+                display_name = user.name,
+                email = user.email,
+                phone = user.phone,
+                profile_picture = user.profilePicture
+            )
 
-        val requestBody = gson.toJson(userUpdate)
-            .toRequestBody("application/json".toMediaType())
+            val requestBody = gson.toJson(userUpdate)
+                .toRequestBody("application/json".toMediaType())
 
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "Bearer $token")
-            .addHeader("Content-Type", "application/json")
-            .put(requestBody)
-            .build()
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .addHeader("Content-Type", "application/json")
+                .put(requestBody)
+                .build()
 
-        client.newCall(request).execute().use { response ->
-            Api.handleResponseStatus(response)
+            client.newCall(request).execute().use { response ->
+                Api.handleResponseStatus(response)
 
-            val body = response.body?.string()
-                ?: throw HttpException(response.code, "Empty response body")
+                val body = response.body?.string()
+                    ?: throw HttpException(response.code, "Empty response body")
 
-            val resultType = object : TypeToken<User>() {}.type
-            val result: User = gson.fromJson(body, resultType)
+                val resultType = object : TypeToken<User>() {}.type
+                val result: User = gson.fromJson(body, resultType)
 
-            return@withContext result
+                return@withContext UserMetadata(result)
+            }
         }
-    }
 
     /**
      * Deletes the specified user.
@@ -160,6 +181,8 @@ class UserApiService {
      * **Request Content-Type**: None
      *
      * **Response**: Empty
+     *
+     * **Return Type**: None
      */
     suspend fun delete(userId: String, token: String) = withContext(Dispatchers.IO) {
         val endpoint = "user/$userId/"
@@ -187,9 +210,11 @@ class UserApiService {
      *
      * **Request Content-Type**: None
      *
-     * **Response**: `models.UserEventList`
+     * **Response**: `dtos.UserEventList`
+     *
+     * **Return Type**: `models.EventMetadataList`
      */
-    suspend fun getEvents(userId: String, token: String): UserEventList =
+    suspend fun getEvents(userId: String, token: String): EventMetadataList =
         withContext(Dispatchers.IO) {
             val endpoint = "user/$userId/events/"
             val url = Api.url(endpoint)
@@ -211,7 +236,7 @@ class UserApiService {
                 val resultType = object : TypeToken<UserEventList>() {}.type
                 val result: UserEventList = gson.fromJson(body, resultType)
 
-                return@withContext result
+                return@withContext EventMetadataList(result)
             }
         }
 
@@ -225,23 +250,26 @@ class UserApiService {
      * **Request Content-Type**: None
      *
      * **Response**: Empty
+     *
+     * **Return Type**: None
      */
-    suspend fun deleteEvent(userId: String, eventId: String, token: String) = withContext(Dispatchers.IO) {
-        val endpoint = "user/$userId/events/$eventId/"
-        val url = Api.url(endpoint)
+    suspend fun deleteEvent(userId: String, eventId: String, token: String)
+        = withContext(Dispatchers.IO) {
+            val endpoint = "user/$userId/events/$eventId/"
+            val url = Api.url(endpoint)
 
-        Log.d(TAG, "DELETE: $url")
+            Log.d(TAG, "DELETE: $url")
 
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "Bearer $token")
-            .delete()
-            .build()
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .delete()
+                .build()
 
-        client.newCall(request).execute().use { response ->
-            Api.handleResponseStatus(response)
+            client.newCall(request).execute().use { response ->
+                Api.handleResponseStatus(response)
+            }
         }
-    }
 
     /**
      * Retrieves the list of pending event invitations.
@@ -252,9 +280,11 @@ class UserApiService {
      *
      * **Request Content-Type**: None
      *
-     * **Response**: `List<models.EventMember>`
+     * **Response**: `List<dtos.EventInfo>`
+     *
+     * **Return Type**: `List<EventMetadata>`
      */
-    suspend fun getPendingEvents(userId: String, token: String): List<EventInfo> =
+    suspend fun getPendingEvents(userId: String, token: String): List<EventMetadata> =
         withContext(Dispatchers.IO) {
             val endpoint = "user/$userId/pending_event_invitations/"
             val url = Api.url(endpoint)
@@ -276,7 +306,7 @@ class UserApiService {
                 val resultType = object : TypeToken<List<EventInfo>>() {}.type
                 val result: List<EventInfo> = gson.fromJson(body, resultType)
 
-                return@withContext result
+                return@withContext result.map { EventMetadata(it) }
             }
         }
 
@@ -290,6 +320,8 @@ class UserApiService {
      * **Request Content-Type**: JSON
      *
      * **Response**: `List<String>`
+     *
+     * **Return Type**: `List<String>`
      */
     suspend fun usersFromEmails(emails: List<String>, token: String): List<String> =
         withContext(Dispatchers.IO) {
@@ -332,9 +364,11 @@ class UserApiService {
      *
      * **Request Content-Type**: None
      *
-     * **Response**: `models.User`
+     * **Response**: `dtos.User`
+     *
+     * **Return Type**: `models.UserMetadata`
      */
-    suspend fun userFromFirebaseId(firebaseId: String, token: String): User =
+    suspend fun userFromFirebaseId(firebaseId: String, token: String): UserMetadata =
         withContext(Dispatchers.IO) {
             val endpoint = "user/id/from_fire_base/"
             val url = Api.url(endpoint)
@@ -362,7 +396,7 @@ class UserApiService {
                 val resultType = object : TypeToken<User>() {}.type
                 val result: User = gson.fromJson(body, resultType)
 
-                return@withContext result
+                return@withContext UserMetadata(result)
             }
         }
 
@@ -375,7 +409,9 @@ class UserApiService {
      *
      * **Request Content-Type**: None
      *
-     * **Response**: `models.User`
+     * **Response**: `dtos.User`
+     *
+     * **Return Type**: None
      */
     suspend fun inviteUsersFromIds(userIds: List<String>, eventId: String, token: String) =
         withContext(Dispatchers.IO) {

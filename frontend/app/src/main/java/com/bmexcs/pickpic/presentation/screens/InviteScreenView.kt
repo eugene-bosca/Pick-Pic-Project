@@ -15,15 +15,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.data.dtos.InvitedUser
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.draw.alpha
 import com.bmexcs.pickpic.presentation.viewmodels.InviteViewModel
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.ui.text.input.KeyboardType
+import com.bmexcs.pickpic.data.models.UserMetadata
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,7 +51,7 @@ fun InviteScreenView(
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -213,7 +213,7 @@ fun EditableEmailField(
 
 @Composable
 fun InvitedUsersList(
-    invitedUsers: List<InvitedUser>,
+    invitedUsers: List<UserMetadata>,
     eventId: String,
     ownerId: String,
     isEventOwner: Boolean,
@@ -233,7 +233,7 @@ fun InvitedUsersList(
             LazyColumn {
                 items(invitedUsers) { invitedUser ->
                     // Check if this invited user is the owner
-                    val isOwner = invitedUser.user.user_id == ownerId
+                    val isOwner = invitedUser.id == ownerId
 
                     // For the owner or accepted users, use full opacity; otherwise, use reduced opacity.
                     val rowAlpha = if (isOwner || invitedUser.accepted) 1f else 0.5f
@@ -249,12 +249,12 @@ fun InvitedUsersList(
                     ) {
                         Column {
                             Text(
-                                text = invitedUser.user.display_name,
+                                text = invitedUser.name,
                                 fontSize = 16.sp,
                                 modifier = Modifier.padding(4.dp)
                             )
                             Text(
-                                text = invitedUser.user.email,
+                                text = invitedUser.email,
                                 fontSize = 14.sp,
                                 modifier = Modifier.padding(4.dp)
                             )
@@ -288,7 +288,7 @@ fun InvitedUsersList(
                             if (isEventOwner && invitedUser.accepted && !isOwner) {
                                 IconButton(
                                     onClick = {
-                                        onKickUser(eventId, invitedUser.user.user_id)
+                                        onKickUser(eventId, invitedUser.id)
                                     }
                                 ) {
                                     Icon(

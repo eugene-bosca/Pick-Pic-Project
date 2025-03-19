@@ -1,9 +1,8 @@
 package com.bmexcs.pickpic.data.repositories
 
-import com.bmexcs.pickpic.data.dtos.EventInfo
-import com.bmexcs.pickpic.data.dtos.ImageInfo
-import com.bmexcs.pickpic.data.dtos.InvitedUser
-import com.bmexcs.pickpic.data.dtos.User
+import com.bmexcs.pickpic.data.models.EventMetadata
+import com.bmexcs.pickpic.data.models.ImageMetadata
+import com.bmexcs.pickpic.data.models.UserMetadata
 import com.bmexcs.pickpic.data.sources.EventDataSource
 import com.bmexcs.pickpic.data.models.VoteKind
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +13,7 @@ import javax.inject.Singleton
 class EventRepository @Inject constructor(
     private val eventDataSource: EventDataSource
 ) {
-    private val _eventInfo = MutableStateFlow(EventInfo())
+    private val _eventInfo = MutableStateFlow(EventMetadata())
     val event = _eventInfo
 
     private var timestamp: Long = 0
@@ -30,43 +29,43 @@ class EventRepository @Inject constructor(
         }
     }
 
-    fun setCurrentEvent(eventInfo: EventInfo) {
+    fun setCurrentEvent(eventInfo: EventMetadata) {
         event.value = eventInfo
     }
 
-    suspend fun getAllEventsMetadata(): List<EventInfo> {
+    suspend fun getAllEventsMetadata(): List<EventMetadata> {
         return eventDataSource.getAllEventsMetadata()
     }
 
-    suspend fun getEventMetadata(eventId: String): EventInfo {
+    suspend fun getEventMetadata(eventId: String): EventMetadata {
         return eventDataSource.getEventMetadata(eventId)
     }
 
-    suspend fun getEventOwnerMetadata(ownerId: String): User {
+    suspend fun getEventOwnerMetadata(ownerId: String): UserMetadata {
         return eventDataSource.getEventOwnerMetadata(ownerId)
     }
 
-    suspend fun getEventUsersMetadata(eventId: String): List<InvitedUser> {
+    suspend fun getEventUsersMetadata(eventId: String): List<UserMetadata> {
         return eventDataSource.getEventUsersMetadata(eventId)
     }
 
-    suspend fun getAllImagesMetadata(eventId: String): List<ImageInfo> {
+    suspend fun getAllImagesMetadata(eventId: String): List<ImageMetadata> {
         return eventDataSource.getAllImagesMetadata(eventId)
     }
 
-    suspend fun getUnrankedImagesMetadata(): List<ImageInfo> {
-        return eventDataSource.getUnrankedImagesMetadata(event.value.event_id)
+    suspend fun getUnrankedImagesMetadata(): List<ImageMetadata> {
+        return eventDataSource.getUnrankedImagesMetadata(event.value.id)
     }
 
     suspend fun voteOnImage(imageId: String, voteKind: VoteKind) {
-        eventDataSource.voteOnImage(event.value.event_id, imageId, voteKind)
+        eventDataSource.voteOnImage(event.value.id, imageId, voteKind)
     }
 
-    suspend fun createEvent(name: String): EventInfo {
+    suspend fun createEvent(name: String): EventMetadata {
         return eventDataSource.createEvent(name)
     }
 
-    suspend fun getPendingEventsMetadata(): List<EventInfo> {
+    suspend fun getPendingEventsMetadata(): List<EventMetadata> {
         return eventDataSource.getPendingEventsMetadata()
     }
 

@@ -22,7 +22,7 @@ class ImageDataSource @Inject constructor(
     }
 
     suspend fun addImage(eventId: String, imageData: ByteArray) {
-        val userId = userDataSource.getUser().user_id
+        val userId = userDataSource.getUser().id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         Log.d(TAG, "addImageBinary for event $eventId and user $userId")

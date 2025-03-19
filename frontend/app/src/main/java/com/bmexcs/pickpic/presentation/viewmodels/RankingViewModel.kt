@@ -5,8 +5,8 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.dtos.EventInfo
-import com.bmexcs.pickpic.data.dtos.ImageInfo
+import com.bmexcs.pickpic.data.models.EventMetadata
+import com.bmexcs.pickpic.data.models.ImageMetadata
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
 import com.bmexcs.pickpic.data.models.VoteKind
@@ -28,8 +28,8 @@ class RankingViewModel @Inject constructor(
     private val imageRepository: ImageRepository
 ) : ViewModel() {
 
-    private val _eventInfo = MutableStateFlow(EventInfo())
-    val event = _eventInfo
+    private val _event = MutableStateFlow(EventMetadata())
+    val event = _event
 
     private val _currentImage = MutableStateFlow<BitmapWithID?>(null)
     val currentImage = _currentImage
@@ -37,7 +37,7 @@ class RankingViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading
 
-    private val unrankedImageInfo = MutableStateFlow<ArrayDeque<ImageInfo>>(ArrayDeque())
+    private val unrankedImageInfo = MutableStateFlow<ArrayDeque<ImageMetadata>>(ArrayDeque())
 
     enum class SwipeDirection {
         LEFT,
@@ -45,7 +45,7 @@ class RankingViewModel @Inject constructor(
     }
 
     init {
-        _eventInfo.value = eventRepository.event.value
+        _event.value = eventRepository.event.value
         viewModelScope.launch {
             Log.d(TAG, "Creating unranked image queue, size = ${unrankedImageInfo.value.size}")
             unrankedImageInfo.value = ArrayDeque(eventRepository.getUnrankedImagesMetadata())
@@ -80,10 +80,10 @@ class RankingViewModel @Inject constructor(
             }
 
             Log.d(TAG, "Loading next image")
-            val imageId = next.image.image_id
+            val imageId = next.id
 
             val byteArray = imageRepository.getImage(
-                _eventInfo.value.event_id,
+                _event.value.id,
                 imageId
             ) ?: throw Exception("Image does not exist")
 
@@ -107,10 +107,10 @@ class RankingViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
 
-            val imageId = next.image.image_id
+            val imageId = next.id
 
             val byteArray = imageRepository.getImage(
-                _eventInfo.value.event_id,
+                _event.value.id,
                 imageId
             ) ?: throw Exception("Image does not exist")
 

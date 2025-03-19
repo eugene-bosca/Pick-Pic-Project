@@ -3,7 +3,7 @@ package com.bmexcs.pickpic.presentation.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.dtos.EventInfo
+import com.bmexcs.pickpic.data.models.EventMetadata
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,8 +20,8 @@ class HomePageViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _events = MutableStateFlow<List<EventInfo>>(emptyList())
-    val events: StateFlow<List<EventInfo>> = _events
+    private val _events = MutableStateFlow<List<EventMetadata>>(emptyList())
+    val events: StateFlow<List<EventMetadata>> = _events
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -29,8 +29,8 @@ class HomePageViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
-    fun setEvent(eventInfo: EventInfo) {
-        eventRepository.setCurrentEvent(eventInfo)
+    fun setEvent(event: EventMetadata) {
+        eventRepository.setCurrentEvent(event)
     }
 
     fun deleteEvent(eventId: String) {
@@ -43,7 +43,7 @@ class HomePageViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                Log.d(TAG, "Fetching events for user: ${userRepository.getUser().user_id}")
+                Log.d(TAG, "Fetching events for user: ${userRepository.getUser().id}")
 
                 // Execute the network call on the IO dispatcher
                 val eventItems = eventRepository.getAllEventsMetadata()
@@ -62,6 +62,6 @@ class HomePageViewModel @Inject constructor(
     }
 
     fun isCurrentUserOwner(ownerId: String): Boolean {
-        return userRepository.getUser().user_id == ownerId
+        return userRepository.getUser().id == ownerId
     }
 }

@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.dtos.InvitedUser
+import com.bmexcs.pickpic.data.models.UserMetadata
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,8 +37,8 @@ class InviteViewModel @Inject constructor(
     val emailList: StateFlow<List<String>> = _emailList
 
     // New state for invited users
-    private val _invitedUsers = MutableStateFlow<List<InvitedUser>>(emptyList())
-    val invitedUsers: StateFlow<List<InvitedUser>> = _invitedUsers
+    private val _invitedUsers = MutableStateFlow<List<UserMetadata>>(emptyList())
+    val invitedUsers: StateFlow<List<UserMetadata>> = _invitedUsers
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -56,7 +56,7 @@ class InviteViewModel @Inject constructor(
 
     /**
      * Loads the invited users for the given eventId.
-     * Assumes that eventRepository provides a method getInvitedUsers(eventId: String): List<UserInfo>.
+     * Assumes that eventRepository provides a method getInvitedUsers(eventId: String): List<UserMetadata>.
      */
     fun loadInvitedUsers(eventId: String) {
         viewModelScope.launch {
@@ -116,6 +116,6 @@ class InviteViewModel @Inject constructor(
     }
 
     fun isCurrentUserOwner(ownerId: String): Boolean {
-        return userRepository.getUser().user_id == ownerId
+        return userRepository.getUser().id == ownerId
     }
 }

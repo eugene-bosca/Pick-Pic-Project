@@ -10,8 +10,8 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.dtos.EventInfo
-import com.bmexcs.pickpic.data.dtos.ImageInfo
+import com.bmexcs.pickpic.data.models.EventMetadata
+import com.bmexcs.pickpic.data.models.ImageMetadata
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
@@ -37,8 +37,8 @@ class EventsViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _images = MutableStateFlow<Map<ImageInfo, ByteArray?>>(emptyMap())
-    val images: StateFlow<Map<ImageInfo, ByteArray?>> = _images
+    private val _images = MutableStateFlow<Map<ImageMetadata, ByteArray?>>(emptyMap())
+    val images: StateFlow<Map<ImageMetadata, ByteArray?>> = _images
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading
@@ -46,16 +46,16 @@ class EventsViewModel @Inject constructor(
     private val _saved = MutableStateFlow(false)
     val saved = _saved
 
-    private val _eventInfo = MutableStateFlow(EventInfo())
-    val event = _eventInfo
+    private val _event = MutableStateFlow(EventMetadata())
+    val event = _event
 
     private val _snackbarMessage = MutableStateFlow<String?>(null)
     val snackbarMessage: StateFlow<String?> = _snackbarMessage
 
     init {
-        _eventInfo.value = eventRepository.event.value
+        _event.value = eventRepository.event.value
         viewModelScope.launch {
-            getImagesByEventId(event.value.event_id)
+            getImagesByEventId(event.value.id)
         }.invokeOnCompletion {
             startAutoRefresh()
         }
@@ -68,16 +68,16 @@ class EventsViewModel @Inject constructor(
     }
 
     fun isCurrentUserOwner(ownerId: String): Boolean {
-        return userRepository.getUser().user_id == ownerId
+        return userRepository.getUser().id == ownerId
     }
 
-    fun isUserPhotoUploader(info: ImageInfo): Boolean {
-        return userRepository.getUser().user_id == info.image.image_id
+    fun isUserPhotoUploader(imageMetadata: ImageMetadata): Boolean {
+        return userRepository.getUser().id == imageMetadata.id
     }
 
     fun addImage(imageByte: ByteArray) {
         viewModelScope.launch(Dispatchers.IO) {
-            imageRepository.addImage(event.value.event_id, imageByte)
+            imageRepository.addImage(event.value.id, imageByte)
         }
     }
 
@@ -149,15 +149,15 @@ class EventsViewModel @Inject constructor(
         }
     }
 
-    fun downloadAlbum(context: Context, images: List<Pair<ImageInfo, ByteArray?>>) {
+    fun downloadAlbum(context: Context, images: List<Pair<ImageMetadata, ByteArray?>>) {
         Log.d(TAG, "Downloading album...")
         viewModelScope.launch(Dispatchers.IO) {
             var successCount = 0
             var failureCount = 0
 
-            images.forEach { (imageInfo, byteArray) ->
+            images.forEach { (imageMetadata, byteArray) ->
                 byteArray?.let {
-                    val imageName = "event_${event.value.event_id}_${imageInfo.image.image_id}.jpg"
+                    val imageName = "event_${event.value.id}_${imageMetadata.id}.jpg"
                     val isSaved = saveImageFromByteArrayToGallery(context, it, imageName)
                     if (isSaved) {
                         successCount++
@@ -188,7 +188,7 @@ class EventsViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             while (isActive) {
                 delay(5000)
-                if (eventRepository.isUpdated(event.value.event_id)) {
+                if (eventRepository.isUpdated(event.value.id)) {
                     refreshInternal()
                 }
             }
@@ -197,7 +197,7 @@ class EventsViewModel @Inject constructor(
 
     private suspend fun refreshInternal() {
         Log.d(TAG, "Refreshing events page...")
-        getImagesByEventId(event.value.event_id)
+        getImagesByEventId(event.value.id)
     }
 
     private suspend fun getImagesByEventId(eventId: String) {
@@ -205,10 +205,10 @@ class EventsViewModel @Inject constructor(
 
         val images = eventRepository.getAllImagesMetadata(eventId)
 
-        val imageBitmapList = mutableMapOf<ImageInfo, ByteArray?>()
+        val imageBitmapList = mutableMapOf<ImageMetadata, ByteArray?>()
 
         for (image in images) {
-            val byteArray = imageRepository.getImage(eventId, image.image.image_id)
+            val byteArray = imageRepository.getImage(eventId, image.id)
             imageBitmapList[image] = byteArray
         }
 

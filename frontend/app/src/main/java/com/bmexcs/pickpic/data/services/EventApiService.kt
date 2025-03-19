@@ -8,6 +8,9 @@ import com.bmexcs.pickpic.data.dtos.EventLastModified
 import com.bmexcs.pickpic.data.dtos.ImageVote
 import com.bmexcs.pickpic.data.dtos.InvitedUser
 import com.bmexcs.pickpic.data.dtos.UserEventInviteLink
+import com.bmexcs.pickpic.data.models.EventMetadata
+import com.bmexcs.pickpic.data.models.ImageMetadata
+import com.bmexcs.pickpic.data.models.UserMetadata
 import com.bmexcs.pickpic.data.models.VoteKind
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -37,9 +40,11 @@ class EventApiService {
      *
      * **Request Content-Type**: None
      *
-     * **Response**: `models.EventInfo`
+     * **Response**: `dtos.EventInfo`
+     *
+     * **Return Type**: `models.EventMetadata`
      */
-    suspend fun getMetadata(eventId: String, token: String): EventInfo =
+    suspend fun getMetadata(eventId: String, token: String): EventMetadata =
         withContext(Dispatchers.IO) {
             val endpoint = "event/$eventId/"
             val url = Api.url(endpoint)
@@ -61,7 +66,7 @@ class EventApiService {
                 val resultType = object : TypeToken<EventInfo>() {}.type
                 val result: EventInfo = gson.fromJson(body, resultType)
 
-                return@withContext result
+                return@withContext EventMetadata(result)
             }
         }
 
@@ -75,8 +80,10 @@ class EventApiService {
      * **Request Content-Type**: None
      *
      * **Response Body**: `List<models.ImageInfo>`
+     *
+     * * **Return Type**: `List<models.ImageMetadata>`
      */
-    suspend fun getAllImageMetadata(eventId: String, token: String): List<ImageInfo> =
+    suspend fun getAllImageMetadata(eventId: String, token: String): List<ImageMetadata> =
         withContext(Dispatchers.IO) {
             val endpoint = "event/$eventId/content/"
             val url = Api.url(endpoint)
@@ -98,7 +105,7 @@ class EventApiService {
                 val resultType = object : TypeToken<List<ImageInfo>>() {}.type
                 val result: List<ImageInfo> = gson.fromJson(body, resultType)
 
-                return@withContext result
+                return@withContext result.map { ImageMetadata(it) }
             }
         }
 
@@ -112,6 +119,8 @@ class EventApiService {
      * **Request Content-Type**: PNG or JPEG
      *
      * **Response**: Empty
+     *
+     * **Return Type**: None
      */
     suspend fun uploadImage(
         eventId: String,
@@ -146,6 +155,8 @@ class EventApiService {
      * **Request Content-Type**: None
      *
      * **Response**: `ByteArray`
+     *
+     * **Return Type**: `ByteArray?`
      */
     suspend fun downloadImage(
         eventId: String,
@@ -180,6 +191,8 @@ class EventApiService {
      * **Request Content-Type**: None
      *
      * **Response**: Empty
+     *
+     * **Return Type**: None
      */
     suspend fun deleteImage(
         eventId: String,
@@ -212,6 +225,8 @@ class EventApiService {
      * **Request Content-Type**: JSON
      *
      * **Response**: Empty
+     *
+     * **Return Type**: None
      */
     suspend fun voteOnImage(eventId: String, imageId: String, userId: String, voteKind: VoteKind, token: String) =
         withContext(Dispatchers.IO) {
@@ -249,6 +264,8 @@ class EventApiService {
      * **Request Content-Type**: JSON
      *
      * **Response**: Empty or Error
+     *
+     * **Return Type**: Boolean
      */
     suspend fun acceptInvite(eventId: String, token: String, userId: String): Boolean =
         withContext(Dispatchers.IO) {
@@ -290,6 +307,8 @@ class EventApiService {
      * **Request Content-Type**: JSON
      *
      * **Response**: Empty or Error
+     *
+     * **Return Type**: Boolean
      */
     suspend fun declineInvite(eventId: String, token: String, userId: String): Boolean =
         withContext(Dispatchers.IO) {
@@ -330,7 +349,9 @@ class EventApiService {
      *
      * **Request Content-Type**: None
      *
-     * **Response**: `models.UserEventInviteLink` as `String`
+     * **Response**: `dtos.UserEventInviteLink`
+     *
+     * **Return Type**: `String`
      */
     suspend fun generateInviteLink(eventId: String, token: String): String =
         withContext(Dispatchers.IO) {
@@ -373,6 +394,7 @@ class EventApiService {
      *
      * **Response**: Empty
      *
+     * **Return Type**: None
      */
     suspend fun addUser(eventId: String, userId: String, token: String) =
         withContext(Dispatchers.IO) {
@@ -415,6 +437,7 @@ class EventApiService {
      *
      * **Response**: Empty
      *
+     * **Return Type**: None
      */
     suspend fun removeUser(eventId: String, userId: String, token: String) =
         withContext(Dispatchers.IO) {
@@ -449,11 +472,12 @@ class EventApiService {
      *
      * **Request Content-Type**: None
      *
-     * **Response**: List<models.ImageInfo>
+     * **Response**: List<dtos.ImageInfo>
      *
+     * **Return Type**: List<models.ImageMetadata>
      */
     suspend fun getUnrankedImageMetadata(eventId: String, userId: String, token: String)
-        : List<ImageInfo> = withContext(Dispatchers.IO) {
+        : List<ImageMetadata> = withContext(Dispatchers.IO) {
             val endpoint = "event/$eventId/image/user/$userId/unranked/"
             val url = Api.url(endpoint)
 
@@ -474,7 +498,7 @@ class EventApiService {
                 val resultType = object : TypeToken<List<ImageInfo>>() {}.type
                 val result: List<ImageInfo> = gson.fromJson(body, resultType)
 
-                return@withContext result
+                return@withContext result.map { ImageMetadata(it) }
             }
         }
 
@@ -487,7 +511,9 @@ class EventApiService {
      *
      * **Request Content-Type**: None
      *
-     * **Response**: `models.EventLastModified` as `Long`
+     * **Response**: `dtos.EventLastModified`
+     *
+     * **Return Type**: `Long`
      */
     suspend fun lastModified(eventId: String, token: String): Long =
         withContext(Dispatchers.IO) {
@@ -528,9 +554,11 @@ class EventApiService {
      *
      * **Request Content-Type**: None
      *
-     * **Response**: `List<models.UserInfo>`
+     * **Response**: `List<dtos.InvitedUser>`
+     *
+     * **Return Type** `List<models.UserMetadata>`
      */
-    suspend fun getUsers(eventId: String, token: String): List<InvitedUser> =
+    suspend fun getInvitedUsers(eventId: String, token: String): List<UserMetadata> =
         withContext(Dispatchers.IO) {
             val endpoint = "event/$eventId/users/"
             val url = Api.url(endpoint)
@@ -552,7 +580,7 @@ class EventApiService {
                 val resultType = object : TypeToken<List<InvitedUser>>() {}.type
                 val result: List<InvitedUser> = gson.fromJson(body, resultType)
 
-                return@withContext result
+                return@withContext result.map { UserMetadata(it) }
             }
         }
 
@@ -565,14 +593,21 @@ class EventApiService {
      *
      * **Request Content-Type**: JSON
      *
-     * **Response**: `models.EventInfo`
+     * **Response**: `dtos.EventInfo`
+     *
+     * **Return Type**: `models.EventMetadata`
      */
-    suspend fun create(eventCreation: EventCreation, token: String): EventInfo =
+    suspend fun create(eventName: String, userId: String, token: String): EventMetadata =
         withContext(Dispatchers.IO) {
             val endpoint = "event/create/"
             val url = Api.url(endpoint)
 
             Log.d(TAG, "POST: $url")
+
+            val eventCreation = EventCreation(
+                user_id = userId,
+                event_name = eventName
+            )
 
             val requestBody = gson.toJson(eventCreation)
                 .toRequestBody("application/json".toMediaType())
@@ -593,11 +628,11 @@ class EventApiService {
                     val resultType = object : TypeToken<EventInfo>() {}.type
                     val result: EventInfo = gson.fromJson(body, resultType)
 
-                    return@withContext result
+                    return@withContext EventMetadata(result)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error creating event: ${e.message}")
-                return@withContext EventInfo()
+                return@withContext EventMetadata()
             }
         }
 }

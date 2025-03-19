@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.data.dtos.EventInfo
+import com.bmexcs.pickpic.data.models.EventMetadata
 import com.bmexcs.pickpic.presentation.viewmodels.EventInvitationViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,24 +94,24 @@ fun EventInvitationScreenView(
                             .weight(1f),
                         contentPadding = PaddingValues(horizontal = 16.dp)
                     ) {
-                        items(events) { eventItem: EventInfo ->
+                        items(events) { eventItem: EventMetadata ->
                             ListItem(
                                 headlineContent = {
-                                    Text(eventItem.event_name)
+                                    Text(eventItem.name)
                                 },
                                 supportingContent = {
-                                    Text("Event Owner: ${eventItem.owner.display_name}")
+                                    Text("Event Owner: ${eventItem.owner.name}")
                                 },
                                 trailingContent = {
                                     Row {
-                                        IconButton(onClick = { viewModel.acceptEvent(eventItem.event_id) }) {
+                                        IconButton(onClick = { viewModel.acceptEvent(eventItem.id) }) {
                                             Icon(
                                                 Icons.Filled.Check,
                                                 contentDescription = null,
                                                 tint = Color.Green
                                             )
                                         }
-                                        IconButton(onClick = { viewModel.declineEvent(eventItem.event_id) }) {
+                                        IconButton(onClick = { viewModel.declineEvent(eventItem.id) }) {
                                             Icon(
                                                 Icons.Filled.Close,
                                                 contentDescription = null,
