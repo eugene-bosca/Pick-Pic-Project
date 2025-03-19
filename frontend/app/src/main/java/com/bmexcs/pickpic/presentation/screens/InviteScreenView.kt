@@ -17,11 +17,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.data.models.InvitedUser
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.draw.alpha
 import com.bmexcs.pickpic.presentation.viewmodels.InviteViewModel
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.ui.text.input.KeyboardType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +33,7 @@ fun InviteScreenView(
     ownerId: String,
     viewModel: InviteViewModel = hiltViewModel()
 ) {
-    // Load invited users when the screen is first displayed
+    // Load invited users when the screen is first displayed.
     LaunchedEffect(eventId) {
         viewModel.loadInvitedUsers(eventId)
     }
@@ -63,7 +65,7 @@ fun InviteScreenView(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Error message if any
+            // Error message if any.
             error?.let {
                 Text(
                     text = it,
@@ -72,14 +74,12 @@ fun InviteScreenView(
                 )
             }
 
-            // Loading indicator
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
 
-            // Email input field
             EditableEmailField(
                 eventId = eventId,
                 viewModel = viewModel
@@ -87,7 +87,6 @@ fun InviteScreenView(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // QR Code navigation button
             Button(
                 onClick = {
                     navController.navigate("qrInviteView/$eventId")
@@ -110,23 +109,21 @@ fun InviteScreenView(
     }
 }
 
-fun isValidEmail(email: String): Boolean {
-    return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-}
-
 @Composable
 fun EditableEmailField(
     eventId: String,
     viewModel: InviteViewModel = hiltViewModel()
 ) {
-    var userEmail by remember { mutableStateOf("") }
-    var isError by remember { mutableStateOf(false) }
+    val userEmail by remember { derivedStateOf { viewModel.emailInput } }
+    val isEmailValid by remember { derivedStateOf { viewModel.isEmailValid } }
+    var addButtonPressed by remember { mutableStateOf(false) }
+
     val emailList by viewModel.emailList.collectAsState()
     val showConfirmButton = emailList.isNotEmpty()
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text(
-            text = "Enter Friends Email",
+            text = "Invitee emails",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(start = 8.dp)
@@ -138,28 +135,32 @@ fun EditableEmailField(
             OutlinedTextField(
                 value = userEmail,
                 onValueChange = {
-                    userEmail = it
-                    isError = false // Reset error on change
+                    viewModel.emailInput = it
+                    addButtonPressed = false
                 },
-                shape = RoundedCornerShape(20.dp),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Email
+                ),
+                shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.weight(1f),
                 singleLine = true,
                 placeholder = { Text("Email") },
-                isError = isError,
+                isError = !isEmailValid,
                 supportingText = {
-                    if (isError) {
-                        Text("Invalid email format", color = Color.Red)
+                    if (!isEmailValid && addButtonPressed) {
+                        Text("Invalid email format", color = MaterialTheme.colorScheme.error)
                     }
                 }
             )
+
             Spacer(modifier = Modifier.width(8.dp))
+
             Button(
                 onClick = {
-                    if (userEmail.isNotBlank() && isValidEmail(userEmail)) {
+                    addButtonPressed = true
+                    if (userEmail.isNotBlank() && isEmailValid) {
                         viewModel.addEmail(userEmail.trim())
-                        userEmail = "" // Clear the input field
-                    } else {
-                        isError = true // Show error message
+                        viewModel.emailInput = ""
                     }
                 },
                 shape = RoundedCornerShape(20.dp)
@@ -268,6 +269,7 @@ fun InvitedUsersList(
                                         modifier = Modifier.padding(4.dp)
                                     )
                                 }
+
                                 // If the invite hasn't been accepted, show "Pending Invite" in gray.
                                 !invitedUser.accepted -> {
                                     Text(
@@ -278,6 +280,7 @@ fun InvitedUsersList(
                                     )
                                 }
                             }
+
                             // Show remove icon only if:
                             // - the current user is the event owner,
                             // - the invited user has accepted,
@@ -302,5 +305,3 @@ fun InvitedUsersList(
         }
     }
 }
-
-

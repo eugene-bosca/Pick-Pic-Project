@@ -3,8 +3,6 @@ package com.bmexcs.pickpic.presentation.screens
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Color
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
@@ -20,11 +18,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.presentation.viewmodels.QrInviteViewModel
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.EncodeHintType
-import com.google.zxing.qrcode.QRCodeWriter
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
-import java.util.Hashtable
 import android.util.Log
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.IconButton
@@ -73,9 +66,11 @@ fun QrInviteView(
             verticalArrangement = Arrangement.Center
         ) {
             when (inviteState) {
+
                 is QrInviteViewModel.InviteState.Loading -> {
                     Text("Loading...")
                 }
+
                 is QrInviteViewModel.InviteState.Success -> {
                     val successState = inviteState as QrInviteViewModel.InviteState.Success
                     Column(
@@ -112,14 +107,16 @@ fun QrInviteView(
                             )
                         }
 
-                        Button(onClick = {
-                            successState.inviteLink?.let { link ->
-                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                val clip = ClipData.newPlainText("Invite Link", link)
-                                clipboard.setPrimaryClip(clip)
-                                android.widget.Toast.makeText(context, "Link copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+                        Button(
+                            onClick = {
+                                successState.inviteLink?.let { link ->
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("Invite Link", link)
+                                    clipboard.setPrimaryClip(clip)
+                                    android.widget.Toast.makeText(context, "Link copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+                                }
                             }
-                        }) {
+                        ) {
                             Text("Copy Link")
                         }
                     }

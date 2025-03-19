@@ -1,6 +1,6 @@
 package com.bmexcs.pickpic.presentation;
 
-import InvitedQRView
+import com.bmexcs.pickpic.presentation.screens.InvitedQRView
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -9,7 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import dagger.hilt.android.AndroidEntryPoint
 
-private val TAG = "InviteLinkActivity"
+private const val TAG = "InviteLinkActivity"
 
 @AndroidEntryPoint
 class InviteLinkActivity : ComponentActivity() {
@@ -34,8 +34,7 @@ private fun parseDeepLink(intent: Intent?): String? {
     if (intent?.action == Intent.ACTION_VIEW) {
         data = intent.data
     } else {
-        showError("Invalid Link")
-        Log.d(TAG, "Tried to deeplink with incorrect action")
+        Log.d(TAG, "Invalid Link: Tried to deeplink with incorrect action")
         return ""
     }
     val eventId: String?
@@ -43,13 +42,8 @@ private fun parseDeepLink(intent: Intent?): String? {
     if (data != null) {
         eventId = data.getQueryParameter("eventId")
     } else {
-        showError("Invalid Link")
-        Log.d(TAG, "eventId parameter not found")
+        Log.d(TAG, "Invalid Link: eventId parameter not found")
         return ""
     }
     return eventId
-}
-
-private fun showError(message: String) {
-    Log.d(TAG, message)
 }

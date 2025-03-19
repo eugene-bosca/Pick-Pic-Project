@@ -1,10 +1,13 @@
 package com.bmexcs.pickpic.presentation.viewmodels
 
 import android.util.Log
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.InvitedUser
-import com.bmexcs.pickpic.data.models.UserInfo
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,20 +23,28 @@ class InviteViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val eventRepository: EventRepository
 ) : ViewModel() {
+
+    // Email input
+    var emailInput by mutableStateOf("")
+
+    val isEmailValid by derivedStateOf {
+        emailInput.isEmpty() ||
+                android.util.Patterns.EMAIL_ADDRESS.matcher(emailInput).matches()
+    }
+
+    // List of invitee emails
     private val _emailList = MutableStateFlow<List<String>>(emptyList())
     val emailList: StateFlow<List<String>> = _emailList
+
+    // New state for invited users
+    private val _invitedUsers = MutableStateFlow<List<InvitedUser>>(emptyList())
+    val invitedUsers: StateFlow<List<InvitedUser>> = _invitedUsers
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage
-    // Alias for UI usage (matches viewModel.error in the UI)
     val error: StateFlow<String?> = _errorMessage
-
-    // New state for invited users
-    private val _invitedUsers = MutableStateFlow<List<InvitedUser>>(emptyList())
-    val invitedUsers: StateFlow<List<InvitedUser>> = _invitedUsers
 
     fun addEmail(email: String) {
         _emailList.value += email
@@ -103,8 +114,8 @@ class InviteViewModel @Inject constructor(
             }
         }
     }
+
     fun isCurrentUserOwner(ownerId: String): Boolean {
         return userRepository.getUser().user_id == ownerId
     }
-
 }

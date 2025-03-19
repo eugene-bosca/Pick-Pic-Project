@@ -1,4 +1,5 @@
-import android.content.Intent
+package com.bmexcs.pickpic.presentation.screens
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,7 +25,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.bmexcs.pickpic.presentation.MainActivity
 import com.bmexcs.pickpic.presentation.viewmodels.InvitedViewModel
 
 @Composable
@@ -39,7 +39,7 @@ fun InvitedQRView(
     val images = viewModel.images.collectAsState().value
     val ownerInfo = viewModel.ownerInfo.collectAsState().value
 
-    // Fetch event info when the composable is first launched
+    // Fetch event info when the composable is first launched.
     LaunchedEffect(Unit) {
         viewModel.setEventId(eventId)
         viewModel.checkUserLoggedIn(context)
@@ -47,12 +47,13 @@ fun InvitedQRView(
         viewModel.getEventContentInfo(eventId)
     }
 
-    // Fetch event owner info only after eventInfo is available
+    // Fetch event owner info only after eventInfo is available.
     LaunchedEffect(eventInfo) {
         if (eventInfo != null) {
             viewModel.getEventOwnerInfo(eventInfo.owner.user_id)
         }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -91,9 +92,9 @@ fun InvitedQRView(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp), // Add padding around the row
-                        horizontalArrangement = Arrangement.SpaceBetween, // Space out the buttons
-                        verticalAlignment = Alignment.CenterVertically // Align buttons vertically
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Button(
                             onClick = { viewModel.handleAcceptInvite(context) },
@@ -131,12 +132,12 @@ fun InvitedQRView(
 
 @Composable
 fun DisplayEntry(title: String, value: String) {
-    // Event Name
     Text(
         text = title,
         fontSize = 14.sp,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
     )
+
     Text(
         text = value,
         fontSize = 18.sp,
