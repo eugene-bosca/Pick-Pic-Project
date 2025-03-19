@@ -16,12 +16,17 @@ class EventRepository @Inject constructor(
     private val _eventInfo = MutableStateFlow(EventMetadata())
     val event = _eventInfo
 
-    private var timestamp: Long = 0
+    private var timestamp: Long? = null
 
     suspend fun isUpdated(eventId: String): Boolean {
         val lastModified =  eventDataSource.getEventLastModified(eventId)
 
-        return if (lastModified > timestamp) {
+        if (timestamp == null) {
+            timestamp = lastModified
+            return false
+        }
+
+        return if (lastModified > timestamp!!) {
             timestamp = lastModified
             true
         } else {
