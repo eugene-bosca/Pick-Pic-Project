@@ -117,39 +117,6 @@ class EventsViewModel @Inject constructor(
         return byteArray
     }
 
-    private suspend fun getImagesByEventId(eventId: String) {
-        _isLoading.value = true
-
-        val images = eventRepository.getAllImageInfo(eventId)
-
-        val imageBitmapList = mutableMapOf<ImageInfo, ByteArray?>()
-
-        for (image in images) {
-            val byteArray = imageRepository.getImageByImageId(eventId, image.image.image_id)
-            imageBitmapList[image] = byteArray
-        }
-
-        _images.value = imageBitmapList
-
-        _isLoading.value = false
-    }
-
-    private fun startAutoRefresh() {
-        viewModelScope.launch(Dispatchers.IO) {
-            while (isActive) {
-                delay(5000)
-                if (eventRepository.isUpdated(event.value.event_id)) {
-                    refreshInternal()
-                }
-            }
-        }
-    }
-
-    private suspend fun refreshInternal() {
-        Log.d(TAG, "Refreshing events page...")
-        getImagesByEventId(event.value.event_id)
-    }
-
     fun saveImageFromByteArrayToGallery(context: Context, byteArray: ByteArray, imageName: String): Boolean {
         // Convert byteArray to Bitmap
         val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
@@ -215,5 +182,38 @@ class EventsViewModel @Inject constructor(
 
     fun clearSnackbarMessage() {
         _snackbarMessage.value = null
+    }
+
+    private fun startAutoRefresh() {
+        viewModelScope.launch(Dispatchers.IO) {
+            while (isActive) {
+                delay(5000)
+                if (eventRepository.isUpdated(event.value.event_id)) {
+                    refreshInternal()
+                }
+            }
+        }
+    }
+
+    private suspend fun refreshInternal() {
+        Log.d(TAG, "Refreshing events page...")
+        getImagesByEventId(event.value.event_id)
+    }
+
+    private suspend fun getImagesByEventId(eventId: String) {
+        _isLoading.value = true
+
+        val images = eventRepository.getAllImageInfo(eventId)
+
+        val imageBitmapList = mutableMapOf<ImageInfo, ByteArray?>()
+
+        for (image in images) {
+            val byteArray = imageRepository.getImageByImageId(eventId, image.image.image_id)
+            imageBitmapList[image] = byteArray
+        }
+
+        _images.value = imageBitmapList
+
+        _isLoading.value = false
     }
 }

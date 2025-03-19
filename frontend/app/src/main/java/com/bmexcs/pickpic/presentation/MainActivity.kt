@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
             val context = this.applicationContext
             val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
-            // if the auth state changes we redirect back to the QR
+            // If the authentication state changes, redirect back to the QR.
             auth.addAuthStateListener { firebaseAuth ->
                 if (firebaseAuth.currentUser != null) {
                     val intent = Intent(context, InviteLinkActivity::class.java).apply {
@@ -36,13 +36,10 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-
-
         setContent {
             Navigation(
                 navController = rememberNavController()
             )
         }
     }
-
 }

@@ -48,13 +48,11 @@ private data class ButtonInfo (
     val onClick: () -> Unit
 )
 
-private data class FullscreenImage (
+private data class FullImageInfo (
     val request: ImageRequest,
     val data: ByteArray,
     val info: ImageInfo
-) {
-    fun uuid(): String = info.image.image_id
-}
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,10 +105,9 @@ fun EventScreenView(
 
     // Filter button
     val expandFilter = remember { mutableStateOf(false) }
-    val filterButtonBox = remember { mutableStateOf(Offset.Zero) }
 
     // Fullscreen image
-    var fullScreenImage by remember { mutableStateOf<FullscreenImage?>(null) }
+    var fullImage by remember { mutableStateOf<FullImageInfo?>(null) }
 
     // Observe the snackbar message
     val snackbarMessage by viewModel.snackbarMessage.collectAsState()
@@ -231,7 +228,7 @@ fun EventScreenView(
                                         ImageTile(
                                             imageRequest = imageRequest,
                                             onClick = {
-                                                fullScreenImage = FullscreenImage(
+                                                fullImage = FullImageInfo(
                                                     request = imageRequest,
                                                     data = it,
                                                     info = imageInfo
@@ -261,36 +258,22 @@ fun EventScreenView(
                     }
                 }
 
-                Box(
-                    modifier = Modifier.onGloballyPositioned { coordinates ->
-                        filterButtonBox.value = coordinates.localToWindow(Offset.Zero)
+                FilterOptionsDropdown(
+                    isExpanded = expandFilter.value,
+                    onDismiss = {
+                        expandFilter.value = !expandFilter.value
+                    },
+                    onFilterByDate = {
+                        // TODO: filter viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                        expandFilter.value = !expandFilter.value
+                    },
+                    onFilterByScore = {
+                        // TODO: filter viewModel.getImagesByEventId(viewModel.event.value.event_id)
+                        expandFilter.value = !expandFilter.value
                     }
-                ) {
-                    DropdownMenu(
-                        expanded = expandFilter.value,
-                        onDismissRequest = {
-                            expandFilter.value = !expandFilter.value
-                        },
-                        offset = DpOffset(100.dp, 0.dp)
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Date") },
-                            onClick = {
-                                // TODO: filter viewModel.getImagesByEventId(viewModel.event.value.event_id)
-                                expandFilter.value = !expandFilter.value
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Score") },
-                            onClick = {
-                                // TODO: filter viewModel.getImagesByEventId(viewModel.event.value.event_id)
-                                expandFilter.value = !expandFilter.value
-                            }
-                        )
-                    }
-                }
+                )
 
-                fullScreenImage?.let { image ->
+                fullImage?.let { image ->
                     ImageFull(
                         image = image.request,
                         title = image.info.image.user.display_name,
@@ -298,19 +281,19 @@ fun EventScreenView(
                         isDeleteButtonVisible = viewModel.isCurrentUserOwner(eventInfo.owner.user_id) ||
                                 viewModel.isUserPhotoUploader(image.info),
                         onDismiss = {
-                            fullScreenImage = null
+                            fullImage = null
                         },
                         onDelete = {
                             viewModel.deleteImage(
                                 viewModel.event.value.event_id,
-                                image.uuid()
+                                image.info.image.image_id
                             )
-                            fullScreenImage = null
+                            fullImage = null
                         },
                         onDownload = {
                             viewModel.saved.value =
                                 viewModel.saveImageFromByteArrayToGallery(
-                                    context, image.data, image.uuid()
+                                    context, image.data, image.info.image.image_id
                                 )
                         }
                     )
@@ -422,6 +405,37 @@ fun ImageFull(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun FilterOptionsDropdown(
+    isExpanded: Boolean,
+    onDismiss: () -> Unit,
+    onFilterByDate: () -> Unit,
+    onFilterByScore: () -> Unit,
+) {
+    val filterButtonBox = remember { mutableStateOf(Offset.Zero) }
+
+    Box(
+        modifier = Modifier.onGloballyPositioned { coordinates ->
+            filterButtonBox.value = coordinates.localToWindow(Offset.Zero)
+        }
+    ) {
+        DropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = onDismiss,
+            offset = DpOffset(100.dp, 0.dp)
+        ) {
+            DropdownMenuItem(
+                text = { Text("Date") },
+                onClick = onFilterByDate
+            )
+            DropdownMenuItem(
+                text = { Text("Score") },
+                onClick = onFilterByScore
+            )
         }
     }
 }

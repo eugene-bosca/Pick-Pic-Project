@@ -19,13 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.DpOffset
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.R
 import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.data.models.EventInfo
 import com.bmexcs.pickpic.navigation.Route
-import com.bmexcs.pickpic.presentation.viewmodels.EventsViewModel
 import com.bmexcs.pickpic.presentation.viewmodels.HomePageViewModel
 
 @Composable
@@ -35,6 +33,7 @@ fun HomePageScreenView(
 ) {
     val events by viewModel.events.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.fetchEvents()
@@ -73,6 +72,18 @@ fun HomePageScreenView(
                     contentAlignment = Alignment.Center
                 ) {
                     Text("No Events Found")
+                }
+            }
+
+            errorMessage != null -> {
+                Box(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        errorMessage ?: "An unknown error occurred",
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             }
 

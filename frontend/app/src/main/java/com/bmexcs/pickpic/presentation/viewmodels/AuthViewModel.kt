@@ -17,6 +17,7 @@ private const val TAG = "AuthViewModel"
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
+
     private val _signInResult = MutableStateFlow<SignInResult?>(null)
     val signInResult: StateFlow<SignInResult?> = _signInResult
 

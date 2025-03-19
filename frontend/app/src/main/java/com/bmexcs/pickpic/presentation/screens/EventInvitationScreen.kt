@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
@@ -28,9 +28,11 @@ fun EventInvitationScreenView(
     viewModel: EventInvitationViewModel = hiltViewModel()
 ) {
     val events by viewModel.events.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.fetchEvents()
+        viewModel.loadEvents()
     }
 
     Scaffold(
@@ -40,7 +42,7 @@ fun EventInvitationScreenView(
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -55,50 +57,72 @@ fun EventInvitationScreenView(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (events.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("No Events Found")
+            when {
+                isLoading && events.isNotEmpty() -> {
+                    CircularProgressIndicator()
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentPadding = PaddingValues(horizontal = 16.dp)
-                ) {
-                    items(events) { eventItem: EventInfo ->
-                        ListItem(
-                            headlineContent = {
-                                Text(eventItem.event_name)
-                            },
-                            supportingContent = {
-                                Text("Event Owner: ${eventItem.owner.display_name}")
-                            },
-                            trailingContent = {
-                                Row {
-                                    IconButton(onClick = { viewModel.acceptEvent(eventItem.event_id) }) {
-                                        Icon(
-                                            Icons.Filled.Check,
-                                            contentDescription = null,
-                                            tint = Color.Green
-                                        )
-                                    }
-                                    IconButton(onClick = { viewModel.declineEvent(eventItem.event_id) }) {
-                                        Icon(
-                                            Icons.Filled.Close,
-                                            contentDescription = null,
-                                            tint = Color.Red
-                                        )
+
+                events.isEmpty() -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No Events Found")
+                    }
+                }
+
+                errorMessage != null -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            errorMessage ?: "An unknown error occurred",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentPadding = PaddingValues(horizontal = 16.dp)
+                    ) {
+                        items(events) { eventItem: EventInfo ->
+                            ListItem(
+                                headlineContent = {
+                                    Text(eventItem.event_name)
+                                },
+                                supportingContent = {
+                                    Text("Event Owner: ${eventItem.owner.display_name}")
+                                },
+                                trailingContent = {
+                                    Row {
+                                        IconButton(onClick = { viewModel.acceptEvent(eventItem.event_id) }) {
+                                            Icon(
+                                                Icons.Filled.Check,
+                                                contentDescription = null,
+                                                tint = Color.Green
+                                            )
+                                        }
+                                        IconButton(onClick = { viewModel.declineEvent(eventItem.event_id) }) {
+                                            Icon(
+                                                Icons.Filled.Close,
+                                                contentDescription = null,
+                                                tint = Color.Red
+                                            )
+                                        }
                                     }
                                 }
-                            }
-                        )
-                        HorizontalDivider()
+                            )
+                            HorizontalDivider()
+                        }
                     }
                 }
             }

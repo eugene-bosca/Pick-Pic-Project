@@ -20,9 +20,9 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PickPicScaffold(
-    title: String, // Title for the TopAppBar
+    title: String, // Title for the TopAppBar.
     navController: NavHostController,
-    content: @Composable () -> Unit // Content of the screen with padding
+    content: @Composable () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -35,7 +35,7 @@ fun PickPicScaffold(
                     .width(300.dp)
                     .fillMaxHeight()
             ) {
-                // Navigation options in the side panel
+                // Navigation options in the side panel.
                 NavDrawerEntry("Home", navController, Route.Home.route)
                 NavDrawerEntry("Profile", navController, Route.Profile.route)
                 NavDrawerEntry("Support", navController, Route.Support.route)
@@ -71,7 +71,7 @@ fun PickPicScaffold(
 fun NavDrawerEntry(
     text: String,
     navController: NavHostController,
-    route: String // Route to navigate to. Defined as distinct objects in Route.kt
+    route: String // Route to navigate to. Defined as distinct objects in Route.kt.
 ) {
     val padding = 16.dp
     Box(

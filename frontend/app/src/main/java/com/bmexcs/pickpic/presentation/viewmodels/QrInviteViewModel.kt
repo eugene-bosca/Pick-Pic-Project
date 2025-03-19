@@ -18,7 +18,9 @@ import java.util.Hashtable
 import javax.inject.Inject
 
 @HiltViewModel
-class QrInviteViewModel @Inject constructor(private val eventDataSource: EventDataSource) : ViewModel() {
+class QrInviteViewModel @Inject constructor(
+    private val eventDataSource: EventDataSource
+) : ViewModel() {
 
     private val _inviteState = MutableStateFlow<InviteState>(InviteState.Loading)
             val inviteState: StateFlow<InviteState> = _inviteState
@@ -51,29 +53,29 @@ class QrInviteViewModel @Inject constructor(private val eventDataSource: EventDa
     }
 
     sealed class InviteState {
-        object Loading : InviteState()
+        data object Loading : InviteState()
         data class Success(val eventName: String?, val qrCodeBitmap: Bitmap?, val inviteLink: String?) : InviteState()
         data class Error(val errorMessage: String) : InviteState()
     }
 
     private fun generateQRCode(data: String, width: Int, height: Int): Bitmap? {
-    return try {
-        val hints = Hashtable<EncodeHintType, Any>()
-        hints[EncodeHintType.CHARACTER_SET] = "UTF-8"
-        hints[EncodeHintType.ERROR_CORRECTION] = ErrorCorrectionLevel.H
+        return try {
+            val hints = Hashtable<EncodeHintType, Any>()
+            hints[EncodeHintType.CHARACTER_SET] = "UTF-8"
+            hints[EncodeHintType.ERROR_CORRECTION] = ErrorCorrectionLevel.H
 
-        val bitMatrix = QRCodeWriter().encode(data, BarcodeFormat.QR_CODE, width, height, hints)
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+            val bitMatrix = QRCodeWriter().encode(data, BarcodeFormat.QR_CODE, width, height, hints)
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
 
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
+            for (x in 0 until width) {
+                for (y in 0 until height) {
+                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
+                }
             }
+            bitmap
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
-        bitmap
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
     }
 }

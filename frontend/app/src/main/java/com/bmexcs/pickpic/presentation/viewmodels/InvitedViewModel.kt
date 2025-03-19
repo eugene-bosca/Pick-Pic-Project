@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val TAG = "InvitedViewModel"
+
 @HiltViewModel
 class InvitedViewModel @Inject constructor(
     private val eventRepository: EventRepository,
@@ -85,27 +87,13 @@ class InvitedViewModel @Inject constructor(
     }
 
     fun checkUserLoggedIn(context: Context) {
-        // I don't think getUser should throw an exception when null
         try {
             userRepository.getUser()
         } catch (e: Exception) {
-            Log.d("InvitedViewModel", e.toString())
+            Log.d(TAG, e.toString())
             redirectLogin(context)
-            Log.d("InvitedViewModel", "User is not logged in")
+            Log.d(TAG, "User is not logged in")
         }
-    }
-
-    private fun redirectLogin(context: Context) {
-        // Create an Intent to start MainActivity
-        val intent = Intent(context, MainActivity::class.java).apply {
-            putExtra("QR_REQUIRE_LOGIN", true)
-            putExtra("EVENT_ID", eventId) // Pass the eventId as an extra
-            flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        context.startActivity(intent)
-
-        // Finish the current activity (user cannot go back)
-        (context as? Activity)?.finish()
     }
 
     fun handleAcceptInvite(context: Context) {
@@ -113,9 +101,8 @@ class InvitedViewModel @Inject constructor(
             _isLoading.value = true
             try {
                 eventRepository.addUserToEvent(eventId, userRepository.getUser().user_id)
-                Log.d("InvitedViewModel", "Invading Poland")
             } catch (e: Exception) {
-                Log.d("InvitedViewModel", e.toString())
+                Log.d(TAG, e.toString())
             } finally {
                 _isLoading.value = false
                 toMainActivity(context)
@@ -129,5 +116,18 @@ class InvitedViewModel @Inject constructor(
     private fun toMainActivity(context: Context) {
         val intent = Intent(context, MainActivity::class.java)
         context.startActivity(intent)
+    }
+
+    private fun redirectLogin(context: Context) {
+        // Create an Intent to start MainActivity.
+        val intent = Intent(context, MainActivity::class.java).apply {
+            putExtra("QR_REQUIRE_LOGIN", true)
+            putExtra("EVENT_ID", eventId)
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        context.startActivity(intent)
+
+        // Finish the current activity (user cannot go back).
+        (context as? Activity)?.finish()
     }
 }
