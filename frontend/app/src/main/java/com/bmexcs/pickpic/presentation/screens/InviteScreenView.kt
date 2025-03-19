@@ -19,10 +19,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.painterResource
 import com.bmexcs.pickpic.presentation.viewmodels.InviteViewModel
 import androidx.compose.ui.text.input.KeyboardType
+import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.data.models.UserMetadata
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,6 +58,18 @@ fun InviteScreenView(
                             contentDescription = "Back"
                         )
                     }
+                },
+                actions = {
+                    IconButton(
+                        onClick = { navController.navigate("qrInviteView/$eventId") },
+                        modifier = Modifier
+                            .background(Color(0xFFEEEEEE), shape = RoundedCornerShape(8.dp))
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.qrcode_plus),
+                            contentDescription = "Generate QR Code"
+                        )
+                    }
                 }
             )
         }
@@ -85,17 +100,6 @@ fun InviteScreenView(
                 viewModel = viewModel
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    navController.navigate("qrInviteView/$eventId")
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Generate QR Code")
-            }
-
             Spacer(modifier = Modifier.height(25.dp))
 
             InvitedUsersList(
@@ -122,14 +126,6 @@ fun EditableEmailField(
     val showConfirmButton = emailList.isNotEmpty()
 
     Column(modifier = Modifier.padding(16.dp)) {
-        Text(
-            text = "Invitee emails",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = 8.dp)
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
 
         Row(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
@@ -163,9 +159,14 @@ fun EditableEmailField(
                         viewModel.emailInput = ""
                     }
                 },
-                shape = RoundedCornerShape(20.dp)
+                modifier = Modifier.size(56.dp),
+                contentPadding = PaddingValues(0.dp)
             ) {
-                Text("+")
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add email",
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
 
@@ -222,7 +223,7 @@ fun InvitedUsersList(
     if (invitedUsers.isNotEmpty()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Already Invited Users",
+                text = "Current Members",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 8.dp)
@@ -263,17 +264,20 @@ fun InvitedUsersList(
                             when {
                                 // If the invited user is the owner, show "Owner" and do not grey out.
                                 isOwner -> {
-                                    Text(
-                                        text = "Owner",
-                                        fontSize = 14.sp,
-                                        modifier = Modifier.padding(4.dp)
-                                    )
+                                    Box(modifier = Modifier.size(24.dp)) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.ic_crown),
+                                            contentDescription = "Owner",
+                                            tint = Color(0xFFD4AF37),
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
                                 }
 
                                 // If the invite hasn't been accepted, show "Pending Invite" in gray.
                                 !invitedUser.accepted -> {
                                     Text(
-                                        text = "Pending Invite",
+                                        text = "Invite Pending",
                                         fontSize = 14.sp,
                                         color = Color.Gray,
                                         modifier = Modifier.padding(4.dp)
