@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.bmexcs.pickpic.data.models.ImageInfo
+import com.bmexcs.pickpic.data.dtos.ImageInfo
 import kotlinx.coroutines.launch
 
 private data class ButtonInfo (

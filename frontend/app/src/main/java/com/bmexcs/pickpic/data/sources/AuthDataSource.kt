@@ -41,7 +41,6 @@ class AuthDataSource @Inject constructor(
     }
 
     suspend fun firebaseAuthWithGoogle(googleIdToken: String) {
-        // TODO: return auth state based on error.
         try {
             val authCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
             firebaseAuth.signInWithCredential(authCredential).await()

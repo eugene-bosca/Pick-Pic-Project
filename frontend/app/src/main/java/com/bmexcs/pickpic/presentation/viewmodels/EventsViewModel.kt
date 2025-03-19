@@ -10,8 +10,8 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.EventInfo
-import com.bmexcs.pickpic.data.models.ImageInfo
+import com.bmexcs.pickpic.data.dtos.EventInfo
+import com.bmexcs.pickpic.data.dtos.ImageInfo
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
@@ -77,7 +77,7 @@ class EventsViewModel @Inject constructor(
 
     fun addImage(imageByte: ByteArray) {
         viewModelScope.launch(Dispatchers.IO) {
-            imageRepository.addImageBinary(event.value.event_id, imageByte)
+            imageRepository.addImage(event.value.event_id, imageByte)
         }
     }
 
@@ -203,12 +203,12 @@ class EventsViewModel @Inject constructor(
     private suspend fun getImagesByEventId(eventId: String) {
         _isLoading.value = true
 
-        val images = eventRepository.getAllImageInfo(eventId)
+        val images = eventRepository.getAllImagesMetadata(eventId)
 
         val imageBitmapList = mutableMapOf<ImageInfo, ByteArray?>()
 
         for (image in images) {
-            val byteArray = imageRepository.getImageByImageId(eventId, image.image.image_id)
+            val byteArray = imageRepository.getImage(eventId, image.image.image_id)
             imageBitmapList[image] = byteArray
         }
 

@@ -22,7 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.R
 import androidx.navigation.NavHostController
-import com.bmexcs.pickpic.data.models.EventInfo
+import com.bmexcs.pickpic.data.dtos.EventInfo
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.viewmodels.HomePageViewModel
 

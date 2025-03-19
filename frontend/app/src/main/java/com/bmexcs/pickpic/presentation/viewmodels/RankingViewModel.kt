@@ -5,11 +5,11 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.EventInfo
-import com.bmexcs.pickpic.data.models.ImageInfo
+import com.bmexcs.pickpic.data.dtos.EventInfo
+import com.bmexcs.pickpic.data.dtos.ImageInfo
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
-import com.bmexcs.pickpic.data.utils.Vote
+import com.bmexcs.pickpic.data.models.Vote
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -48,7 +48,7 @@ class RankingViewModel @Inject constructor(
         _eventInfo.value = eventRepository.event.value
         viewModelScope.launch {
             Log.d(TAG, "Creating unranked image queue, size = ${unrankedImageInfo.value.size}")
-            unrankedImageInfo.value = ArrayDeque(eventRepository.getUnrankedImageInfo())
+            unrankedImageInfo.value = ArrayDeque(eventRepository.getUnrankedImagesMetadata())
         }.invokeOnCompletion {
             loadFirstImage()
         }
@@ -82,7 +82,7 @@ class RankingViewModel @Inject constructor(
             Log.d(TAG, "Loading next image")
             val imageId = next.image.image_id
 
-            val byteArray = imageRepository.getImageByImageId(
+            val byteArray = imageRepository.getImage(
                 _eventInfo.value.event_id,
                 imageId
             ) ?: throw Exception("Image does not exist")
@@ -109,7 +109,7 @@ class RankingViewModel @Inject constructor(
 
             val imageId = next.image.image_id
 
-            val byteArray = imageRepository.getImageByImageId(
+            val byteArray = imageRepository.getImage(
                 _eventInfo.value.event_id,
                 imageId
             ) ?: throw Exception("Image does not exist")

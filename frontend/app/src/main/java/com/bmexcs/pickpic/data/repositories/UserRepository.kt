@@ -1,7 +1,6 @@
 package com.bmexcs.pickpic.data.repositories
 
-import com.bmexcs.pickpic.data.models.Email
-import com.bmexcs.pickpic.data.models.User
+import com.bmexcs.pickpic.data.dtos.User
 import com.bmexcs.pickpic.data.sources.UserDataSource
 import javax.inject.Inject
 import javax.inject.Singleton

@@ -1,15 +1,13 @@
 package com.bmexcs.pickpic.data.services
 
 import android.util.Log
-import com.bmexcs.pickpic.data.models.EventInfo
-import com.bmexcs.pickpic.data.models.UserEventList
-import com.bmexcs.pickpic.data.models.User
-import com.bmexcs.pickpic.data.models.UserCreation
-import com.bmexcs.pickpic.data.models.UserEmails
-import com.bmexcs.pickpic.data.models.UserFirebaseId
-import com.bmexcs.pickpic.data.models.UserIds
-import com.bmexcs.pickpic.data.utils.Api
-import com.bmexcs.pickpic.data.utils.HttpException
+import com.bmexcs.pickpic.data.dtos.EventInfo
+import com.bmexcs.pickpic.data.dtos.UserEventList
+import com.bmexcs.pickpic.data.dtos.User
+import com.bmexcs.pickpic.data.dtos.UserCreation
+import com.bmexcs.pickpic.data.dtos.UserEmails
+import com.bmexcs.pickpic.data.dtos.UserFirebaseId
+import com.bmexcs.pickpic.data.dtos.UserIds
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -137,54 +135,6 @@ class UserApiService {
             .addHeader("Authorization", "Bearer $token")
             .addHeader("Content-Type", "application/json")
             .put(requestBody)
-            .build()
-
-        client.newCall(request).execute().use { response ->
-            Api.handleResponseStatus(response)
-
-            val body = response.body?.string()
-                ?: throw HttpException(response.code, "Empty response body")
-
-            val resultType = object : TypeToken<User>() {}.type
-            val result: User = gson.fromJson(body, resultType)
-
-            return@withContext result
-        }
-    }
-
-    /**
-     * Partially updates information about the specified user.
-     *
-     * **Endpoint**: `PATCH /user/{user_id}/`
-     *
-     * **Request Body**: `models.User`
-     *
-     * **Request Content-Type**: JSON
-     *
-     * **Response Type**: `models.User`
-     */
-    suspend fun updatePartial(user: User, token: String): User = withContext(Dispatchers.IO) {
-        val endpoint = "user/${user.user_id}/"
-        val url = Api.url(endpoint)
-
-        Log.d(TAG, "PATCH: $url")
-
-        val userPatch = UserCreation(
-            firebase_id = user.firebase_id,
-            display_name = user.display_name,
-            email = user.email,
-            phone = user.phone,
-            profile_picture = user.profile_picture
-        )
-
-        val requestBody = gson.toJson(userPatch)
-            .toRequestBody("application/json".toMediaType())
-
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "Bearer $token")
-            .addHeader("Content-Type", "application/json")
-            .patch(requestBody)
             .build()
 
         client.newCall(request).execute().use { response ->
@@ -339,7 +289,7 @@ class UserApiService {
      *
      * **Request Content-Type**: JSON
      *
-     * **Response**: `List<models.User>`
+     * **Response**: `List<String>`
      */
     suspend fun usersFromEmails(emails: List<String>, token: String): List<String> =
         withContext(Dispatchers.IO) {
@@ -416,6 +366,17 @@ class UserApiService {
             }
         }
 
+    /**
+     * Invite a list of users by ID.
+     *
+     * **Endpoint**: `POST /event/{event_id}/invite/users/${"poggers"}
+     *
+     * **Request Body**: `models.UserFirebaseIds` as `List<String>`
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: `models.User`
+     */
     suspend fun inviteUsersFromIds(userIds: List<String>, eventId: String, token: String) =
         withContext(Dispatchers.IO) {
             val endpoint = "event/${eventId}/invite/users/${"poggers"}"
@@ -423,13 +384,9 @@ class UserApiService {
 
             Log.d(TAG, "POST: $url")
 
-            // Create a JSON body with the user_id
-
-            val userIds: List<String> = userIds
             val jsonBody = JSONObject().apply {
-                put("user_ids", JSONArray(userIds)) // Convert List<String> to JSONArray
+                put("user_ids", JSONArray(userIds))
             }.toString()
-            Log.d(TAG, "JSON body: $jsonBody")
 
             val requestBody = jsonBody.toRequestBody("application/json".toMediaType())
 
@@ -439,7 +396,6 @@ class UserApiService {
                 .addHeader("Content-Type", "application/json")
                 .post(requestBody)
                 .build()
-            Log.d(TAG, "Request: $request")
 
             client.newCall(request).execute().use { response ->
                 Log.d(TAG, "Response: $response")

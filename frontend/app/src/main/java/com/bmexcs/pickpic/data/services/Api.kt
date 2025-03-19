@@ -1,13 +1,13 @@
-package com.bmexcs.pickpic.data.utils
+package com.bmexcs.pickpic.data.services
 
 import android.util.Log
 import okhttp3.Response
 import java.net.URL
 
-private const val TAG = "ApiUtils"
-
 object Api {
     private const val BASE_URL = "https://pick-pic-service-627889116714.northamerica-northeast2.run.app"
+
+    private const val TAG = "ApiUtils"
 
     fun handleResponseStatus(response: Response): Boolean {
         val code = response.code

@@ -36,7 +36,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.bmexcs.pickpic.data.utils.SignInResult
+import com.bmexcs.pickpic.data.services.SignInResult
 import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.R
 import com.bmexcs.pickpic.navigation.Route

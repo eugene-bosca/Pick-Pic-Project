@@ -6,9 +6,9 @@ import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.EventInfo
-import com.bmexcs.pickpic.data.models.ImageInfo
-import com.bmexcs.pickpic.data.models.User
+import com.bmexcs.pickpic.data.dtos.EventInfo
+import com.bmexcs.pickpic.data.dtos.ImageInfo
+import com.bmexcs.pickpic.data.dtos.User
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
 import com.bmexcs.pickpic.presentation.MainActivity
@@ -48,7 +48,7 @@ class InvitedViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val eventInfo = eventRepository.getEventInfo(eventId)
+                val eventInfo = eventRepository.getEventMetadata(eventId)
                 _eventInfo.value = eventInfo
             } catch (e: Exception) {
                 _eventInfo.value = null
@@ -62,7 +62,7 @@ class InvitedViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val ownerInfo = eventRepository.getEventOwnerInfo(userId)
+                val ownerInfo = eventRepository.getEventOwnerMetadata(userId)
                 _ownerInfo.value = ownerInfo
             } catch (e: Exception) {
                 _ownerInfo.value = null
@@ -76,7 +76,7 @@ class InvitedViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val images = eventRepository.getAllImageInfo(eventId)
+                val images = eventRepository.getAllImagesMetadata(eventId)
                 _images.value = images
             } catch (e: Exception) {
                 _images.value = emptyList()

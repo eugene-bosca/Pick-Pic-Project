@@ -13,7 +13,7 @@ import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import com.bmexcs.pickpic.BuildConfig
-import com.bmexcs.pickpic.data.utils.SignInResult
+import com.bmexcs.pickpic.data.services.SignInResult
 import com.bmexcs.pickpic.data.sources.AuthDataSource
 import com.bmexcs.pickpic.data.sources.UserDataSource
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -67,7 +67,6 @@ class AuthRepository @Inject constructor(
         val credentialManager = CredentialManager.create(context)
         val request = ClearCredentialStateRequest()
 
-        // TODO: tell the UI layer this problem occurred?
         try {
             credentialManager.clearCredentialState(request)
         } catch (e: ClearCredentialException) {

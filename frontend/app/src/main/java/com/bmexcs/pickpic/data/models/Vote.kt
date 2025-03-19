@@ -1,4 +1,4 @@
-package com.bmexcs.pickpic.data.utils
+package com.bmexcs.pickpic.data.models
 
 enum class Vote(private val id: String) {
     UPVOTE("upvote"),

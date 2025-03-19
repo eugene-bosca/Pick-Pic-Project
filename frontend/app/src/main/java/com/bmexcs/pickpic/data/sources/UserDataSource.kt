@@ -1,11 +1,10 @@
 package com.bmexcs.pickpic.data.sources
 
 import android.util.Log
-import com.bmexcs.pickpic.data.models.Email
-import com.bmexcs.pickpic.data.models.User
-import com.bmexcs.pickpic.data.models.UserCreation
+import com.bmexcs.pickpic.data.dtos.User
+import com.bmexcs.pickpic.data.dtos.UserCreation
 import com.bmexcs.pickpic.data.services.UserApiService
-import com.bmexcs.pickpic.data.utils.NotFoundException
+import com.bmexcs.pickpic.data.services.NotFoundException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,6 +14,7 @@ private const val TAG = "UserDataSource"
 class UserDataSource @Inject constructor(
     private val authDataSource: AuthDataSource
 ) {
+
     private var cachedUser: User? = null
 
     private val userApi = UserApiService()

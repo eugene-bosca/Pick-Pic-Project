@@ -3,7 +3,7 @@ package com.bmexcs.pickpic.presentation.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmexcs.pickpic.data.models.EventInfo
+import com.bmexcs.pickpic.data.dtos.EventInfo
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -64,7 +64,7 @@ class EventInvitationViewModel @Inject constructor(
         try {
             Log.d(TAG, "Fetching events for user: ${userRepository.getUser().user_id}")
 
-            val eventItems = eventRepository.getUserEventsPending()
+            val eventItems = eventRepository.getPendingEventsMetadata()
 
             _events.value = eventItems
             _errorMessage.value = null
