@@ -60,14 +60,18 @@ fun InviteScreenView(
                     }
                 },
                 actions = {
+                    // QR Code Icon Button
                     IconButton(
                         onClick = { navController.navigate("qrInviteView/$eventId") },
                         modifier = Modifier
+                            .padding(end = 16.dp) // Consistent padding from the screen edge
+                            .size(48.dp) // Larger button size
                             .background(Color(0xFFEEEEEE), shape = RoundedCornerShape(8.dp))
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.qrcode_plus),
-                            contentDescription = "Generate QR Code"
+                            contentDescription = "Generate QR Code",
+                            modifier = Modifier.size(32.dp) // Larger icon size
                         )
                     }
                 }
