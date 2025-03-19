@@ -33,10 +33,23 @@ class HomePageViewModel @Inject constructor(
         eventRepository.setCurrentEvent(event)
     }
 
+    // delete the event locally without needing to make a new network call
+    fun deleteEventFromCache(eventId: String) {
+        _events.value = _events.value.filter { it.id != eventId }
+    }
+
     fun deleteEvent(eventId: String) {
         viewModelScope.launch {
             eventRepository.deleteEvent(eventId)
         }
+        deleteEventFromCache(eventId)
+    }
+
+    fun leaveInvitedEvent(eventId: String) {
+        viewModelScope.launch {
+            eventRepository.removeUserFromEvent(eventId, userRepository.getUser().id)
+        }
+        deleteEventFromCache(eventId)
     }
 
     fun fetchEvents() {

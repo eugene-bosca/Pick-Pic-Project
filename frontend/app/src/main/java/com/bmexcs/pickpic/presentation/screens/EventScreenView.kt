@@ -1,7 +1,9 @@
 package com.bmexcs.pickpic.presentation.screens
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -42,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.bmexcs.pickpic.data.models.ImageMetadata
+import com.bmexcs.pickpic.presentation.viewmodels.DownloadAmount
 import com.bmexcs.pickpic.presentation.viewmodels.FilterType
 import kotlinx.coroutines.launch
 
@@ -77,6 +80,7 @@ fun EventScreenView(
     val imageList = images.toList()
 
     val isLoading by viewModel.isLoading.collectAsState()
+    var showDownloadMenu by remember { mutableStateOf(false) } // State to control dropdown menu visibility
 
     // Pagination state
     var pageSize by remember { mutableIntStateOf(8) }
@@ -125,12 +129,14 @@ fun EventScreenView(
         }
     }
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            viewModel.uriToByteArray(context, uri)?.let { byteArray ->
-                viewModel.addImage(byteArray)
+    val pickMultipleMedia = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(10)
+    ) { uris ->
+        if (uris.isNotEmpty()) {
+            uris.forEach { uri ->
+                viewModel.uriToByteArray(context, uri)?.let { byteArray ->
+                    viewModel.addImage(byteArray)
+                }
             }
         }
     }
@@ -150,7 +156,9 @@ fun EventScreenView(
         ButtonInfo(
             "Upload",
             R.drawable.image,
-            onClick = { launcher.launch("image/*") }
+            onClick = {
+                pickMultipleMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            }
         ),
         ButtonInfo(
             "Rank",
@@ -180,12 +188,46 @@ fun EventScreenView(
                             contentDescription = "Refresh"
                         )
                     }
-                    // Download album button
-                    IconButton(onClick = { viewModel.downloadAlbum(context, imageList) }) {
-                        Icon(
-                            painter = painterResource(R.drawable.download),
-                            contentDescription = "Download Album"
-                        )
+
+                    // Download album button with dropdown menu
+                    Box {
+                        IconButton(onClick = { showDownloadMenu = true }) {
+                            Icon(
+                                painter = painterResource(R.drawable.download),
+                                contentDescription = "Download Album"
+                            )
+                        }
+
+                        // Dropdown menu
+                        DropdownMenu(
+                            expanded = showDownloadMenu,
+                            onDismissRequest = { showDownloadMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("All") },
+                                onClick = {
+                                    viewModel.downloadAmount.value = DownloadAmount.All
+                                    viewModel.downloadAlbum(context, imageList)
+                                    showDownloadMenu = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Top 10") },
+                                onClick = {
+                                    viewModel.downloadAmount.value = DownloadAmount.TopTen
+                                    viewModel.downloadAlbum(context, imageList)
+                                    showDownloadMenu = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Top 20") },
+                                onClick = {
+                                    viewModel.downloadAmount.value = DownloadAmount.TopTwenty
+                                    viewModel.downloadAlbum(context, imageList)
+                                    showDownloadMenu = false
+                                }
+                            )
+                        }
                     }
                 }
             )
@@ -491,20 +533,5 @@ fun FilterOptionsDropdown(
                 onClick = onFilterByScore
             )
         }
-    }
-}
-
-@Composable
-fun FilterIconUpDown(filterType: FilterType) {
-    if (filterType == FilterType.FilterDateDesc || filterType == FilterType.FilterRankDesc) {
-       Icon(
-           imageVector = Icons.Default.ArrowDownward,
-           contentDescription = "Descending"
-       )
-    } else if (filterType == FilterType.FilterDateAsc || filterType == FilterType.FilterRankAsc) {
-        Icon(
-            imageVector = Icons.Default.ArrowUpward,
-            contentDescription = "Ascending"
-        )
     }
 }

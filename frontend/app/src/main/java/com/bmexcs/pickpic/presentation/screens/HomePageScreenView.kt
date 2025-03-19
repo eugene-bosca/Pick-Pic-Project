@@ -104,6 +104,9 @@ fun HomePageScreenView(
                             },
                             onDelete = {
                                 viewModel.deleteEvent(eventItem.id)
+                            },
+                            onLeave = {
+                                viewModel.leaveInvitedEvent(eventItem.id)
                             }
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -156,6 +159,9 @@ fun EventListing(
     eventItem: EventMetadata,
     onEnter: () -> Unit,
     onDelete: () -> Unit,
+
+    // callback function for when user is not owner but would like to leave
+    onLeave: () -> Unit
 ) {
     val expandFilter = remember { mutableStateOf(false) }
 
@@ -202,6 +208,26 @@ fun EventListing(
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
+                    } else {
+                        IconButton(onClick = { expandFilter.value = !expandFilter.value }) {
+                            Icon(Icons.Filled.MoreVert, contentDescription = null)
+
+                            DropdownMenu(
+                                expanded = expandFilter.value,
+                                onDismissRequest = {
+                                    expandFilter.value = !expandFilter.value
+                                }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Leave") },
+                                    onClick = {
+                                        onLeave()
+                                        expandFilter.value = false
+                                    }
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.size(24.dp))
                     }
                 }
 

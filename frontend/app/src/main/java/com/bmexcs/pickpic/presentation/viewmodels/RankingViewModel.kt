@@ -64,9 +64,9 @@ class RankingViewModel @Inject constructor(
             _isLoading.value = true
 
             val voteKind = if (direction == SwipeDirection.LEFT) {
-                VoteKind.UPVOTE
-            } else {
                 VoteKind.DOWNVOTE
+            } else {
+                VoteKind.UPVOTE
             }
 
             Log.d(TAG, "Voting on imageId = ${_currentImage.value!!.id} with vote = $voteKind")

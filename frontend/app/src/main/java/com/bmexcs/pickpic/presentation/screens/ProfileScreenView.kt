@@ -32,19 +32,19 @@ fun ProfileScreenView(
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
-        // Profile Picture
-        val profilePicture: Painter = painterResource(id = R.drawable.ic_launcher_foreground) //replace with actual image.
-        Image(
-            painter = profilePicture,
-            contentDescription = "Profile Picture",
-            modifier = Modifier
-                .size(150.dp)
-                .align(Alignment.CenterHorizontally)
-                .clickable {
-                    // TODO: Implement image selection logic
-                }
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+//        // Profile Picture
+//        val profilePicture: Painter = painterResource(id = R.drawable.ic_launcher_foreground) //replace with actual image.
+//        Image(
+//            painter = profilePicture,
+//            contentDescription = "Profile Picture",
+//            modifier = Modifier
+//                .size(150.dp)
+//                .align(Alignment.CenterHorizontally)
+//                .clickable {
+//                    // TODO: Implement image selection logic
+//                }
+//        )
+//        Spacer(modifier = Modifier.height(16.dp))
 
         // Display Name
         EditableDisplayNameField(viewModel)
