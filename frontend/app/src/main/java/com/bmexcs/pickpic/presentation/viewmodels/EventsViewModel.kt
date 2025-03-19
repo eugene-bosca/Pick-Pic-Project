@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.EventMetadata
+import com.bmexcs.pickpic.data.models.Image
 import com.bmexcs.pickpic.data.models.ImageMetadata
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
@@ -44,8 +45,8 @@ class EventsViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _images = MutableStateFlow<Map<ImageMetadata, ByteArray?>>(emptyMap())
-    val images: StateFlow<Map<ImageMetadata, ByteArray?>> = _images
+    private val _images = MutableStateFlow<List<Image>>(emptyList())
+    val images: StateFlow<List<Image>> = _images
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading
@@ -163,15 +164,15 @@ class EventsViewModel @Inject constructor(
         }
     }
 
-    fun downloadAlbum(context: Context, images: List<Pair<ImageMetadata, ByteArray?>>) {
+    fun downloadAlbum(context: Context, images: List<Image>) {
         Log.d(TAG, "Downloading album...")
         viewModelScope.launch(Dispatchers.IO) {
             var successCount = 0
             var failureCount = 0
 
-            images.forEach { (imageMetadata, byteArray) ->
-                byteArray?.let {
-                    val imageName = "event_${event.value.id}_${imageMetadata.id}.jpg"
+            images.forEach { image ->
+                image.data.let {
+                    val imageName = "event_${event.value.id}_${image.metadata.id}.jpg"
                     val isSaved = saveImageFromByteArrayToGallery(context, it, imageName)
                     if (isSaved) {
                         successCount++
@@ -210,42 +211,27 @@ class EventsViewModel @Inject constructor(
     }
 
     private suspend fun refreshInternal() {
-//        sortCachedImages()
         Log.d(TAG, "Refreshing events page...")
         getImagesByEventId(event.value.id)
-    }
-
-    private fun sortCachedImages() {
-        _images.value = sortImages(images.value)
-
-        Log.d(TAG, "Sorting by ${filterType.value}")
-
-        images.value.forEach { (metadata, byteArray) ->
-            Log.d(TAG, "  Metadata: ${metadata.score}")
-            Log.d(TAG, "  Metadata: ${metadata.dateUploaded}")
-        }
     }
 
     private suspend fun getImagesByEventId(eventId: String) {
         _isLoading.value = true
 
-        val images = eventRepository.getAllImagesMetadata(eventId)
+        val imageMetadata = eventRepository.getAllImagesMetadata(eventId)
 
-        val imageBitmapList = mutableMapOf<ImageMetadata, ByteArray?>()
+        val imageList = mutableListOf<Image>() // Using a mutableList of Image
 
-        for (image in images) {
-            val byteArray = imageRepository.getImage(eventId, image.id)
-            imageBitmapList[image] = byteArray
+        for (metadata in imageMetadata) {
+            val byteArray = imageRepository.getImage(eventId, metadata.id)
+            if (byteArray != null) {
+                imageList.add(Image(metadata, byteArray))
+            } else {
+                println("Failed to retrieve image with metadata: $metadata")
+            }
         }
 
-        val sortedList = sortImages(imageBitmapList)
-
-        sortedList.forEach { (metadata, byteArray) ->
-            Log.d(TAG, "  Metadata: ${metadata.score}")
-            Log.d(TAG, "  Metadata: ${metadata.dateUploaded}")
-        }
-
-        _images.value = sortedList
+        _images.value = sortImages(imageList)
 
         _isLoading.value = false
     }
@@ -254,16 +240,17 @@ class EventsViewModel @Inject constructor(
      * Sorts the images based on the current filter type.
      * Returns a new map with the sorted entries.
      */
-    private fun sortImages(images: Map<ImageMetadata, ByteArray?>): Map<ImageMetadata, ByteArray?> {
-        val sortedList = when (filterType.value) {
-            FilterType.FilterDateDesc -> images.entries.sortedByDescending { it.key.dateUploaded }
-            FilterType.FilterDateAsc -> images.entries.sortedBy { it.key.dateUploaded }
-            FilterType.FilterRankDesc -> images.entries.sortedByDescending { it.key.score }
-            FilterType.FilterRankAsc -> images.entries.sortedBy { it.key.score }
-            else -> images.entries.sortedByDescending { it.key.score }
+    private fun sortImages(image: List<Image>): List<Image> {
+        return when (filterType.value) {
+            FilterType.FilterDateDesc -> image.sortedByDescending { it.metadata.dateUploaded }
+            FilterType.FilterDateAsc -> image.sortedBy { it.metadata.dateUploaded }
+            FilterType.FilterRankDesc -> image.sortedByDescending { it.metadata.score }
+            FilterType.FilterRankAsc -> image.sortedBy { it.metadata.score }
         }
-
-        // Convert the sorted list back to a map
-        return sortedList.associate { it.toPair() }
     }
+
+    fun sortCachedImages() {
+        _images.value = sortImages(images.value)
+    }
+
 }

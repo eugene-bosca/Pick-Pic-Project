@@ -221,8 +221,8 @@ fun EventScreenView(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp),
                             ) {
-                                items(images.entries.toList()) { (imageMetadata, stream) ->
-                                    stream?.let {
+                                items(images) { image ->
+                                    image.data.let {
                                         val imageRequest = ImageRequest.Builder(context)
                                             .data(it)
                                             .memoryCachePolicy(CachePolicy.ENABLED)
@@ -236,7 +236,7 @@ fun EventScreenView(
                                                 fullImage = FullImage(
                                                     request = imageRequest,
                                                     data = it,
-                                                    metadata = imageMetadata
+                                                    metadata = image.metadata
                                                 )
                                             },
                                         )
@@ -274,7 +274,7 @@ fun EventScreenView(
                         } else {
                             viewModel.filterType.value = FilterType.FilterDateDesc
                         }
-                        viewModel.refresh()
+                        viewModel.sortCachedImages()
                         // TODO: filter viewModel.getImagesByEventId(viewModel.event.value.event_id)
                         expandFilter.value = !expandFilter.value
                     },
@@ -284,7 +284,7 @@ fun EventScreenView(
                         } else {
                             viewModel.filterType.value = FilterType.FilterRankDesc
                         }
-                        viewModel.refresh()
+                        viewModel.sortCachedImages()
                         // TODO: filter viewModel.getImagesByEventId(viewModel.event.value.event_id)
                         expandFilter.value = !expandFilter.value
                     },
