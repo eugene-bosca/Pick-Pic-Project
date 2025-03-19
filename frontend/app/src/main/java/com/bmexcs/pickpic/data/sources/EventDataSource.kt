@@ -9,7 +9,7 @@ import com.bmexcs.pickpic.data.dtos.User
 import com.bmexcs.pickpic.data.services.EventApiService
 import com.bmexcs.pickpic.data.services.UserApiService
 import com.bmexcs.pickpic.data.services.NotFoundException
-import com.bmexcs.pickpic.data.models.Vote
+import com.bmexcs.pickpic.data.models.VoteKind
 import javax.inject.Inject
 
 private const val TAG = "EventDataSource"
@@ -200,12 +200,12 @@ class EventDataSource @Inject constructor(
         return eventApi.getUnrankedImageMetadata(eventId, userId, token)
     }
 
-    suspend fun voteOnImage(eventId: String, imageId: String, vote: Vote) {
+    suspend fun voteOnImage(eventId: String, imageId: String, voteKind: VoteKind) {
         val userId = userDataSource.getUser().user_id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         Log.d(TAG, "voteOnImage for event $eventId and image id $imageId")
 
-        eventApi.voteOnImage(eventId, imageId, userId, vote, token)
+        eventApi.voteOnImage(eventId, imageId, userId, voteKind, token)
     }
 }

@@ -5,7 +5,7 @@ import com.bmexcs.pickpic.data.dtos.ImageInfo
 import com.bmexcs.pickpic.data.dtos.InvitedUser
 import com.bmexcs.pickpic.data.dtos.User
 import com.bmexcs.pickpic.data.sources.EventDataSource
-import com.bmexcs.pickpic.data.models.Vote
+import com.bmexcs.pickpic.data.models.VoteKind
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -58,8 +58,8 @@ class EventRepository @Inject constructor(
         return eventDataSource.getUnrankedImagesMetadata(event.value.event_id)
     }
 
-    suspend fun voteOnImage(imageId: String, vote: Vote) {
-        eventDataSource.voteOnImage(event.value.event_id, imageId, vote)
+    suspend fun voteOnImage(imageId: String, voteKind: VoteKind) {
+        eventDataSource.voteOnImage(event.value.event_id, imageId, voteKind)
     }
 
     suspend fun createEvent(name: String): EventInfo {

@@ -1,6 +1,6 @@
 package com.bmexcs.pickpic.data.models
 
-enum class Vote(private val id: String) {
+enum class VoteKind(private val id: String) {
     UPVOTE("upvote"),
     DOWNVOTE("downvote");
 

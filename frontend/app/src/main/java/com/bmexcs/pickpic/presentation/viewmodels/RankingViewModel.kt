@@ -9,7 +9,7 @@ import com.bmexcs.pickpic.data.dtos.EventInfo
 import com.bmexcs.pickpic.data.dtos.ImageInfo
 import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.repositories.ImageRepository
-import com.bmexcs.pickpic.data.models.Vote
+import com.bmexcs.pickpic.data.models.VoteKind
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -63,14 +63,14 @@ class RankingViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
 
-            val vote = if (direction == SwipeDirection.LEFT) {
-                Vote.UPVOTE
+            val voteKind = if (direction == SwipeDirection.LEFT) {
+                VoteKind.UPVOTE
             } else {
-                Vote.DOWNVOTE
+                VoteKind.DOWNVOTE
             }
 
-            Log.d(TAG, "Voting on imageId = ${_currentImage.value!!.id} with vote = $vote")
-            eventRepository.voteOnImage(_currentImage.value!!.id, vote)
+            Log.d(TAG, "Voting on imageId = ${_currentImage.value!!.id} with vote = $voteKind")
+            eventRepository.voteOnImage(_currentImage.value!!.id, voteKind)
 
             val next = unrankedImageInfo.value.removeFirstOrNull() ?: run {
                 Log.d(TAG, "Unranked image queue empty")

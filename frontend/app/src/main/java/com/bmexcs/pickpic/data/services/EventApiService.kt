@@ -8,7 +8,7 @@ import com.bmexcs.pickpic.data.dtos.EventLastModified
 import com.bmexcs.pickpic.data.dtos.ImageVote
 import com.bmexcs.pickpic.data.dtos.InvitedUser
 import com.bmexcs.pickpic.data.dtos.UserEventInviteLink
-import com.bmexcs.pickpic.data.models.Vote
+import com.bmexcs.pickpic.data.models.VoteKind
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -213,7 +213,7 @@ class EventApiService {
      *
      * **Response**: Empty
      */
-    suspend fun voteOnImage(eventId: String, imageId: String, userId: String, vote: Vote, token: String) =
+    suspend fun voteOnImage(eventId: String, imageId: String, userId: String, voteKind: VoteKind, token: String) =
         withContext(Dispatchers.IO) {
             val endpoint = "event/$eventId/image/$imageId/vote/"
             val url = Api.url(endpoint)
@@ -222,7 +222,7 @@ class EventApiService {
 
             val imageVote = ImageVote(
                 user_id = userId,
-                vote = vote.toString()
+                vote = voteKind.toString()
             )
 
             val requestBody = gson.toJson(imageVote)
