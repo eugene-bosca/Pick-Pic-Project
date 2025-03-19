@@ -1,7 +1,9 @@
 package com.bmexcs.pickpic.presentation.screens
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -127,12 +129,14 @@ fun EventScreenView(
         }
     }
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            viewModel.uriToByteArray(context, uri)?.let { byteArray ->
-                viewModel.addImage(byteArray)
+    val pickMultipleMedia = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(10)
+    ) { uris ->
+        if (uris.isNotEmpty()) {
+            uris.forEach { uri ->
+                viewModel.uriToByteArray(context, uri)?.let { byteArray ->
+                    viewModel.addImage(byteArray)
+                }
             }
         }
     }
@@ -152,7 +156,9 @@ fun EventScreenView(
         ButtonInfo(
             "Upload",
             R.drawable.image,
-            onClick = { launcher.launch("image/*") }
+            onClick = {
+                pickMultipleMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            }
         ),
         ButtonInfo(
             "Rank",
