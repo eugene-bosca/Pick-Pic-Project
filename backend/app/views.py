@@ -19,6 +19,8 @@ from datetime import datetime
 import io
 import mimetypes
 
+from .helper import *
+
 # User ViewSet
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -271,7 +273,7 @@ def list_users_events(request: Request, user_id):
     try:
         owned_events = Event.objects.filter(owner_id=user_id)
 
-        invited_event_ids = EventUser.objects.filter(user_id=user_id, accepted = True).values_list('event_id', flat=True)
+        invited_event_ids = EventUser.objects.filter(user_id=user_id).values_list('event_id', flat=True)
 
         invited_events = Event.objects.filter(event_id__in=invited_event_ids)
         
@@ -308,16 +310,14 @@ def create_new_event(request: Request):
 
     event = Event.objects.create(event_name=event_name, owner=event_owner)
 
-    event_user = EventUser.objects.create(event_id=event.event_id, user_id=user_id)
-    event_user.accepted = True
-    event_user.save()
+    EventUser.objects.create(event_id=event.event_id, user_id=user_id)
 
     return Response(status=status.HTTP_201_CREATED, data=EventSerializer(event).data)
 
 # Retrieves the user associated with the given Firebase ID
 @extend_schema(
     request=UserIDSerializer,
-    responses={200: UserSerializer}
+    responses={200: ClientSideUserSerializer}
 )
 @api_view(['POST'])
 def get_user_id_by_firebase_id(request: Request):
@@ -473,9 +473,7 @@ def accept_event_user(request, event_id, user_id):
     Changes the 'accepted' status of an EventUser to True.
     """
     try:
-        event_user = EventUser.objects.get(event__event_id=event_id, user__user_id=user_id)
-        event_user.accepted = True
-        event_user.save()
+        EventUser.objects.get_or_create(event_id=event_id, user_id=user_id)
         return Response({'message': 'Event user accepted successfully.'}, status=status.HTTP_200_OK)
     except EventUser.DoesNotExist:
         return Response({'error': 'Event user not found.'}, status=status.HTTP_404_NOT_FOUND)
@@ -487,8 +485,8 @@ def get_pending_events(request, user_id):
     Retrieves a list of Event objects where the user is invited but has not accepted.
     """
     try:
-        pending_events = EventUser.objects.filter(user__user_id=user_id, accepted=False)
-        events = [pe.event for pe in pending_events]
+        pending_invites = DirectInvite.objects.filter(user_id=user_id)
+        events = [pe.event for pe in pending_invites]
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
@@ -540,13 +538,7 @@ def invite_to_event(request: Request, event_id, accept = None):
         user_ids = request.data.get('user_ids')
 
         for user_id in user_ids:
-            try:
-                event_user, _ = EventUser.objects.get_or_create(event_id=event_id, user_id=user_id)
-            except:
-                pass
-            if accept == 'accept':
-                event_user.accepted = True
-                event_user.save()
+            EventUser.objects.get_or_create(event_id=event_id, user_id=user_id)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
     except Event.DoesNotExist:
@@ -556,27 +548,27 @@ def invite_to_event(request: Request, event_id, accept = None):
 
 # Generate invite link with obfuscated event ID
 @api_view(['GET'])
-def generate_invite_link(request, event_id):
+def generate_invite_link(request: Request, event_id):
     """
     Generate a shareable invite link using the event's obfuscated ID.
     """
+
     try:
         # Get the event to make sure it exists
-        event = Event.objects.get(event_id=event_id)
+        Event.objects.get(event_id=event_id)
         
-        # Ensure obfuscated_event_id exists
-        if not event.obfuscated_event_id:
-            # Generate a new UUID for the obfuscated ID
-            event.obfuscated_event_id = uuid.uuid4()
-            event.save()
+        # already verified jwt exist and is valid in middleware
+        inviter = getUserFromToken(request.headers.get('Authorization').split(' ')[1])
+
+        # generate invite link
+        event_invite = EventInvite.objects.create(event_id=event_id, creator=inviter, link=f'{uuid.uuid4().hex}')
         
         # Create invite link using the obfuscated event ID
         base_url = settings.INVITE_BASE_URL if hasattr(settings, 'INVITE_BASE_URL') else request.build_absolute_uri('/join/')
-        invite_link = f"{base_url.rstrip('/')}/{event.obfuscated_event_id}"
+        invite_link = f"{base_url.rstrip('/')}/{event_invite.link}"
         
         return Response({
-            'invite_link': invite_link,
-            'obfuscated_event_id': str(event.obfuscated_event_id)
+            'invite_link': invite_link
         }, status=status.HTTP_200_OK)
     except Event.DoesNotExist:
         return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -585,76 +577,56 @@ def generate_invite_link(request, event_id):
 
 # Join event via link/QR code
 @api_view(['GET', 'POST'])
-def join_via_link(request: Request, obfuscated_event_id):
+def join_via_link(request: Request, invite_link):
     """
     Handle user joining an event via an invite link with jibberish event ID.
     GET: Return event details
     POST: Join the event
     """
     try:
-        # Find the event using the obfuscated ID
-        event = Event.objects.get(obfuscated_event_id=obfuscated_event_id)
 
         if request.method == 'GET':
             # Return event details
-            serializer = EventSerializer(event)
+            serializer = EventSerializer(DirectInvite.objects.get(link=invite_link).event)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         elif request.method == 'POST':
             # Get the user from the request
             user_id = request.data.get('user_id')
-            if not user_id:
-                return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check if the user already has a relation with this event
-            event_user, created = EventUser.objects.get_or_create(
-                event_id=event.event_id,
-                user_id=user_id,
-                defaults={'accepted': True}  # Auto-accept when joining via link
-            )
+            invite = DirectInvite.objects.get(link=invite_link)
 
-            if not created:
-                # Update the existing record to accepted if needed
-                if not event_user.accepted:
-                    event_user.accepted = True
-                    event_user.save()
+            event_user, _ = EventUser.objects.get_or_create(user_id=user_id, event_id=invite.event.event_id)
 
             return Response({
                 'message': 'Successfully joined the event',
-                'event': EventSerializer(event).data
+                'event': EventSerializer(event_user.event).data
             }, status=status.HTTP_200_OK)
 
-    except Event.DoesNotExist:
-        return Response({'error': 'Invalid invite link'}, status=status.HTTP_404_NOT_FOUND)
+    except DirectInvite.DoesNotExist:
+        return Response({'error': 'Invite link does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    except User.DoesNotExist:
+        return Response({'error': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # Handle invitation response (accept/decline)
 @api_view(['POST'])
-def handle_invitation(request, event_id, action):
+def handle_invitation(request: Request, event_id, action):
     """
     Handle a user accepting or declining an invitation.
     action can be 'accept' or 'decline'
     """
     try:
         user_id = request.data.get('user_id')
-        if not user_id:
-            return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Get the event user record
-        event_user = EventUser.objects.get(event_id=event_id, user_id=user_id)
-
-        if action == 'accept':
+        if action.lower() == 'accept':
             # Accept the invitation
-            event_user.accepted = True
-            event_user.save()
+            EventUser.objects.create(user_id=user_id, event_id=event_id)
             return Response({'message': 'Invitation accepted'}, status=status.HTTP_200_OK)
-
-        elif action == 'decline':
+        elif action.lower() == 'decline':
             # Decline by removing the record
-            event_user.delete()
             return Response({'message': 'Invitation declined'}, status=status.HTTP_200_OK)
-
         else:
             return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -670,21 +642,11 @@ def get_pending_event_invitations(request, user_id):
     Get all pending event invitations for a user.
     """
     try:
-        # Find all events where the user has been invited but not accepted
-        pending_invitations = EventUser.objects.filter(
-            user_id=user_id,
-            accepted=False
-        )
 
-        # Prepare the response data
-        events_data = []
-        for invitation in pending_invitations:
-            event_data = EventSerializer(invitation.event).data
-            # Add owner - for something like "Luda has invited you to his event awesome cookies photos"
-            event_data['owner_name'] = invitation.event.owner.display_name
-            events_data.append(event_data)
+        invitee = User.objects.get(user_id=user_id)
+        pending_invitations = DirectInvite.objects.filter(invitee=invitee)
 
-        return Response(events_data, status=status.HTTP_200_OK)
+        return Response(data=DirectInviteInviteSerializer(pending_invitations).data, status=status.HTTP_200_OK)
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

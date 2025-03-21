@@ -25,7 +25,7 @@ class Event(models.Model):
 class EventInvite(models.Model):
     event = models.ForeignKey(Event, editable=False, on_delete=models.CASCADE)
     creator = models.ForeignKey(User, editable=False, on_delete=models.CASCADE)
-    link = models.CharField(max_length=30, default='/' ,blank=True, null=True)              
+    link = models.CharField(max_length=30, default='/' ,blank=True, null=True, unique=True)
     # URLField will validate if its a proper url: www.google.ca, this stores endpoint
     expiration_date = models.DateTimeField(default=timezone.now() + timedelta(hours=24))
     # default is 24 hours

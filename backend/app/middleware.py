@@ -2,7 +2,6 @@ from django.conf import settings
 from django.http import JsonResponse
 
 from firebase_admin import auth
-import jwt
 
 SECRET_KEY = settings.SECRET_KEY  # Use Django's secret key
 
