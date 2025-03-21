@@ -11,12 +11,23 @@ class UserSettingsSerializer(serializers.ModelSerializer):
         model = UserSettings
         fields = "__all__"
 
-
 class EventSerializer(serializers.ModelSerializer):
     owner = UserSerializer()
 
     class Meta:
         model = Event
+        fields = "__all__"
+
+class EventInviteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventInvite
+        fields = "__all__"
+
+class DirectInviteInvite(serializers.ModelSerializer):
+    event = EventSerializer()
+    user = UserSerializer()
+    class Meta:
+        model = DirectInvite
         fields = "__all__"
 
 class EventUserSerializer(serializers.ModelSerializer):

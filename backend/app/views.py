@@ -14,7 +14,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework.request import Request
 
 import uuid
-import jwt
 from .google_cloud_storage.bucket import *
 from datetime import datetime
 import io
@@ -99,9 +98,6 @@ class EventContentViewSet(viewsets.ModelViewSet):
 class ScoredByViewSet(viewsets.ModelViewSet):
     queryset = ScoredBy.objects.all()
     serializer_class = ScoredBySerializer
-
-# Secret key for JWT
-SECRET_KEY = settings.SECRET_KEY  # Use Django's secret key
 
 # Get the metadata for an event
 @api_view(['GET'])
@@ -312,7 +308,9 @@ def create_new_event(request: Request):
 
     event = Event.objects.create(event_name=event_name, owner=event_owner)
 
-    EventUser.objects.create(event_id=event.event_id, user_id=user_id)
+    event_user = EventUser.objects.create(event_id=event.event_id, user_id=user_id)
+    event_user.accepted = True
+    event_user.save()
 
     return Response(status=status.HTTP_201_CREATED, data=EventSerializer(event).data)
 
