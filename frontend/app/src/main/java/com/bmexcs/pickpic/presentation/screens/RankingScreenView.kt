@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,6 +52,7 @@ fun RankingScreenView(
     var showParticles by remember { mutableStateOf(false) }
 
     val currentBitmap by viewModel.currentImage.collectAsState()
+    val nextBitmap by viewModel.nextImage.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val event by viewModel.event.collectAsState()
     val eventName = event.name
