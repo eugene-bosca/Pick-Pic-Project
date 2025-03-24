@@ -22,12 +22,11 @@ class ImageDataSource @Inject constructor(
     }
 
     suspend fun addImage(eventId: String, imageData: ByteArray) {
-        val userId = userDataSource.getUser().id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
-        Log.d(TAG, "addImage for event $eventId and user $userId")
+        Log.d(TAG, "addImage for event $eventId")
 
-        eventApi.uploadImage(eventId, userId, imageData, token)
+        eventApi.uploadImage(eventId, imageData, token)
     }
 
     suspend fun deleteImage(eventId: String, imageId: String) {

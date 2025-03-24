@@ -110,9 +110,9 @@ class EventApiService {
         }
 
     /**
-     * Uploads an image for the specified event.
+     * Uploads an image to the specified event.
      *
-     * **Endpoint**: `PUT /event/{event_id}/image/user/{user_id}/create/`
+     * **Endpoint**: `PUT /event/{event_id}/image/`
      *
      * **Request Body**: `ByteArray`
      *
@@ -124,11 +124,10 @@ class EventApiService {
      */
     suspend fun uploadImage(
         eventId: String,
-        userId: String,
         imageData: ByteArray,
         token: String,
     ) = withContext(Dispatchers.IO) {
-        val endpoint = "event/$eventId/image/user/$userId/create/"
+        val endpoint = "event/$eventId/image/"
         val url = Api.url(endpoint)
 
         Log.d(TAG, "PUT $url")
