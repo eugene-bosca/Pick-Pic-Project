@@ -6,7 +6,7 @@ import com.bmexcs.pickpic.data.dtos.ImageInfo
 import com.bmexcs.pickpic.data.dtos.EventCreation
 import com.bmexcs.pickpic.data.dtos.EventLastModified
 import com.bmexcs.pickpic.data.dtos.ImageVote
-import com.bmexcs.pickpic.data.dtos.InvitedUser
+import com.bmexcs.pickpic.data.dtos.User
 import com.bmexcs.pickpic.data.dtos.UserEventInviteLink
 import com.bmexcs.pickpic.data.models.EventMetadata
 import com.bmexcs.pickpic.data.models.ImageMetadata
@@ -81,7 +81,7 @@ class EventApiService {
      *
      * **Response Body**: `List<models.ImageInfo>`
      *
-     * * **Return Type**: `List<models.ImageMetadata>`
+     * **Return Type**: `List<models.ImageMetadata>`
      */
     suspend fun getAllImageMetadata(eventId: String, token: String): List<ImageMetadata> =
         withContext(Dispatchers.IO) {
@@ -384,9 +384,9 @@ class EventApiService {
         }
 
     /**
-     * Adds a user to the specified event.
+     * Direct user invitation accept (used for email invitations).
      *
-     * **Endpoint**: `POST /event/{event_id}/user`
+     * **Endpoint**: `POST event/{eventId}/invite/users/{"accept"}`
      *
      * **Request Body**: Empty
      *
@@ -396,7 +396,7 @@ class EventApiService {
      *
      * **Return Type**: None
      */
-    suspend fun addUser(eventId: String, userId: String, token: String) =
+    suspend fun acceptDirectInvitation(eventId: String, userId: String, token: String) =
         withContext(Dispatchers.IO) {
             val endpoint = "event/${eventId}/invite/users/${"accept"}"
             val url = Api.url(endpoint)
@@ -554,11 +554,11 @@ class EventApiService {
      *
      * **Request Content-Type**: None
      *
-     * **Response**: `List<dtos.InvitedUser>`
+     * **Response**: `List<dtos.User>`
      *
      * **Return Type** `List<models.UserMetadata>`
      */
-    suspend fun getInvitedUsers(eventId: String, token: String): List<UserMetadata> =
+    suspend fun getAcceptedUsers(eventId: String, token: String): List<UserMetadata> =
         withContext(Dispatchers.IO) {
             val endpoint = "event/$eventId/users/"
             val url = Api.url(endpoint)
@@ -576,9 +576,50 @@ class EventApiService {
 
                 val body = response.body?.string()
                     ?: throw HttpException(response.code, "Empty response body")
+                
+                val resultType = object : TypeToken<List<User>>() {}.type
+                val result: List<User> = gson.fromJson(body, resultType)
 
-                val resultType = object : TypeToken<List<InvitedUser>>() {}.type
-                val result: List<InvitedUser> = gson.fromJson(body, resultType)
+                Log.d(TAG, "$result")
+
+                return@withContext result.map { UserMetadata(it) }
+            }
+        }
+
+    /**
+     * Retrieves metadata about all users who are pending for an event.
+     *
+     * **Endpoint**: `GET /event/{event_id}/pending_users/`
+     *
+     * **Request Body**: Empty
+     *
+     * **Request Content-Type**: None
+     *
+     * **Response**: `List<dtos.User>`
+     *
+     * **Return Type** `List<models.UserMetadata>`
+     */
+    suspend fun getPendingUsers(eventId: String, token: String): List<UserMetadata> =
+        withContext(Dispatchers.IO) {
+            val endpoint = "event/$eventId/pending_users/"
+            val url = Api.url(endpoint)
+
+            Log.d(TAG, "GET: $url")
+
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer $token")
+                .get()
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                Api.handleResponseStatus(response)
+
+                val body = response.body?.string()
+                    ?: throw HttpException(response.code, "Empty response body")
+
+                val resultType = object : TypeToken<List<User>>() {}.type
+                val result: List<User> = gson.fromJson(body, resultType)
 
                 return@withContext result.map { UserMetadata(it) }
             }

@@ -36,9 +36,13 @@ class InviteViewModel @Inject constructor(
     private val _emailList = MutableStateFlow<List<String>>(emptyList())
     val emailList: StateFlow<List<String>> = _emailList
 
-    // New state for invited users
-    private val _invitedUsers = MutableStateFlow<List<UserMetadata>>(emptyList())
-    val invitedUsers: StateFlow<List<UserMetadata>> = _invitedUsers
+    // New state for accepted users
+    private val _acceptedUsers = MutableStateFlow<List<UserMetadata>>(emptyList())
+    val acceptedUsers: StateFlow<List<UserMetadata>> = _acceptedUsers
+
+    // New state for pending users
+    private val _pendingUsers = MutableStateFlow<List<UserMetadata>>(emptyList())
+    val pendingUsers: StateFlow<List<UserMetadata>> = _pendingUsers
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -55,17 +59,36 @@ class InviteViewModel @Inject constructor(
     }
 
     /**
-     * Loads the invited users for the given eventId.
-     * Assumes that eventRepository provides a method getInvitedUsers(eventId: String): List<UserMetadata>.
+     * Loads the accepted users for the given eventId.
      */
-    fun loadInvitedUsers(eventId: String) {
+    fun loadAcceptedUsers(eventId: String) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
                 val users = withContext(Dispatchers.IO) {
-                    eventRepository.getEventUsersMetadata(eventId)
+                    eventRepository.getAcceptedUsersMetadata(eventId)
                 }
-                _invitedUsers.value = users
+                _acceptedUsers.value = users
+            } catch(e: Exception) {
+                _errorMessage.value = e.localizedMessage ?: "An unknown error occurred"
+                Log.e("InviteViewModel", "Error loading invited users", e)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    /**
+     * Loads the pending users for the given eventId.
+     */
+    fun loadPendingUsers(eventId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val users = withContext(Dispatchers.IO) {
+                    eventRepository.getPendingUsersMetadata(eventId)
+                }
+                _pendingUsers.value = users
             } catch(e: Exception) {
                 _errorMessage.value = e.localizedMessage ?: "An unknown error occurred"
                 Log.e("InviteViewModel", "Error loading invited users", e)
@@ -93,7 +116,7 @@ class InviteViewModel @Inject constructor(
                 // Clear the email list after successful invitation
                 _emailList.value = emptyList()
                 // Refresh the invited users list
-                loadInvitedUsers(eventId)
+                loadAcceptedUsers(eventId)
             } catch (e: Exception) {
                 _errorMessage.value = e.localizedMessage ?: "An unknown error occurred"
                 Log.e("InviteViewModel", "Error inviting users", e)
@@ -107,7 +130,7 @@ class InviteViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 eventRepository.removeUserFromEvent(eventId, userId)
-                loadInvitedUsers(eventId)
+                loadAcceptedUsers(eventId)
             } catch (e: Exception) {
                 _errorMessage.value = e.localizedMessage ?: "An unknown error occurred"
                 Log.e("EventInvitationViewModel", "Error declining event", e)

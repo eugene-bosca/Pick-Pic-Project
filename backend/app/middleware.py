@@ -2,7 +2,6 @@ from django.conf import settings
 from django.http import JsonResponse
 
 from firebase_admin import auth
-import jwt
 
 SECRET_KEY = settings.SECRET_KEY  # Use Django's secret key
 
@@ -37,16 +36,9 @@ class AuthMiddleware:
 
             # Verify Firebase Token
             try:
-                decoded_token = auth.verify_id_token(token)
+                auth.verify_id_token(token)
             except:
-                # Verify Custom JWT Token
-                try:
-                    decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-                    request.user = decoded_token["username"]
-                except jwt.ExpiredSignatureError:
-                    return JsonResponse({"error": "Token has expired"}, status=401)
-                except jwt.InvalidTokenError:
-                    return JsonResponse({"error": "Invalid token"}, status=401)
+                return JsonResponse({"error": "token unauthorized"}, status=401)
 
         except ValueError:
             return JsonResponse({"error": "Invalid Authorization header format"}, status=401)

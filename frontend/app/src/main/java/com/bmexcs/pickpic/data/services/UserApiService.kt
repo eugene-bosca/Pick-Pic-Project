@@ -401,7 +401,7 @@ class UserApiService {
         }
 
     /**
-     * Invite a list of users by ID.
+     * Directly invite a list of users by ID.
      *
      * **Endpoint**: `POST /event/{event_id}/invite/users/${"poggers"}
      *
@@ -413,7 +413,7 @@ class UserApiService {
      *
      * **Return Type**: None
      */
-    suspend fun inviteUsersFromIds(userIds: List<String>, eventId: String, token: String) =
+    suspend fun directInviteUsersByIds(userIds: List<String>, eventId: String, token: String) =
         withContext(Dispatchers.IO) {
             val endpoint = "event/${eventId}/invite/users/${"poggers"}"
             val url = Api.url(endpoint)
