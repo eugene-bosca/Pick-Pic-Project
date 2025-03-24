@@ -576,9 +576,7 @@ class EventApiService {
 
                 val body = response.body?.string()
                     ?: throw HttpException(response.code, "Empty response body")
-
-                Log.d(TAG, body)
-
+                
                 val resultType = object : TypeToken<List<User>>() {}.type
                 val result: List<User> = gson.fromJson(body, resultType)
 
