@@ -4,7 +4,7 @@ from .serializers import *
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, OpenApiTypes, OpenApiResponse
 
 from .models import User
 
@@ -102,12 +102,18 @@ class ScoredByViewSet(viewsets.ModelViewSet):
     serializer_class = ScoredBySerializer
 
 # Get the metadata for an event
+@extend_schema(
+    responses={200: EventSerializer},
+)
 @api_view(['GET'])
 def event_info(request: Request, event_id):
     event = Event.objects.get(event_id=event_id)
     return Response(data=EventSerializer(event).data, status=status.HTTP_200_OK)
 
 # Get or delete an image from an event
+@extend_schema(
+    responses={200: {}},
+)
 @api_view(['GET', 'DELETE'])
 def get_delete_image(request: Request, event_id=None, image_id=None):
     try:
@@ -160,16 +166,17 @@ def get_delete_image(request: Request, event_id=None, image_id=None):
     responses={201: EventContentSerializer},
 )
 @api_view(['PUT'])
-def create_image(request: Request, event_id=None, user_id=None):
+def create_image(request: Request, event_id=None):
 
     print(event_id)
-    print(user_id)
 
     try:
 
         event = get_object_or_404(Event, event_id=event_id)
 
         print(event.event_name)
+
+        user_id = getUserFromToken(request.headers.get('Authorization').split(' ')[1])
 
         user = get_object_or_404(User, user_id=user_id)
 
@@ -199,7 +206,7 @@ def create_image(request: Request, event_id=None, user_id=None):
 
         print(unique_name)
 
-        new_image = Image.objects.create(file_name=unique_name, user_id=user_id)
+        new_image = Image.objects.create(file_name=unique_name, owner=user)
 
         print(new_image.image_id)
         
@@ -259,6 +266,9 @@ def user_pfp(request: Request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # Get the number of images added to an event
+@extend_schema(
+    responses={200: {}},
+)
 @api_view(['GET'])
 def event_image_count(request: Request, event_id):
     try:
@@ -411,6 +421,9 @@ def get_user_id_from_email(request: Request):
     return Response(data={'users': users}, status=status.HTTP_200_OK)
     
 # Get the image with the highest score
+@extend_schema(
+    responses={200: {}}
+)
 @api_view(['GET'])
 def get_highest_scored_image(request: Request, event_id):
     """
@@ -454,6 +467,9 @@ def get_highest_scored_image(request: Request, event_id):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # Decline an event invitation for the specified user
+@extend_schema(
+    responses={204: {}}
+)
 @api_view(['DELETE'])
 def remove_event_user(request, event_id, user_id):
     """
@@ -462,7 +478,7 @@ def remove_event_user(request, event_id, user_id):
     try:
         event_user = EventUser.objects.get(event__event_id=event_id, user__user_id=user_id)
         event_user.delete()
-        return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_204_NO_CONTENT)
     except EventUser.DoesNotExist:
         return Response({'error': 'Event user not found.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -493,6 +509,9 @@ def get_pending_events(request, user_id):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # Get the last-modified date for an event
+@extend_schema(
+    responses={200: {}}
+)
 @api_view(['GET'])
 def event_last_modified(request, event_id):
     event = Event.objects.filter(event_id=event_id)
@@ -527,9 +546,6 @@ def remove_user_from_event(request, event_id, user_id):
 )
 @api_view(['POST'])
 def invite_to_event(request: Request, event_id, accept = None):
-    """
-    Invite one user to an event (in-app method).
-    """
     try:
         # Get the event
         event = Event.objects.get(event_id=event_id)
@@ -537,8 +553,9 @@ def invite_to_event(request: Request, event_id, accept = None):
         # Check if the request has multiple user_ids or a single user_id
         user_ids = request.data.get('user_ids')
 
-        for user_id in user_ids:
-            EventUser.objects.get_or_create(event_id=event_id, user_id=user_id)
+        if accept == 'accept':
+            for user_id in user_ids:
+                EventUser.objects.get_or_create(event_id=event_id, user_id=user_id)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
     except Event.DoesNotExist:
@@ -611,6 +628,12 @@ def join_via_link(request: Request, invite_link):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # Handle invitation response (accept/decline)
+@extend_schema(
+    responses={
+        200: OpenApiResponse(description="Invitation accepted"),
+        200: OpenApiResponse(description="Invitation declined")
+    }
+)
 @api_view(['POST'])
 def handle_invitation(request: Request, event_id, action):
     """
@@ -696,3 +719,9 @@ def unranked_images(request: Request, event_id, user_id):
     serializer = EventContentSerializer(unranked_images, many=True)
 
     return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def pending_invites(request: Request, event_id):
+    invites = DirectInvite.objects.filter(event_id=event_id).values_list('invitee', flat=True)
+    users = User.objects.filter(user_id__in=invites)
+    return Response(data=UserSerializer(users, many=True).data, status=status.HTTP_200_OK)

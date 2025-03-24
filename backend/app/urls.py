@@ -41,10 +41,10 @@ urlpatterns = [
 
     # image/picture endpoints
     path('event/<str:event_id>/image/<str:image_id>/', views.get_delete_image, name='GET/DELETE Image'),
-    path('event/<str:event_id>/image/count/', views.event_image_count, name='Event Image Count'),
+    #path('event/<str:event_id>/image/count/', views.event_image_count, name='Event Image Count'),
     path('event/<str:event_id>/image/highest_score/', views.get_highest_scored_image, name='Get Highest Score Image'),
     path('event/<str:event_id>/image/user/<str:user_id>/unranked/', views.unranked_images, name='GET unranked images'),
-    path('event/<str:event_id>/image/user/<str:user_id>/create/', views.create_image, name='PUT Image'),
+    path('event/<str:event_id>/image/', views.create_image, name='PUT Image'),
     
     # upvote/downvote
     path('event/<str:event_id>/image/<str:image_id>/vote/', views.vote_image, name='Upvote/Downvote Image'),
@@ -57,6 +57,7 @@ urlpatterns = [
 
     # event users
     path('event/<str:event_id>/users/', views.EventUserViewSet.as_view({'get': 'list'}), name='Event Users'),
+    path('event/<str:event_id>/pending_users/', views.pending_invites, name='Pending Event Users'),
     path('event/<str:event_id>/user/<str:user_id>/', views.remove_event_user, name='Remove Event User'),
 
     path('user/<str:user_id>/events/', views.list_users_events, name='List Users Events'),

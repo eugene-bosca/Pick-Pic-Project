@@ -36,15 +36,17 @@ class DirectInviteInviteSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class EventUserSerializer(serializers.ModelSerializer):
-    #event = EventSerializer()
     user = UserSerializer()
 
     class Meta:
         model = EventUser
-        fields = ["user", "accepted"]
+        fields = ["user"]
+
+    def to_representation(self, instance):
+        return super().to_representation(instance)["user"]
 
 class ImageSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    owner = UserSerializer()
     class Meta:
         model = Image
         fields = "__all__"

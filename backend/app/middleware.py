@@ -21,7 +21,7 @@ class AuthMiddleware:
 
     def __call__(self, request):
         
-        if request.path in ["/swagger", "/swagger/", "/schema", "/schema/"]:
+        if request.path in ["/swagger", "/swagger/", "/schema", "/schema/", "/", "/favicon.ico"]:
             return self.get_response(request)
 
         auth_header = request.headers.get("Authorization")
