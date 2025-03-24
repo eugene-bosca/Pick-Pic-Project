@@ -1,5 +1,5 @@
 import firebase_admin
-from firebase_admin import credentials, auth
+from firebase_admin import credentials
 
 # Path to your Firebase service account JSON file
 cred = credentials.Certificate("concrete-spider-449820-p0-b07324f24234.json")

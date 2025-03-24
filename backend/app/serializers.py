@@ -6,17 +6,33 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = "__all__"
 
+class ClientSideUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["user_id", "display_name", "email"]
+
 class UserSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSettings
         fields = "__all__"
 
-
 class EventSerializer(serializers.ModelSerializer):
-    owner = UserSerializer()
+    owner = ClientSideUserSerializer()
 
     class Meta:
         model = Event
+        fields = "__all__"
+
+class EventInviteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventInvite
+        fields = "__all__"
+
+class DirectInviteInviteSerializer(serializers.ModelSerializer):
+    event = EventSerializer()
+    user = ClientSideUserSerializer()
+    class Meta:
+        model = DirectInvite
         fields = "__all__"
 
 class EventUserSerializer(serializers.ModelSerializer):
@@ -40,12 +56,12 @@ class EventContentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EventContent
-        fields = ["id", "image"]
+        fields = ["image"]
 
 
 class ScoredBySerializer(serializers.ModelSerializer):
     image = ImageSerializer()
-    user = UserSerializer()
+    user = ClientSideUserSerializer()
 
     class Meta:
         model = ScoredBy

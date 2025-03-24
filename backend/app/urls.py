@@ -74,7 +74,7 @@ urlpatterns = [
 
     # Link/QR invitation handling
     path('event/invite/generate/<str:event_id>/', views.generate_invite_link, name='generate_invite_link'), # Generates a link with obfuscated event ID
-    path('event/join/<str:obfuscated_event_id>/', views.join_via_link, name='join_via_link'),
+    path('event/join/<str:invite_link>/', views.join_via_link, name='join_via_link'),
 
     # Handle invitation acceptance/decline
     path('event/<str:event_id>/invitation/<str:action>/', views.handle_invitation, name='handle_invitation'),

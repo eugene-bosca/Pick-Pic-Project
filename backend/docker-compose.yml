@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile.proxy
     container_name: cloud-sql-proxy
-    restart: always
+    #restart: always
     env_file:
       - .env
     ports:
@@ -17,7 +17,7 @@ services:
       context: .
       dockerfile: Dockerfile.web
     container_name: django_container
-    restart: always
+    #restart: always
     depends_on:
       - cloud-sql-proxy
     env_file:
