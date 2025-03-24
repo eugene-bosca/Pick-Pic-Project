@@ -243,7 +243,7 @@ fun RankingScreenView(
                     // Background ripple
                     Surface(
                         modifier = Modifier
-                            .size(200.dp)
+                            .size(150.dp)  // Reduced from 200dp
                             .scale(feedbackIconScale),
                         shape = CircleShape,
                         color = Color.Green.copy(alpha = feedbackIconAlpha * 0.3f)
@@ -252,7 +252,7 @@ fun RankingScreenView(
                     // Inner circle with icon
                     Surface(
                         modifier = Modifier
-                            .size(100.dp)
+                            .size(75.dp)  // Reduced from 100dp
                             .scale(feedbackIconScale),
                         shape = CircleShape,
                         color = Color.Green.copy(alpha = feedbackIconAlpha * 0.7f)
@@ -262,7 +262,7 @@ fun RankingScreenView(
                                 imageVector = Icons.Default.ThumbUp,
                                 contentDescription = "Upvote",
                                 tint = Color.White,
-                                modifier = Modifier.size(60.dp)
+                                modifier = Modifier.size(40.dp)  // Reduced from 60dp
                             )
                         }
                     }
@@ -279,7 +279,7 @@ fun RankingScreenView(
                     // Background ripple
                     Surface(
                         modifier = Modifier
-                            .size(200.dp)
+                            .size(150.dp)  // Reduced from 200dp
                             .scale(feedbackIconScale),
                         shape = CircleShape,
                         color = Color.Red.copy(alpha = feedbackIconAlpha * 0.3f)
@@ -288,7 +288,7 @@ fun RankingScreenView(
                     // Inner circle with icon
                     Surface(
                         modifier = Modifier
-                            .size(100.dp)
+                            .size(75.dp)  // Reduced from 100dp
                             .scale(feedbackIconScale),
                         shape = CircleShape,
                         color = Color.Red.copy(alpha = feedbackIconAlpha * 0.7f)
@@ -298,7 +298,7 @@ fun RankingScreenView(
                                 imageVector = Icons.Default.ThumbDown,
                                 contentDescription = "Downvote",
                                 tint = Color.White,
-                                modifier = Modifier.size(60.dp)
+                                modifier = Modifier.size(40.dp)  // Reduced from 60dp
                             )
                         }
                     }
@@ -312,7 +312,8 @@ fun RankingScreenView(
                 delay(100)
                 val absTotalOffsetX = abs(totalOffsetX)
 
-                if (absTotalOffsetX > 100) {
+                // Changed threshold from 100 to 200
+                if (absTotalOffsetX > 200) {
                     isAnimating = true
 
                     // Determine swipe direction and show appropriate feedback
