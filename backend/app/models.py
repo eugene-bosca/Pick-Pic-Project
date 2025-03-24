@@ -42,11 +42,11 @@ class EventInvite(models.Model):
 
 class DirectInvite(models.Model):  # only pending invites, once accepted entry removed
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    inviter = models.ForeignKey(User, on_delete=models.CASCADE)
-    invitee = models.ForeignKey(User, on_delete=models.CASCADE)
+    inviter = models.ForeignKey(User, related_name='sent_invites', on_delete=models.CASCADE)
+    invitee = models.ForeignKey(User, related_name='received_invites', on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('event_invite', 'inviter', 'invitee')
+        unique_together = ('event', 'inviter', 'invitee')
 
     # ensure inviter != invitee
     def clean(self):
