@@ -56,7 +56,7 @@ class EventContentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EventContent
-        fields = ["id", "image"]
+        fields = ["image"]
 
 
 class ScoredBySerializer(serializers.ModelSerializer):
