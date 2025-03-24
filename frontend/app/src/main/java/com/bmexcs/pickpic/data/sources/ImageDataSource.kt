@@ -16,7 +16,7 @@ class ImageDataSource @Inject constructor(
     suspend fun getImage(eventId: String, imageId: String): ByteArray? {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
-        Log.d(TAG, "getImageBinary for event $eventId and image $imageId")
+        Log.d(TAG, "getImage for event $eventId and image $imageId")
 
         return eventApi.downloadImage(eventId, imageId, token)
     }
@@ -25,7 +25,7 @@ class ImageDataSource @Inject constructor(
         val userId = userDataSource.getUser().id
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
-        Log.d(TAG, "addImageBinary for event $eventId and user $userId")
+        Log.d(TAG, "addImage for event $eventId and user $userId")
 
         eventApi.uploadImage(eventId, userId, imageData, token)
     }
