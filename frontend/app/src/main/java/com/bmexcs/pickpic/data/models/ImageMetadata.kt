@@ -10,7 +10,7 @@ data class ImageMetadata(
 ) {
     constructor(imageInfo: ImageInfo) : this(
         id = imageInfo.image.image_id,
-        uploader = UserMetadata(imageInfo.image.user),
+        uploader = UserMetadata(imageInfo.image.owner),
         score = imageInfo.image.score,
         dateUploaded = imageInfo.image.file_name.substringBeforeLast('.')
     )

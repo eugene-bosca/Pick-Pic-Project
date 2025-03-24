@@ -96,11 +96,11 @@ class InvitedViewModel @Inject constructor(
         }
     }
 
-    fun handleAcceptInvite(context: Context) {
+    fun handleAcceptDirectInvitation(context: Context) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                eventRepository.addUserToEvent(eventId, userRepository.getUser().id)
+                eventRepository.acceptDirectInvitation(eventId, userRepository.getUser().id)
             } catch (e: Exception) {
                 Log.d(TAG, e.toString())
             } finally {

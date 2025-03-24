@@ -50,8 +50,12 @@ class EventRepository @Inject constructor(
         return eventDataSource.getEventOwnerMetadata(ownerId)
     }
 
-    suspend fun getEventUsersMetadata(eventId: String): List<UserMetadata> {
-        return eventDataSource.getEventUsersMetadata(eventId)
+    suspend fun getAcceptedUsersMetadata(eventId: String): List<UserMetadata> {
+        return eventDataSource.getAcceptedUsersMetadata(eventId)
+    }
+
+    suspend fun getPendingUsersMetadata(eventId: String): List<UserMetadata> {
+        return eventDataSource.getPendingUsersMetadata(eventId)
     }
 
     suspend fun getAllImagesMetadata(eventId: String): List<ImageMetadata> {
@@ -86,8 +90,8 @@ class EventRepository @Inject constructor(
         eventDataSource.declineEvent(eventId)
     }
 
-    suspend fun addUserToEvent(eventId: String, userId: String) {
-        eventDataSource.addUserToEvent(eventId, userId)
+    suspend fun acceptDirectInvitation(eventId: String, userId: String) {
+        eventDataSource.acceptDirectInvitation(eventId, userId)
     }
 
     suspend fun removeUserFromEvent(eventId: String, userId: String) {
