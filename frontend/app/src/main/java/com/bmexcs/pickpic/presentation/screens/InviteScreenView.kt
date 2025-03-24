@@ -38,10 +38,13 @@ fun InviteScreenView(
 ) {
     // Load invited users when the screen is first displayed.
     LaunchedEffect(eventId) {
-        viewModel.loadInvitedUsers(eventId)
+        viewModel.loadAcceptedUsers(eventId)
+        viewModel.loadPendingUsers(eventId)
     }
 
-    val invitedUsers by viewModel.invitedUsers.collectAsState()
+    val acceptedUsers by viewModel.acceptedUsers.collectAsState()
+    val pendingUsers by viewModel.pendingUsers.collectAsState()
+
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
@@ -107,7 +110,8 @@ fun InviteScreenView(
             Spacer(modifier = Modifier.height(25.dp))
 
             InvitedUsersList(
-                invitedUsers = invitedUsers,
+                acceptedUsers = acceptedUsers,
+                pendingUsers = pendingUsers,
                 eventId = eventId,
                 ownerId = ownerId,
                 isEventOwner = isEventOwner,
@@ -218,12 +222,15 @@ fun EditableEmailField(
 
 @Composable
 fun InvitedUsersList(
-    invitedUsers: List<UserMetadata>,
+    acceptedUsers: List<UserMetadata>,
+    pendingUsers: List<UserMetadata>,
     eventId: String,
     ownerId: String,
     isEventOwner: Boolean,
     onKickUser: (eventId: String, userId: String) -> Unit
 ) {
+    val invitedUsers = acceptedUsers.map{ Pair(true, it) } + pendingUsers.map{ Pair(false, it) }
+
     if (invitedUsers.isNotEmpty()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -236,12 +243,12 @@ fun InvitedUsersList(
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn {
-                items(invitedUsers) { invitedUser ->
+                items(invitedUsers) { (accepted, invitedUser) ->
                     // Check if this invited user is the owner
                     val isOwner = invitedUser.id == ownerId
 
                     // For the owner or accepted users, use full opacity; otherwise, use reduced opacity.
-                    val rowAlpha = if (isOwner || invitedUser.accepted) 1f else 0.5f
+                    val rowAlpha = if (isOwner || accepted) 1f else 0.5f
 
                     Row(
                         modifier = Modifier
@@ -279,7 +286,7 @@ fun InvitedUsersList(
                                 }
 
                                 // If the invite hasn't been accepted, show "Pending Invite" in gray.
-                                !invitedUser.accepted -> {
+                                !accepted -> {
                                     Text(
                                         text = "Invite Pending",
                                         fontSize = 14.sp,
@@ -293,7 +300,7 @@ fun InvitedUsersList(
                             // - the current user is the event owner,
                             // - the invited user has accepted,
                             // - and the invited user is not the owner.
-                            if (isEventOwner && invitedUser.accepted && !isOwner) {
+                            if (isEventOwner && accepted && !isOwner) {
                                 IconButton(
                                     onClick = {
                                         onKickUser(eventId, invitedUser.id)
