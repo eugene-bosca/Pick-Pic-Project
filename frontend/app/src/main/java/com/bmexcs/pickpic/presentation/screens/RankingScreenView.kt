@@ -1,5 +1,6 @@
 package com.bmexcs.pickpic.presentation.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -8,6 +9,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ThumbDown
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,6 +22,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -26,7 +30,10 @@ import com.bmexcs.pickpic.presentation.viewmodels.RankingViewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.delay
 import kotlin.random.Random
+import kotlin.math.abs
+import kotlin.math.min
 
+@SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RankingScreenView(
@@ -39,131 +46,112 @@ fun RankingScreenView(
     var isAnimating by remember { mutableStateOf(false) }
     var swipeDirection by remember { mutableStateOf<RankingViewModel.SwipeDirection?>(null) }
 
+    // Animation states for swipe feedback
+    var showThumbsUp by remember { mutableStateOf(false) }
+    var showThumbsDown by remember { mutableStateOf(false) }
+
     val currentBitmap by viewModel.currentImage.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val event by viewModel.event.collectAsState()
     val eventName = event.name
 
-    // Animation progress (0f to 1f)
+    // Animation values
     val animationProgress by animateFloatAsState(
         targetValue = if (isAnimating) 1f else 0f,
         animationSpec = tween(durationMillis = 500),
         label = "SwipeAnimation"
     )
 
-    // Animation for trash can (left swipe)
-    val trashCanScale by animateFloatAsState(
-        targetValue = if (swipeDirection == RankingViewModel.SwipeDirection.LEFT && isAnimating) 1.2f else 1f,
-        animationSpec = spring(dampingRatio = 0.5f, stiffness = 300f),
-        label = "TrashCanScale"
+    // Animation for feedback icons
+    val feedbackIconScale by animateFloatAsState(
+        targetValue = if (showThumbsUp || showThumbsDown) 1.5f else 0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "FeedbackIconAnimation"
     )
 
-    // Animation for particles (right swipe)
-    val particleCount = 15
-    val particles = remember { List(particleCount) { Particle() } }
+    val feedbackIconAlpha by animateFloatAsState(
+        targetValue = if (showThumbsUp || showThumbsDown) 0.9f else 0f,
+        animationSpec = tween(durationMillis = 300),
+        label = "FeedbackIconAlphaAnimation"
+    )
 
-    // Reset animation state when bitmap changes
+    val swipeProgress by derivedStateOf {
+        if (isAnimating) 0f else min(1f, abs(totalOffsetX) / 300f)
+    }
+
     LaunchedEffect(currentBitmap) {
         currentOffsetX = 0f
         isAnimating = false
         swipeDirection = null
-        particles.forEach { it.reset() }
+        showThumbsUp = false
+        showThumbsDown = false
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TopAppBar(
             title = { Text(text = eventName) },
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                 }
             }
         )
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectTransformGestures { _, pan, _, _ ->
-                        if (!isAnimating) {
-                            currentOffsetX += pan.x
-                            totalOffsetX += pan.x
-
-                            if (pan != Offset.Zero) {
-                                swipeStartedKey++
-                            }
-
-                            if (pan == Offset.Zero && currentOffsetX != 0f) {
-                                currentOffsetX = 0f
-                            }
-                        }
-                    }
-                }
-        ) {
-            // Trash can icon (shown only during left swipe animation)
-            if (swipeDirection == RankingViewModel.SwipeDirection.LEFT && isAnimating) {
-                Icon(
-                    painter = painterResource(android.R.drawable.ic_menu_delete),
-                    contentDescription = "Trash",
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(32.dp)
-                        .scale(trashCanScale),
-                    tint = Color.Red
-                )
-            }
-
-            // Particles (shown only during right swipe animation)
-            if (swipeDirection == RankingViewModel.SwipeDirection.RIGHT && isAnimating) {
-                particles.forEach { particle ->
-                    if (particle.isActive) {
-                        Box(
-                            modifier = Modifier
-                                .offset(particle.offset.x.dp, particle.offset.y.dp)
-                                .size(particle.size.dp)
-                                .background(
-                                    color = Color.Green.copy(alpha = particle.alpha),
-                                    shape = CircleShape
-                                )
-                        )
-                    }
-                }
-            }
-
-            LaunchedEffect(key1 = swipeStartedKey) {
-                if (swipeStartedKey > 0 && !isAnimating) {
-                    delay(100)
-                    val absTotalOffsetX = kotlin.math.abs(totalOffsetX)
-
-                    if (absTotalOffsetX > 100) {
-                        isAnimating = true
-
-                        if (totalOffsetX > 0) {
-                            swipeDirection = RankingViewModel.SwipeDirection.RIGHT
-                            particles.forEach { it.activate() }
-                        } else {
-                            swipeDirection = RankingViewModel.SwipeDirection.LEFT
-                        }
-
-                        delay(500) // Wait for animation to complete
-                        viewModel.onSwipe(swipeDirection!!)
-                        isAnimating = false
-                        currentOffsetX = 0f
-                        totalOffsetX = 0f
-                    }
-                }
-            }
-
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Text indicators above image
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .padding(top = 32.dp)
+            ) {
+                if (totalOffsetX > 0) {
+                    Text(
+                        text = "UPVOTE",
+                        color = Color.Green.copy(alpha = swipeProgress),
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .padding(end = 32.dp)
+                            .graphicsLayer { translationX = 100f * (1 - swipeProgress) }
+                    )
+                }
+                if (totalOffsetX < 0) {
+                    Text(
+                        text = "DOWNVOTE",
+                        color = Color.Red.copy(alpha = swipeProgress),
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .padding(start = 32.dp)
+                            .graphicsLayer { translationX = -100f * (1 - swipeProgress) }
+                    )
+                }
+            }
+
+            // Image container with gestures
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 80.dp)
+                    .pointerInput(Unit) {
+                        detectTransformGestures { _, pan, _, _ ->
+                            if (!isAnimating) {
+                                currentOffsetX += pan.x
+                                totalOffsetX += pan.x
+                                if (pan != Offset.Zero) swipeStartedKey++
+                                if (pan == Offset.Zero && currentOffsetX != 0f) currentOffsetX = 0f
+                            }
+                        }
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 if (isLoading) {
@@ -174,32 +162,23 @@ fun RankingScreenView(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .graphicsLayer {
-                                    translationX = if (isAnimating) {
-                                        when (swipeDirection) {
-                                            RankingViewModel.SwipeDirection.RIGHT ->
-                                                currentOffsetX + (2000f * animationProgress)
-
-                                            RankingViewModel.SwipeDirection.LEFT ->
-                                                currentOffsetX - (2000f * animationProgress)
-
-                                            else -> currentOffsetX
-                                        }
-                                    } else {
-                                        currentOffsetX
+                                    translationX = when {
+                                        isAnimating && swipeDirection == RankingViewModel.SwipeDirection.RIGHT ->
+                                            currentOffsetX + (2000f * animationProgress)
+                                        isAnimating && swipeDirection == RankingViewModel.SwipeDirection.LEFT ->
+                                            currentOffsetX - (2000f * animationProgress)
+                                        else -> currentOffsetX
                                     }
                                     rotationZ = currentOffsetX * 0.1f
-                                    scaleX =
-                                        if (swipeDirection == RankingViewModel.SwipeDirection.LEFT && isAnimating) {
-                                            1f - animationProgress
-                                        } else 1f
-                                    scaleY =
-                                        if (swipeDirection == RankingViewModel.SwipeDirection.LEFT && isAnimating) {
-                                            1f - animationProgress
-                                        } else 1f
-                                    alpha =
-                                        if (isAnimating && swipeDirection == RankingViewModel.SwipeDirection.LEFT) {
-                                            1f - animationProgress
-                                        } else 1f
+                                    scaleX = if (isAnimating && swipeDirection == RankingViewModel.SwipeDirection.LEFT) {
+                                        1f - animationProgress
+                                    } else 1f
+                                    scaleY = if (isAnimating && swipeDirection == RankingViewModel.SwipeDirection.LEFT) {
+                                        1f - animationProgress
+                                    } else 1f
+                                    alpha = if (isAnimating && swipeDirection == RankingViewModel.SwipeDirection.LEFT) {
+                                        1f - animationProgress
+                                    } else 1f
                                 }
                         ) {
                             Image(
@@ -208,89 +187,113 @@ fun RankingScreenView(
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
+                    } ?: Text("All images ranked!", fontSize = 18.sp)
+                }
+            }
 
-                        // Animate particles for right swipe
-                        if (swipeDirection == RankingViewModel.SwipeDirection.RIGHT && isAnimating) {
-                            LaunchedEffect(Unit) {
-                                particles.forEach { particle ->
-                                    with(particle) {
-                                        offset = Offset(
-                                            Random.nextFloat() * 300f - 150f,
-                                            Random.nextFloat() * -300f - 50f
-                                        )
-                                        size = Random.nextFloat() * 10f + 5f
-                                        alpha = Random.nextFloat() * 0.7f + 0.3f
-                                        velocity = Offset(
-                                            Random.nextFloat() * 4f - 2f,
-                                            Random.nextFloat() * -8f - 4f
-                                        )
-                                        isActive = true
-                                    }
-                                }
+            // Material3 Feedback indicators
+            if (showThumbsUp) {
+                // Green circular ripple effect with thumbs up icon
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    // Background ripple
+                    Surface(
+                        modifier = Modifier
+                            .size(200.dp)
+                            .scale(feedbackIconScale),
+                        shape = CircleShape,
+                        color = Color.Green.copy(alpha = feedbackIconAlpha * 0.3f)
+                    ) {}
 
-                                // Animate particles over time
-                                repeat(60) { frame ->
-                                    particles.forEach { particle ->
-                                        with(particle) {
-                                            offset += velocity
-                                            velocity = velocity.copy(y = velocity.y + 0.2f)
-                                            alpha *= 0.95f
-                                        }
-                                    }
-                                    delay(16)
-                                }
-
-                                particles.forEach { it.isActive = false }
-                            }
-
-                            // Draw active particles
-                            particles.forEach { particle ->
-                                if (particle.isActive) {
-                                    Box(
-                                        modifier = Modifier
-                                            .offset(particle.offset.x.dp, particle.offset.y.dp)
-                                            .size(particle.size.dp)
-                                            .background(
-                                                color = Color.Green.copy(alpha = particle.alpha),
-                                                shape = CircleShape
-                                            )
-                                    )
-                                }
-                            }
+                    // Inner circle with icon
+                    Surface(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .scale(feedbackIconScale),
+                        shape = CircleShape,
+                        color = Color.Green.copy(alpha = feedbackIconAlpha * 0.7f)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.ThumbUp,
+                                contentDescription = "Upvote",
+                                tint = Color.White,
+                                modifier = Modifier.size(60.dp)
+                            )
                         }
-                    } ?: Text(
-                        "All images ranked!",
-                        fontSize = 18.sp
-                    )
+                    }
+                }
+            }
+
+            if (showThumbsDown) {
+                // Red circular ripple effect with thumbs down icon
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    // Background ripple
+                    Surface(
+                        modifier = Modifier
+                            .size(200.dp)
+                            .scale(feedbackIconScale),
+                        shape = CircleShape,
+                        color = Color.Red.copy(alpha = feedbackIconAlpha * 0.3f)
+                    ) {}
+
+                    // Inner circle with icon
+                    Surface(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .scale(feedbackIconScale),
+                        shape = CircleShape,
+                        color = Color.Red.copy(alpha = feedbackIconAlpha * 0.7f)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.ThumbDown,
+                                contentDescription = "Downvote",
+                                tint = Color.White,
+                                modifier = Modifier.size(60.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
-    }
-}
 
-// Particle data class for right swipe animation
-private class Particle {
-    var offset by mutableStateOf(Offset(0f, 0f))
-    var size by mutableStateOf(0f)
-    var alpha by mutableStateOf(0f)
-    var isActive by mutableStateOf(false)
-    var velocity by mutableStateOf(Offset(0f, 0f))
+        // Swipe handling
+        LaunchedEffect(swipeStartedKey) {
+            if (swipeStartedKey > 0 && !isAnimating) {
+                delay(100)
+                val absTotalOffsetX = abs(totalOffsetX)
 
-    fun activate() {
-        offset = Offset(
-            Random.nextFloat() * 300f - 150f,
-            Random.nextFloat() * -300f - 50f
-        )
-        size = Random.nextFloat() * 10f + 5f
-        alpha = Random.nextFloat() * 0.7f + 0.3f
-        velocity = Offset(
-            Random.nextFloat() * 4f - 2f,
-            Random.nextFloat() * -8f - 4f
-        )
-        isActive = true
-    }
+                if (absTotalOffsetX > 100) {
+                    isAnimating = true
 
-    fun reset() {
-        isActive = false
+                    // Determine swipe direction and show appropriate feedback
+                    swipeDirection = if (totalOffsetX > 0) {
+                        showThumbsUp = true
+                        RankingViewModel.SwipeDirection.RIGHT
+                    } else {
+                        showThumbsDown = true
+                        RankingViewModel.SwipeDirection.LEFT
+                    }
+
+                    // Keep feedback visible for a moment
+                    delay(800)
+
+                    viewModel.onSwipe(swipeDirection!!)
+                    isAnimating = false
+                    showThumbsUp = false
+                    showThumbsDown = false
+                    currentOffsetX = 0f
+                    totalOffsetX = 0f
+                }
+            }
+        }
     }
 }
