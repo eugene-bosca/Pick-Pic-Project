@@ -625,9 +625,10 @@ def generate_invite_link(request: Request, event_id):
 
 # Join event via link/QR code
 @api_view(['GET', 'POST'])
-def join_via_link(request: Request, invite_link):
+def join_via_link(request: Request, event_id):
     """
     Handle user joining an event via an invite link with jibberish event ID.
+    user determined by Authorization token in header
     GET: Return event details
     POST: Join the event
     """
@@ -635,16 +636,19 @@ def join_via_link(request: Request, invite_link):
 
         if request.method == 'GET':
             # Return event details
-            serializer = EventSerializer(DirectInvite.objects.get(link=invite_link).event)
+            serializer = EventSerializer(Event.objects.get(event_id=event_id))
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         elif request.method == 'POST':
             # Get the user from the request
-            user_id = request.data.get('user_id')
 
-            invite = DirectInvite.objects.get(link=invite_link)
+            firebase_id = getUserFromToken(request.headers.get('Authorization').split(' ')[1])
 
-            event_user, _ = EventUser.objects.get_or_create(user_id=user_id, event_id=invite.event.event_id)
+            user = User.objects.get(firebase_id=firebase_id)
+
+            event = Event.objects.get(event_id=event_id)
+
+            event_user, _ = EventUser.objects.get_or_create(user=user, event=event)
 
             return Response({
                 'message': 'Successfully joined the event',
