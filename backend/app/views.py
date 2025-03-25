@@ -541,7 +541,7 @@ def remove_user_from_event(request, event_id, user_id):
 
 
 @extend_schema(
-    request=UserListSerializer,
+    request=EmailSerializer,
     responses={204: {}}
 )
 @api_view(['POST'])
@@ -559,8 +559,9 @@ def invite_to_event_through_email(request: Request, event_id):
         inviter = User.objects.get(firebase_id=firebase_id)
 
         for email in emails:
+            print(email)
             invitee = User.objects.get(email=email)
-            DirectInvite.objects.get_or_create(event_id, inviter=inviter, invitee=invitee)
+            DirectInvite.objects.get_or_create(event_id=event_id, inviter=inviter, invitee=invitee)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
     except Event.DoesNotExist:
@@ -695,7 +696,9 @@ def get_pending_event_invitations(request, user_id):
         invitee = User.objects.get(user_id=user_id)
         pending_invitations = DirectInvite.objects.filter(invitee=invitee)
 
-        return Response(data=DirectInviteInviteSerializer(pending_invitations).data, status=status.HTTP_200_OK)
+        print(pending_invitations)
+
+        return Response(data=SelfPendingInviteSerializer(pending_invitations, many=True).data, status=status.HTTP_200_OK)
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

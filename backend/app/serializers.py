@@ -28,12 +28,17 @@ class EventInviteSerializer(serializers.ModelSerializer):
         model = EventInvite
         fields = "__all__"
 
-class DirectInviteInviteSerializer(serializers.ModelSerializer):
+class DirectInviteSerializer(serializers.ModelSerializer):
     event = EventSerializer()
-    user = ClientSideUserSerializer()
     class Meta:
         model = DirectInvite
         fields = "__all__"
+
+class SelfPendingInviteSerializer(serializers.ModelSerializer):
+    event = EventSerializer()
+    class Meta:
+        model = DirectInvite
+        fields = ["event"]
 
 class EventUserSerializer(serializers.ModelSerializer):
     user = UserSerializer()
@@ -74,7 +79,9 @@ class VoteImageSerializer(serializers.Serializer):
     vote = serializers.CharField()
 
 class EmailSerializer(serializers.Serializer):
-    emails = serializers.ListField()
+    emails = serializers.ListField(
+        child=serializers.CharField(),
+    )
 
 class UserIDSerializer(serializers.Serializer):
     user_id = serializers.UUIDField()
