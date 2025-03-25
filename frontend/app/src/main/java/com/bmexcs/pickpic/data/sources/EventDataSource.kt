@@ -16,7 +16,6 @@ class EventDataSource @Inject constructor(
     private val authDataSource: AuthDataSource,
     private val userDataSource: UserDataSource
 ) {
-
     private val eventApi = EventApiService()
     private val userApi = UserApiService()
 
@@ -72,7 +71,7 @@ class EventDataSource @Inject constructor(
 
         Log.d(TAG, "getAcceptedUsersMetadata for event $eventId")
 
-        val users = eventApi.getAcceptedUsers(eventId, token)
+        val users = eventApi.getJoinedUsers(eventId, token)
         return users
     }
 
@@ -153,20 +152,20 @@ class EventDataSource @Inject constructor(
         return result
     }
 
-    suspend fun inviteUsersFromEmail(userEmails: List<String>, eventId: String) {
+    suspend fun inviteUsersByEmails(userEmails: List<String>, eventId: String) {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
         Log.d(TAG, "inviteUsersFromEmail to event $eventId for users $userEmails")
 
-        userApi.directInviteUsersByEmail(userEmails, eventId, token)
+        eventApi.inviteUsersByEmails(eventId, userEmails, token)
     }
 
-    suspend fun acceptDirectInvitation(eventId: String, userId: String) {
+    suspend fun joinEvent(eventId: String) {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
-        Log.d(TAG, "acceptDirectInvitation for event $eventId for user $userId")
+        Log.d(TAG, "joinEvent for event $eventId")
 
-        eventApi.acceptDirectInvitation(eventId, userId, token)
+        eventApi.join(eventId, token)
     }
 
     suspend fun removeUserFromEvent(eventId: String, userId: String) {

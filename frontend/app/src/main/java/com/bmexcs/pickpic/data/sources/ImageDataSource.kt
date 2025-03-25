@@ -7,10 +7,8 @@ import javax.inject.Inject
 private const val TAG = "ImageDataSource"
 
 class ImageDataSource @Inject constructor(
-    private val authDataSource: AuthDataSource,
-    private val userDataSource: UserDataSource
+    private val authDataSource: AuthDataSource
 ) {
-
     private val eventApi = EventApiService()
 
     suspend fun getImage(eventId: String, imageId: String): ByteArray? {

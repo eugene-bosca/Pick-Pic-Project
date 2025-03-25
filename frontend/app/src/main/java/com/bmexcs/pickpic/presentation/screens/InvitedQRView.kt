@@ -97,7 +97,7 @@ fun InvitedQRView(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Button(
-                            onClick = { viewModel.handleAcceptDirectInvitation(context) },
+                            onClick = { viewModel.handleAcceptInvite(context) },
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(end = 8.dp)

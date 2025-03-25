@@ -1,6 +1,6 @@
 package com.bmexcs.pickpic.data.models
 
-import com.bmexcs.pickpic.data.dtos.ImageInfo
+import com.bmexcs.pickpic.data.dtos.Image
 
 data class ImageMetadata(
     val id: String = "",
@@ -8,10 +8,10 @@ data class ImageMetadata(
     val score: Long = 0,
     val dateUploaded: String = "",
 ) {
-    constructor(imageInfo: ImageInfo) : this(
-        id = imageInfo.image.image_id,
-        uploader = UserMetadata(imageInfo.image.owner),
-        score = imageInfo.image.score,
-        dateUploaded = imageInfo.image.file_name.substringBeforeLast('.')
+    constructor(imageInfo: Image) : this(
+        id = imageInfo.image_id,
+        uploader = UserMetadata(imageInfo.owner),
+        score = imageInfo.score,
+        dateUploaded = imageInfo.file_name.substringBeforeLast('.')
     )
 }

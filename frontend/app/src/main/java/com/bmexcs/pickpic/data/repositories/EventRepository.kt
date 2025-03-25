@@ -90,15 +90,15 @@ class EventRepository @Inject constructor(
         eventDataSource.declineEvent(eventId)
     }
 
-    suspend fun acceptDirectInvitation(eventId: String, userId: String) {
-        eventDataSource.acceptDirectInvitation(eventId, userId)
+    suspend fun inviteUsersFromEmail(userEmails: List<String>, eventId: String)  {
+        return eventDataSource.inviteUsersByEmails(userEmails, eventId)
+    }
+
+    suspend fun joinEvent(eventId: String) {
+        eventDataSource.joinEvent(eventId)
     }
 
     suspend fun removeUserFromEvent(eventId: String, userId: String) {
         eventDataSource.removeUserFromEvent(eventId, userId)
-    }
-
-    suspend fun inviteUsersFromEmail(userEmails: List<String>, eventId: String)  {
-        return eventDataSource.inviteUsersFromEmail(userEmails, eventId)
     }
 }
