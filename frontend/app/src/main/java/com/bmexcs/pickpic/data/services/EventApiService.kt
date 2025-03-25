@@ -663,11 +663,11 @@ class EventApiService {
         }
 
     /**
-     * Joints an event.
+     * Immediately joins a user to event.
      *
      * **Endpoint**: `POST /event/join/{event_id}/`
      *
-     * **Request Body**: Empty
+     * **Request Body**: User to be added is identified by bearer token
      *
      * **Request Content-Type**: None
      *
@@ -676,7 +676,7 @@ class EventApiService {
      * **Return Type**: None
      */
     suspend fun join(eventId: String, token: String) =withContext(Dispatchers.IO) {
-        val endpoint = "event/join/$eventId"
+        val endpoint = "event/join/${eventId}/"
         val url = Api.url(endpoint)
 
         Log.d(TAG, "POST: $url")
