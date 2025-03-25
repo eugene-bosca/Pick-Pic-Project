@@ -694,11 +694,9 @@ def get_pending_event_invitations(request, user_id):
     try:
 
         invitee = User.objects.get(user_id=user_id)
-        pending_invitations = DirectInvite.objects.filter(invitee=invitee)
+        pending_invited_events = DirectInvite.objects.filter(invitee=invitee).values_list('event')
 
-        print(pending_invitations)
-
-        return Response(data=SelfPendingInviteSerializer(pending_invitations, many=True).data, status=status.HTTP_200_OK)
+        return Response(data=EventSerializer(pending_invited_events, many=True).data, status=status.HTTP_200_OK)
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -64,6 +64,9 @@ class EventContentSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventContent
         fields = ["image"]
+    
+    def to_representation(self, instance):
+        return super().to_representation(instance)["image"]
 
 
 class ScoredBySerializer(serializers.ModelSerializer):
