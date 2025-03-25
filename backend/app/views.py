@@ -668,11 +668,16 @@ def join_via_link(request: Request, invite_link):
 @api_view(['POST'])
 def handle_invitation(request: Request, event_id, action):
     try:
-        user_id = request.data.get('user_id')
+        
+        firebase_id = getUserFromToken(request.headers.get('Authorization').split(' ')[1])
+
+        invitee = get_object_or_404(User, firebase_id=firebase_id)
+
+        DirectInvite.objects.get(event_id=event_id, invitee=invitee).delete()
 
         if action.lower() == 'accept':
             # Accept the invitation
-            EventUser.objects.create(user_id=user_id, event_id=event_id)
+            EventUser.objects.create(user=invitee, event_id=event_id)
             return Response({'message': 'Invitation accepted'}, status=status.HTTP_200_OK)
         elif action.lower() == 'decline':
             # Decline by removing the record
@@ -694,9 +699,12 @@ def get_pending_event_invitations(request, user_id):
     try:
 
         invitee = User.objects.get(user_id=user_id)
-        pending_invited_events = DirectInvite.objects.filter(invitee=invitee).values_list('event')
+        pending_invited_events = DirectInvite.objects.filter(invitee=invitee).values_list('event', flat=True)
+        pending_events = Event.objects.filter(event_id__in=pending_invited_events)
 
-        return Response(data=EventSerializer(pending_invited_events, many=True).data, status=status.HTTP_200_OK)
+        #print(pending_invited_events)
+
+        return Response(data=EventSerializer(pending_events, many=True).data, status=status.HTTP_200_OK)
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -743,9 +751,7 @@ def unranked_images(request: Request, event_id, user_id):
         event_id=event_id
     ).exclude(image_id__in=ranked_image_ids)
 
-    serializer = EventContentSerializer(unranked_images, many=True)
-
-    return Response(data=serializer.data, status=status.HTTP_200_OK)
+    return Response(data=EventContentSerializer(unranked_images, many=True).data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def pending_invites(request: Request, event_id):

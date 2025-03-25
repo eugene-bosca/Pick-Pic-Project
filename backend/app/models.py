@@ -28,7 +28,7 @@ def default_expiration():
 class EventInvite(models.Model):
     event = models.ForeignKey(Event, editable=False, on_delete=models.CASCADE)
     creator = models.ForeignKey(User, editable=False, on_delete=models.CASCADE)
-    link = models.CharField(max_length=30, default='/' ,blank=True, null=True, unique=True)
+    link = models.CharField(max_length=50, default='/' ,blank=True, null=True, unique=True)
     # URLField will validate if its a proper url: www.google.ca, this stores endpoint
     expiration_date = models.DateTimeField(default=default_expiration)
     # default is 24 hourss
