@@ -98,7 +98,7 @@ class EventRepository @Inject constructor(
         eventDataSource.removeUserFromEvent(eventId, userId)
     }
 
-    suspend fun inviteUsersFromEmail(userIds: List<String>, eventId: String)  {
-        return eventDataSource.inviteUsersFromEmail(userIds, eventId)
+    suspend fun inviteUsersFromEmail(userEmails: List<String>, eventId: String)  {
+        return eventDataSource.inviteUsersFromEmail(userEmails, eventId)
     }
 }

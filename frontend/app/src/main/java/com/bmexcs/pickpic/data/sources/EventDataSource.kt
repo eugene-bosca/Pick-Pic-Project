@@ -153,12 +153,12 @@ class EventDataSource @Inject constructor(
         return result
     }
 
-    suspend fun inviteUsersFromEmail(userIds: List<String>, eventId: String) {
+    suspend fun inviteUsersFromEmail(userEmails: List<String>, eventId: String) {
         val token = authDataSource.getIdToken() ?: throw Exception("No user token")
 
-        Log.d(TAG, "inviteUsersFromEmail to event $eventId for users $userIds")
+        Log.d(TAG, "inviteUsersFromEmail to event $eventId for users $userEmails")
 
-        userApi.directInviteUsersByIds(userIds, eventId, token)
+        userApi.directInviteUsersByEmail(userEmails, eventId, token)
     }
 
     suspend fun acceptDirectInvitation(eventId: String, userId: String) {

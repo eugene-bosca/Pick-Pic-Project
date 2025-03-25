@@ -401,11 +401,11 @@ class UserApiService {
         }
 
     /**
-     * Directly invite a list of users by ID.
+     * Directly invite a list of users by Email.
      *
-     * **Endpoint**: `POST /event/{event_id}/invite/users/${"poggers"}
+     * **Endpoint**: `POST event/${eventId}/invite/email
      *
-     * **Request Body**: `models.UserFirebaseIds` as `List<String>`
+     * **Request Body**: `emails` as JSON `List<String>`
      *
      * **Request Content-Type**: None
      *
@@ -413,22 +413,25 @@ class UserApiService {
      *
      * **Return Type**: None
      */
-    suspend fun directInviteUsersByIds(userIds: List<String>, eventId: String, token: String) =
+    suspend fun directInviteUsersByEmail(emails: List<String>, eventId: String, token: String) =
         withContext(Dispatchers.IO) {
-            val endpoint = "event/${eventId}/invite/users/${"poggers"}"
+            val endpoint = "event/${eventId}/invite/email/"
+
             val url = Api.url(endpoint)
 
             Log.d(TAG, "POST: $url")
 
             val jsonBody = JSONObject().apply {
-                put("user_ids", JSONArray(userIds))
+                put("emails", JSONArray(emails))
             }.toString()
+
+            Log.d(TAG, jsonBody)
 
             val requestBody = jsonBody.toRequestBody("application/json".toMediaType())
 
             val request = Request.Builder()
                 .url(url)
-                .addHeader("Authorization", "Bearer $token")
+                .addHeader("Authorization", "bearer $token")
                 .addHeader("Content-Type", "application/json")
                 .post(requestBody)
                 .build()
