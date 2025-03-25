@@ -113,7 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'EDT'   # Eastern Daylight Time
+TIME_ZONE = 'America/Toronto'   # Eastern Daylight Time
 
 USE_I18N = True
 

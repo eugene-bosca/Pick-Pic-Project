@@ -28,23 +28,30 @@ class EventInviteSerializer(serializers.ModelSerializer):
         model = EventInvite
         fields = "__all__"
 
-class DirectInviteInviteSerializer(serializers.ModelSerializer):
+class DirectInviteSerializer(serializers.ModelSerializer):
     event = EventSerializer()
-    user = ClientSideUserSerializer()
     class Meta:
         model = DirectInvite
         fields = "__all__"
 
+class SelfPendingInviteSerializer(serializers.ModelSerializer):
+    event = EventSerializer()
+    class Meta:
+        model = DirectInvite
+        fields = ["event"]
+
 class EventUserSerializer(serializers.ModelSerializer):
-    #event = EventSerializer()
     user = UserSerializer()
 
     class Meta:
         model = EventUser
-        fields = ["user", "accepted"]
+        fields = ["user"]
+
+    def to_representation(self, instance):
+        return super().to_representation(instance)["user"]
 
 class ImageSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    owner = UserSerializer()
     class Meta:
         model = Image
         fields = "__all__"
@@ -57,6 +64,9 @@ class EventContentSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventContent
         fields = ["image"]
+    
+    def to_representation(self, instance):
+        return super().to_representation(instance)["image"]
 
 
 class ScoredBySerializer(serializers.ModelSerializer):
@@ -72,7 +82,9 @@ class VoteImageSerializer(serializers.Serializer):
     vote = serializers.CharField()
 
 class EmailSerializer(serializers.Serializer):
-    emails = serializers.ListField()
+    emails = serializers.ListField(
+        child=serializers.CharField(),
+    )
 
 class UserIDSerializer(serializers.Serializer):
     user_id = serializers.UUIDField()
