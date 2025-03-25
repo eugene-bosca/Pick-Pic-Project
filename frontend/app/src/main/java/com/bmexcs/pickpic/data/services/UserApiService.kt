@@ -1,7 +1,7 @@
 package com.bmexcs.pickpic.data.services
 
 import android.util.Log
-import com.bmexcs.pickpic.data.dtos.EventInfo
+import com.bmexcs.pickpic.data.dtos.Event
 import com.bmexcs.pickpic.data.dtos.UserEventList
 import com.bmexcs.pickpic.data.dtos.User
 import com.bmexcs.pickpic.data.dtos.UserCreation
@@ -19,8 +19,6 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONArray
-import org.json.JSONObject
 
 private const val TAG = "UserApiService"
 
@@ -274,7 +272,7 @@ class UserApiService {
     /**
      * Retrieves the list of pending event invitations.
      *
-     * **Endpoint**: `GET /user/{user_id}/pending_events_full/`
+     * **Endpoint**: `GET /user/{user_id}/pending_event_invitations/`
      *
      * **Request Body**: Empty
      *
@@ -303,8 +301,8 @@ class UserApiService {
                 val body = response.body?.string()
                     ?: throw HttpException(response.code, "Empty response body")
 
-                val resultType = object : TypeToken<List<EventInfo>>() {}.type
-                val result: List<EventInfo> = gson.fromJson(body, resultType)
+                val resultType = object : TypeToken<List<Event>>() {}.type
+                val result: List<Event> = gson.fromJson(body, resultType)
 
                 return@withContext result.map { EventMetadata(it) }
             }
@@ -345,8 +343,6 @@ class UserApiService {
 
                 val body = response.body?.string()
                     ?: throw HttpException(response.code, "Empty response body")
-
-                Log.d(TAG, body)
 
                 val resultType = object : TypeToken<UserIds>() {}.type
                 val result: UserIds = gson.fromJson(body, resultType)
@@ -391,51 +387,10 @@ class UserApiService {
                 val body = response.body?.string()
                     ?: throw HttpException(response.code, "Empty response body")
 
-                Log.d(TAG, body)
-
                 val resultType = object : TypeToken<User>() {}.type
                 val result: User = gson.fromJson(body, resultType)
 
                 return@withContext UserMetadata(result)
-            }
-        }
-
-    /**
-     * Directly invite a list of users by ID.
-     *
-     * **Endpoint**: `POST /event/{event_id}/invite/users/${"poggers"}
-     *
-     * **Request Body**: `models.UserFirebaseIds` as `List<String>`
-     *
-     * **Request Content-Type**: None
-     *
-     * **Response**: `dtos.User`
-     *
-     * **Return Type**: None
-     */
-    suspend fun directInviteUsersByIds(userIds: List<String>, eventId: String, token: String) =
-        withContext(Dispatchers.IO) {
-            val endpoint = "event/${eventId}/invite/users/${"poggers"}"
-            val url = Api.url(endpoint)
-
-            Log.d(TAG, "POST: $url")
-
-            val jsonBody = JSONObject().apply {
-                put("user_ids", JSONArray(userIds))
-            }.toString()
-
-            val requestBody = jsonBody.toRequestBody("application/json".toMediaType())
-
-            val request = Request.Builder()
-                .url(url)
-                .addHeader("Authorization", "Bearer $token")
-                .addHeader("Content-Type", "application/json")
-                .post(requestBody)
-                .build()
-
-            client.newCall(request).execute().use { response ->
-                Log.d(TAG, "Response: $response")
-                Api.handleResponseStatus(response)
             }
         }
 }

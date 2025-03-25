@@ -33,7 +33,7 @@ class QrInviteViewModel @Inject constructor(
                 if (obfuscatedEventId != null && eventName != null) {
                     // TODO: switch back to obfuscated ID
                     val inviteLink = "https://ludayu.ca/join?eventId=$eventId"
-//                    val inviteLink = "https://ludayu.ca/join?eventId=$obfuscatedEventId"
+                    // val inviteLink = "https://ludayu.ca/join?eventId=$obfuscatedEventId"
 
                     val qrCodeBitmap = generateQRCode(inviteLink, 512, 512)
 

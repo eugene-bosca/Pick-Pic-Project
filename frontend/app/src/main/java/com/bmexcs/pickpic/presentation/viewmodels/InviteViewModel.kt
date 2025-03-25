@@ -106,11 +106,8 @@ class InviteViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val userIds = withContext(Dispatchers.IO) {
-                    userRepository.getUsersFromEmails(emailList)
-                }
                 withContext(Dispatchers.IO) {
-                    eventRepository.inviteUsersFromEmail(userIds, eventId)
+                    eventRepository.inviteUsersFromEmail(emailList, eventId)
                 }
                 _errorMessage.value = null
                 // Clear the email list after successful invitation
