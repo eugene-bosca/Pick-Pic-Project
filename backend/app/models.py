@@ -1,6 +1,6 @@
 from django.db import models
 import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
@@ -22,21 +22,27 @@ class Event(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     last_modified = models.DateTimeField(auto_now=True)
 
+def default_expiration():
+    return timezone.now() + timedelta(hours=24)
+
 class EventInvite(models.Model):
     event = models.ForeignKey(Event, editable=False, on_delete=models.CASCADE)
     creator = models.ForeignKey(User, editable=False, on_delete=models.CASCADE)
     link = models.CharField(max_length=30, default='/' ,blank=True, null=True, unique=True)
     # URLField will validate if its a proper url: www.google.ca, this stores endpoint
-    expiration_date = models.DateTimeField(default=timezone.now() + timedelta(hours=24))
-    # default is 24 hours
+    expiration_date = models.DateTimeField(default=default_expiration)
+    # default is 24 hourss
 
-    # ensure invite link expires within 365 days
-    def maxExpire(self):
-        if self.expiration_date > timezone.now() + timedelta(days=365):
+    def clean(self):
+        """Ensure the expiration date does not exceed 365 days from now."""
+        max_expiration = timezone.now() + timedelta(days=365)
+        if self.expiration_date > max_expiration:
             raise ValidationError("The invite link can last at most 365 days.")
-        
+
     def save(self, *args, **kwargs):
-        self.maxExpire()
+        self.full_clean()  # Calls `clean()` before saving
+        if not self.link:
+            self.link = str(uuid.uuid4())[:8]  # Generates a short unique link
         super().save(*args, **kwargs)
 
 

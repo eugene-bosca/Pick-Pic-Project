@@ -176,9 +176,9 @@ def create_image(request: Request, event_id=None):
 
         print(event.event_name)
 
-        user_id = getUserFromToken(request.headers.get('Authorization').split(' ')[1])
+        firebase_id = getUserFromToken(request.headers.get('Authorization').split(' ')[1])
 
-        user = get_object_or_404(User, user_id=user_id)
+        user = get_object_or_404(User, firebase_id=firebase_id)
 
         print(user.display_name)
 
@@ -545,7 +545,31 @@ def remove_user_from_event(request, event_id, user_id):
     responses={204: {}}
 )
 @api_view(['POST'])
-def invite_to_event(request: Request, event_id, accept = None):
+def invite_to_event_through_email(request: Request, event_id):
+    try:
+        # Get the event
+        event = Event.objects.get(event_id=event_id)
+
+        # Check if the request has multiple user_ids or a single user_id
+        emails = request.data.get('emails')
+
+        # user requester as inviter
+        firebase_id = getUserFromToken(request.headers.get('Authorization').split(' ')[1])
+
+        inviter = User.objects.get(firebase_id=firebase_id)
+
+        for email in emails:
+            invitee = User.objects.get(email=email)
+            DirectInvite.objects.get_or_create(event_id, inviter=inviter, invitee=invitee)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    except Event.DoesNotExist:
+        return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['POST'])
+def force_add_to_event(request: Request, event_id):
     try:
         # Get the event
         event = Event.objects.get(event_id=event_id)
@@ -553,15 +577,19 @@ def invite_to_event(request: Request, event_id, accept = None):
         # Check if the request has multiple user_ids or a single user_id
         user_ids = request.data.get('user_ids')
 
-        if accept == 'accept':
-            for user_id in user_ids:
-                EventUser.objects.get_or_create(event_id=event_id, user_id=user_id)
+        for user_id in user_ids:
+            invitee = User.objects.get(user_id=user_id)
+            EventUser.objects.get_or_create(event_id=event_id, user=invitee)
+
+            # remove any direct_invites, if exist
+            direct_invite = DirectInvite.objects.filter(event_id=event_id, invitee=invitee)
+            if direct_invite.exists():
+                direct_invite.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
     except Event.DoesNotExist:
         return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 # Generate invite link with obfuscated event ID
 @api_view(['GET'])
@@ -575,7 +603,9 @@ def generate_invite_link(request: Request, event_id):
         Event.objects.get(event_id=event_id)
         
         # already verified jwt exist and is valid in middleware
-        inviter = getUserFromToken(request.headers.get('Authorization').split(' ')[1])
+        firebase_id = getUserFromToken(request.headers.get('Authorization').split(' ')[1])
+
+        inviter = User.objects.get(firebase_id=firebase_id)
 
         # generate invite link
         event_invite = EventInvite.objects.create(event_id=event_id, creator=inviter, link=f'{uuid.uuid4().hex}')
@@ -636,10 +666,6 @@ def join_via_link(request: Request, invite_link):
 )
 @api_view(['POST'])
 def handle_invitation(request: Request, event_id, action):
-    """
-    Handle a user accepting or declining an invitation.
-    action can be 'accept' or 'decline'
-    """
     try:
         user_id = request.data.get('user_id')
 

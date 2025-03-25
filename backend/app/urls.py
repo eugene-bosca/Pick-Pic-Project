@@ -69,13 +69,12 @@ urlpatterns = [
     # View pending invitations for a user
     path('user/<str:user_id>/pending_event_invitations/', views.get_pending_event_invitations, name='get_pending_event_invitations'),
 
-    ### Invite-related endpoints
-    # Direct user invitation (in-app method)
-    path('event/<str:event_id>/invite/users/<str:accept>', views.invite_to_event, name='invite users to event'),
+    # creates pending invite
+    path('event/<str:event_id>/invite/email/', views.invite_to_event_through_email, name='invite users to event'),
 
     # Link/QR invitation handling
-    path('event/invite/generate/<str:event_id>/', views.generate_invite_link, name='generate_invite_link'), # Generates a link with obfuscated event ID
-    path('event/join/<str:invite_link>/', views.join_via_link, name='join_via_link'),
+    path('event/invite/generate/<str:event_id>/', views.generate_invite_link, name='generate_invite_link'), 
+    path('event/join/<str:event_id>/', views.join_via_link, name='join_via_link'),
 
     # Handle invitation acceptance/decline
     path('event/<str:event_id>/invitation/<str:action>/', views.handle_invitation, name='handle_invitation'),
