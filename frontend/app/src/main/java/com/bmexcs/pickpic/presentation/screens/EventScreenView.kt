@@ -1,8 +1,5 @@
 package com.bmexcs.pickpic.presentation.screens
 
-import android.content.Context
-import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -305,6 +302,7 @@ fun EventScreenView(
                                         val isSelected = selectedImages.contains(image.metadata.id)
                                         ImageTile(
                                             imageRequest = imageRequest,
+                                            isRanked = image.metadata.score > 0,
                                             onLongPress = {
                                                 isSelectionMode = true
                                                 viewModel.toggleImageSelection(image.metadata.id)
@@ -405,7 +403,7 @@ fun EventScreenView(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ImageTile(imageRequest: ImageRequest, onLongPress: () -> Unit, onClick: () -> Unit, isSelected: Boolean, isSelectionMode: Boolean) {
+fun ImageTile(imageRequest: ImageRequest, onLongPress: () -> Unit, onClick: () -> Unit, isSelected: Boolean, isSelectionMode: Boolean, isRanked: Boolean = false) {
     ElevatedCard(
         modifier = Modifier
             .size(width = 150.dp, height = 225.dp)
@@ -426,7 +424,10 @@ fun ImageTile(imageRequest: ImageRequest, onLongPress: () -> Unit, onClick: () -
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(all = 15.dp)
-                    .border(width = 1.dp, color = Color.Black)
+                    .border(
+                        width = if (isRanked) 3.dp else 1.dp,
+                        color = if (isRanked) Color(0xFFFFD700) else Color.Black  // Gold for ranked, black for unranked
+                    )
             )
 
             if (isSelectionMode) {
