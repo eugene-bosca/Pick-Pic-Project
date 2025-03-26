@@ -1,12 +1,14 @@
 package com.bmexcs.pickpic.presentation.screens
 
-import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -17,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -96,6 +99,10 @@ fun EventScreenView(
     // Infinite scroll state
     val gridState = rememberLazyGridState()
 
+    // Selection Mode
+    val selectedImages by viewModel.selectedImages.collectAsState()
+    var isSelectionMode by remember { mutableStateOf(false) }
+
     // Load more when scrolled to end
     LaunchedEffect(gridState) {
         snapshotFlow { gridState.layoutInfo.visibleItemsInfo }
@@ -171,7 +178,9 @@ fun EventScreenView(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, // Add SnackbarHost here
         topBar = {
             TopAppBar(
-                title = { Text(text = eventName) },
+                title = {
+                    Text(if (isSelectionMode) "${selectedImages.size} selected" else eventName)
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -181,52 +190,70 @@ fun EventScreenView(
                     }
                 },
                 actions = {
-                    // Refresh button
-                    IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(
-                            imageVector = Icons.Filled.Refresh,
-                            contentDescription = "Refresh"
-                        )
-                    }
-
-                    // Download album button with dropdown menu
-                    Box {
-                        IconButton(onClick = { showDownloadMenu = true }) {
+                    if(isSelectionMode) {
+                        IconButton(onClick = {
+                            viewModel.downloadSelectedImages(context, selectedImages)
+                            isSelectionMode = false
+                        }) {
                             Icon(
                                 painter = painterResource(R.drawable.download),
                                 contentDescription = "Download Album"
                             )
                         }
+                        IconButton(onClick = {
+                            isSelectionMode = false
+                            viewModel.clearSelectedImages()
+                        }) {
+                            Icon(Icons.Default.Close, contentDescription = "Cancel")
+                        }
+                    } else {
+                        // Refresh button
+                        IconButton(onClick = { viewModel.refresh() }) {
+                            Icon(
+                                imageVector = Icons.Filled.Refresh,
+                                contentDescription = "Refresh"
+                            )
+                        }
 
-                        // Dropdown menu
-                        DropdownMenu(
-                            expanded = showDownloadMenu,
-                            onDismissRequest = { showDownloadMenu = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("All") },
-                                onClick = {
-                                    viewModel.downloadAmount.value = DownloadAmount.All
-                                    viewModel.downloadAlbum(context, imageList)
-                                    showDownloadMenu = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Top 10") },
-                                onClick = {
-                                    viewModel.downloadAmount.value = DownloadAmount.TopTen
-                                    viewModel.downloadAlbum(context, imageList)
-                                    showDownloadMenu = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Top 20") },
-                                onClick = {
-                                    viewModel.downloadAmount.value = DownloadAmount.TopTwenty
-                                    viewModel.downloadAlbum(context, imageList)
-                                    showDownloadMenu = false
-                                }
-                            )
+                        // Download album button with dropdown menu
+                        Box {
+                            IconButton(onClick = { showDownloadMenu = true }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.download),
+                                    contentDescription = "Download Album"
+                                )
+                            }
+
+                            // Dropdown menu
+                            DropdownMenu(
+                                expanded = showDownloadMenu,
+                                onDismissRequest = { showDownloadMenu = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("All") },
+                                    onClick = {
+                                        viewModel.downloadAmount.value = DownloadAmount.All
+                                        viewModel.downloadAlbum(context, imageList)
+                                        showDownloadMenu = false
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Top 10") },
+                                    onClick = {
+                                        viewModel.downloadAmount.value = DownloadAmount.TopTen
+                                        viewModel.downloadAlbum(context, imageList)
+                                        showDownloadMenu = false
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Top 20") },
+                                    onClick = {
+                                        viewModel.downloadAmount.value = DownloadAmount.TopTwenty
+                                        viewModel.downloadAlbum(context, imageList)
+                                        showDownloadMenu = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -272,16 +299,26 @@ fun EventScreenView(
                                             .crossfade(true)
                                             .build()
 
+                                        val isSelected = selectedImages.contains(image.metadata.id)
                                         ImageTile(
                                             imageRequest = imageRequest,
-                                            isRanked = image.metadata.score > 0,  // This will show the penguin for images with a score
+                                            isRanked = image.metadata.score > 0,
+                                            onLongPress = {
+                                                isSelectionMode = true
+                                                viewModel.toggleImageSelection(image.metadata.id)
+                                            },
                                             onClick = {
-                                                fullImage = FullImage(
+                                                if (isSelectionMode) {
+                                                    viewModel.toggleImageSelection(image.metadata.id)
+                                                }
+                                                else fullImage = FullImage(
                                                     request = imageRequest,
                                                     data = it,
                                                     metadata = image.metadata
                                                 )
                                             },
+                                            isSelected = isSelected,
+                                            isSelectionMode = isSelectionMode
                                         )
                                     }
                                 }
@@ -364,31 +401,53 @@ fun EventScreenView(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ImageTile(
-    imageRequest: ImageRequest,
-    isRanked: Boolean = false,
-    onClick: () -> Unit
-) {
+fun ImageTile(imageRequest: ImageRequest, onLongPress: () -> Unit, onClick: () -> Unit, isSelected: Boolean, isSelectionMode: Boolean, isRanked: Boolean = false) {
     ElevatedCard(
         modifier = Modifier
             .size(width = 150.dp, height = 225.dp)
             .clip(RoundedCornerShape(12.dp))
-            .clickable { onClick() },
+            .combinedClickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+                onLongClick = onLongPress
+            ),
         shape = RoundedCornerShape(12.dp)
     ) {
-        AsyncImage(
-            model = imageRequest,
-            contentDescription = "Event image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(all = 15.dp)
-                .border(
-                    width = if (isRanked) 3.dp else 1.dp,
-                    color = if (isRanked) Color(0xFFFFD700) else Color.Black  // Gold for ranked, black for unranked
+        Box {
+            AsyncImage(
+                model = imageRequest,
+                contentDescription = "Event image",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(all = 15.dp)
+                    .border(
+                        width = if (isRanked) 3.dp else 1.dp,
+                        color = if (isRanked) Color(0xFFFFD700) else Color.Black  // Gold for ranked, black for unranked
+                    )
+            )
+
+            if (isSelectionMode) {
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = null,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
                 )
-        )
+
+                if (isSelected) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.4f))
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -497,49 +556,49 @@ fun FilterOptionsDropdown(
             onDismissRequest = onDismiss,
             offset = DpOffset(100.dp, 0.dp)
         ) {
-            // Date Filter Option
-            DropdownMenuItem(
-                text = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Show the correct arrow for the Date filter
-                        when (filter) {
-                            FilterType.FilterDateAsc -> Icon(
-                                imageVector = Icons.Default.ArrowUpward,
-                                contentDescription = "Ascending"
-                            )
-                            FilterType.FilterDateDesc -> Icon(
-                                imageVector = Icons.Default.ArrowDownward,
-                                contentDescription = "Descending"
-                            )
-                            else -> {} // No icon for other filter types
+                // Date Filter Option
+                DropdownMenuItem(
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            // Show the correct arrow for the Date filter
+                            when (filter) {
+                                FilterType.FilterDateAsc -> Icon(
+                                    imageVector = Icons.Default.ArrowUpward,
+                                    contentDescription = "Ascending"
+                                )
+                                FilterType.FilterDateDesc -> Icon(
+                                    imageVector = Icons.Default.ArrowDownward,
+                                    contentDescription = "Descending"
+                                )
+                                else -> {} // No icon for other filter types
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Date")
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Date")
-                    }
-                },
-                onClick = onFilterByDate
-            )
-            DropdownMenuItem(
-                text = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Show the correct arrow for the Score filter
-                        when (filter) {
-                            FilterType.FilterRankAsc -> Icon(
-                                imageVector = Icons.Default.ArrowUpward,
-                                contentDescription = "Ascending"
-                            )
-                            FilterType.FilterRankDesc -> Icon(
-                                imageVector = Icons.Default.ArrowDownward,
-                                contentDescription = "Descending"
-                            )
-                            else -> {} // No icon for other filter types
+                    },
+                    onClick = onFilterByDate
+                )
+                DropdownMenuItem(
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            // Show the correct arrow for the Score filter
+                            when (filter) {
+                                FilterType.FilterRankAsc -> Icon(
+                                    imageVector = Icons.Default.ArrowUpward,
+                                    contentDescription = "Ascending"
+                                )
+                                FilterType.FilterRankDesc -> Icon(
+                                    imageVector = Icons.Default.ArrowDownward,
+                                    contentDescription = "Descending"
+                                )
+                                else -> {} // No icon for other filter types
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Score")
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Score")
-                    }
-                },
-                onClick = onFilterByScore
-            )
-        }
+                    },
+                    onClick = onFilterByScore
+                )
+            }
     }
 }
