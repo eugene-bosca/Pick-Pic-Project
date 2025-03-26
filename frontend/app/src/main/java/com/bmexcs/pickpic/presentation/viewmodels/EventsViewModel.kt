@@ -72,6 +72,9 @@ class EventsViewModel @Inject constructor(
     private val _snackbarMessage = MutableStateFlow<String?>(null)
     val snackbarMessage: StateFlow<String?> = _snackbarMessage
 
+    private val _selectedImages = MutableStateFlow<Set<String>>(emptySet())
+    val selectedImages: StateFlow<Set<String>> = _selectedImages
+
     init {
         _event.value = eventRepository.event.value
         viewModelScope.launch {
@@ -106,6 +109,25 @@ class EventsViewModel @Inject constructor(
             imageRepository.deleteImage(eventId, imageId)
         }
     }
+
+    fun clearSelectedImages() {
+        _selectedImages.value = emptySet()
+    }
+
+    fun downloadSelectedImages(context: Context, selectedImageIds: Set<String>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val selectedImages = images.value.filter { it.metadata.id in selectedImageIds }
+            downloadAlbum(context, selectedImages)
+            clearSelectedImages()
+        }
+    }
+
+    fun toggleImageSelection(imageId: String) {
+        _selectedImages.value = _selectedImages.value.toMutableSet().apply {
+            if (contains(imageId)) remove(imageId) else add(imageId)
+        }
+    }
+
 
     fun uriToByteArray(context: Context, uri: Uri?): ByteArray? {
         var inputStream: InputStream? = null
@@ -248,6 +270,9 @@ class EventsViewModel @Inject constructor(
                 println("Failed to retrieve image with metadata: $metadata")
             }
         }
+
+        val existingIds = imageList.map { it.metadata.id }.toSet()
+        _selectedImages.value = _selectedImages.value.filter { it in existingIds }.toSet()
 
         _images.value = sortImages(imageList, filterType.value)
 
