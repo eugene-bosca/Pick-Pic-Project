@@ -274,6 +274,7 @@ fun EventScreenView(
 
                                         ImageTile(
                                             imageRequest = imageRequest,
+                                            isRanked = image.metadata.score > 0,  // This will show the penguin for images with a score
                                             onClick = {
                                                 fullImage = FullImage(
                                                     request = imageRequest,
@@ -364,7 +365,11 @@ fun EventScreenView(
 }
 
 @Composable
-fun ImageTile(imageRequest: ImageRequest, onClick: () -> Unit) {
+fun ImageTile(
+    imageRequest: ImageRequest,
+    isRanked: Boolean = false,
+    onClick: () -> Unit
+) {
     ElevatedCard(
         modifier = Modifier
             .size(width = 150.dp, height = 225.dp)
@@ -379,7 +384,10 @@ fun ImageTile(imageRequest: ImageRequest, onClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(all = 15.dp)
-                .border(width = 1.dp, color = Color.Black)
+                .border(
+                    width = if (isRanked) 3.dp else 1.dp,
+                    color = if (isRanked) Color(0xFFFFD700) else Color.Black  // Gold for ranked, black for unranked
+                )
         )
     }
 }
