@@ -1,0 +1,17 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.bmexcs.pickpic",
+            "sha256_cert_fingerprints": [
+                "8F:A0:2D:69:BC:5F:1A:1B:85:BD:8E:D6:DE:52:CB:57:E1:7E:D3:49:13:FD:B0:B5:F7:CB:FD:69:E4:7C:01:CB",
+                "7C:28:B4:D3:F2:13:EA:31:A2:70:B4:71:99:EC:F9:21:94:2B:70:AC:39:79:E4:6A:01:83:32:23:6D:29:DD:59",
+                "64:13:CE:06:15:D6:63:30:22:2E:BD:F2:F2:C2:DF:57:3F:E3:95:09:33:B8:1E:B7:0F:7D:67:49:5B:64:73:26",
+                "43:C2:DE:BB:7D:B3:58:59:E5:01:1D:68:84:FC:16:6A:73:44:8C:A2:76:BA:85:92:9E:BF:87:54:D8:05:FC:78"
+            ]
+        }
+    }
+]

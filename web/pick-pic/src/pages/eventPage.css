@@ -1,0 +1,16 @@
+.image-gallery {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+	padding: 20px;
+    justify-content: center;
+}
+
+.event-name {
+    text-align: center;
+	width: 100%;
+}
+
+div {
+	width: 100%;
+}
