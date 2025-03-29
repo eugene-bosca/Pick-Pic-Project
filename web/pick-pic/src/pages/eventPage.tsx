@@ -36,7 +36,7 @@ const EventPage = () => {
 
 		const fetchEvent = async () => {
 			try {
-			  const response = await fetch(`${backendUrl}/event/${eventId}`, {
+			  const response = await fetch(`${backendUrl}/event/${eventId}/`, {
 				method: "GET",
 				headers: {
 					"Content-Type": "application/json",

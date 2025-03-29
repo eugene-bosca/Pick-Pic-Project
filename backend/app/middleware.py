@@ -22,6 +22,13 @@ class AuthMiddleware:
     def __call__(self, request):
         #return self.get_response(request)
 
+        origin = request.headers.get("Origin", "")
+
+        if origin == "http://localhost:5173":
+            return self.get_response(request)
+        elif origin == "https://concrete-spider-449820-p0.web.app":
+            return self.get_response(request)
+
         if request.path in ["/swagger", "/swagger/", "/schema", "/schema/", "/", "/favicon.ico"]:
             return self.get_response(request)
 

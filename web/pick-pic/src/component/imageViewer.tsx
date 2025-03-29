@@ -41,7 +41,7 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
 
 		  fetchImage(imageId);
 
-	});
+	}, []);
 
 
 	return (

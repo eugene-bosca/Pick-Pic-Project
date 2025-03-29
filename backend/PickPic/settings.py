@@ -38,6 +38,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]  
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Allow Vite (React/Preact/Vue)
+]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -51,6 +55,7 @@ INSTALLED_APPS = [
     # For Swagger UI
     'drf_spectacular',
     #'drf_spectacular.swagger', 
+    'corsheaders',
 
     'rest_framework',
 
@@ -58,6 +63,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
