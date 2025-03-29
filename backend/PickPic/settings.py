@@ -40,6 +40,7 @@ ALLOWED_HOSTS = ["*"]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Allow Vite (React/Preact/Vue)
+    "https://concrete-spider-449820-p0.web.app",
 ]
 
 # Application definition
