@@ -16,15 +16,19 @@ class ImageRepository @Inject constructor(
     private val _prevEvent = MutableStateFlow(EventMetadata())
     val prevEvent = _prevEvent
 
-    private val _imagesCache = MutableStateFlow<List<Image>>(emptyList())
-    val imagesCache: StateFlow<List<Image>> = _imagesCache
+    private val _imagesCache = MutableStateFlow<Map<String,ByteArray>>(emptyMap())
+    val imagesCache: StateFlow<Map<String,ByteArray>> = _imagesCache
 
     fun setPrevEvent(eventInfo: EventMetadata) {
         _prevEvent.value = eventInfo
     }
 
-    fun setImages(images: List<Image>) {
-        _imagesCache.value = images
+    fun setImageCache(imageId: String, byteArray: ByteArray) {
+        _imagesCache.value += mapOf(imageId to byteArray)
+    }
+
+    fun clearImageCache() {
+        _imagesCache.value = emptyMap()
     }
 
     suspend fun getImage(eventId: String, imageId: String): ByteArray? {
