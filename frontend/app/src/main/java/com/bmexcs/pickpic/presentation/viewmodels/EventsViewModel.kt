@@ -258,8 +258,10 @@ class EventsViewModel @Inject constructor(
     }
 
     private suspend fun refreshInternal() {
-        Log.d(TAG, "Refreshing events page...")
-        getImagesByEventId(event.value.id)
+        if (!_isLoading.value) { // Prevent overlapping refreshes
+            Log.d(TAG, "Refreshing events page...")
+            getImagesByEventId(event.value.id)
+        }
     }
 
     private suspend fun getImagesByEventId(eventId: String) {
