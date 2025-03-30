@@ -276,6 +276,7 @@ class EventsViewModel @Inject constructor(
 
         val imageMetadata = eventRepository.getAllImagesMetadata(eventId)
         val cachedImages = imageRepository.imagesCache.value
+        _images.value = emptyList()
 
         for (metadata in imageMetadata) {
                 var byteArray:ByteArray?
