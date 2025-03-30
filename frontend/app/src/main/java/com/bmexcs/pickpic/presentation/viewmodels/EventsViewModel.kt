@@ -84,6 +84,14 @@ class EventsViewModel @Inject constructor(
         }
     }
 
+    fun setPrevEvent(event: EventMetadata) {
+        imageRepository.setPrevEvent(event)
+    }
+
+    fun setImagesList(images: List<Image>) {
+        imageRepository.setImages(images)
+    }
+
     fun refresh() {
         viewModelScope.launch {
             refreshInternal()
@@ -127,7 +135,6 @@ class EventsViewModel @Inject constructor(
             if (contains(imageId)) remove(imageId) else add(imageId)
         }
     }
-
 
     fun uriToByteArray(context: Context, uri: Uri?): ByteArray? {
         var inputStream: InputStream? = null
@@ -257,18 +264,28 @@ class EventsViewModel @Inject constructor(
 
     private suspend fun getImagesByEventId(eventId: String) {
         _isLoading.value = true
+        val prevEventId = imageRepository.prevEvent.value.id
+        var imageList = mutableListOf<Image>() // Using a mutableList of Image
 
-        val imageMetadata = eventRepository.getAllImagesMetadata(eventId)
+        val cachedList = imageRepository.imagesCache.value.toMutableList();
 
-        val imageList = mutableListOf<Image>() // Using a mutableList of Image
+        if(prevEventId == eventId && cachedList.isNotEmpty()) {
+            imageList = cachedList
+        } else {
+            setPrevEvent(event.value)
 
-        for (metadata in imageMetadata) {
-            val byteArray = imageRepository.getImage(eventId, metadata.id)
-            if (byteArray != null) {
-                imageList.add(Image(metadata, byteArray))
-            } else {
-                println("Failed to retrieve image with metadata: $metadata")
+            val imageMetadata = eventRepository.getAllImagesMetadata(eventId)
+
+            for (metadata in imageMetadata) {
+                val byteArray = imageRepository.getImage(eventId, metadata.id)
+                if (byteArray != null) {
+                    imageList.add(Image(metadata, byteArray))
+                } else {
+                    println("Failed to retrieve image with metadata: $metadata")
+                }
             }
+
+            setImagesList(imageList)
         }
 
         val existingIds = imageList.map { it.metadata.id }.toSet()
