@@ -309,11 +309,7 @@ fun UserProfileCard(userMetadata: UserMetadata?, ownedEventsCount: Int, subscrib
                         )
                     }
 
-                    Text(
-                        text = "|",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Spacer(modifier = Modifier.width(10.dp))
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
