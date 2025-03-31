@@ -2,6 +2,7 @@ package com.bmexcs.pickpic.presentation.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -55,7 +56,7 @@ fun HomePageScreenView(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        UserProfileCard(userMetadata, ownedEventsCount, subscribedEventsCount)
+        UserProfileCard(userMetadata, ownedEventsCount, subscribedEventsCount, onClick = {navController.navigate(Route.Profile.route)})
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -247,12 +248,13 @@ fun EventListing(
 }
 
 @Composable
-fun UserProfileCard(userMetadata: UserMetadata?, ownedEventsCount: Int, subscribedEventsCount: Int) {
+fun UserProfileCard(userMetadata: UserMetadata?, ownedEventsCount: Int, subscribedEventsCount: Int, onClick: () -> Unit = {}) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .height(160.dp),
+            .height(160.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(

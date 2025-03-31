@@ -20,53 +20,32 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PickPicScaffold(
-    title: String, // Title for the TopAppBar.
+    title: String, // Title for the TopAppBar
     navController: NavHostController,
     content: @Composable () -> Unit
 ) {
-    val scope = rememberCoroutineScope()
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet(
-                modifier = Modifier
-                    .width(300.dp)
-                    .fillMaxHeight()
-            ) {
-                // Navigation options in the side panel.
-                NavDrawerEntry("Home", navController, Route.Home.route)
-                NavDrawerEntry("Profile", navController, Route.Profile.route)
-                NavDrawerEntry("Support", navController, Route.Support.route)
-            }
-        }
-    ) {
-        Scaffold (
-            topBar = {
-                TopAppBar(
-                    title = { Text(title) },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            scope.launch {
-                                Log.d("Click",drawerState.isOpen.toString())
-                                if (drawerState.isClosed) drawerState.open() else drawerState.close()
-                            }
-                        }) {
-                            Icon(Icons.Filled.Menu, contentDescription = "Menu")
-                        }
-                    },
-                )
-            },
-        ) {
-            innerPadding ->
-            Box(Modifier.padding(innerPadding)) {
-                content()
-            }
+    // scaffold is still here for layout purposes
+    Scaffold(
+//        topBar = {
+//            TopAppBar(
+//                title = { Text(title) },
+//                // Remove the menu icon if you don't need it anymore
+//                // Or keep it for potential future use
+//                navigationIcon = {
+//                    // Optional: You can keep this empty or remove it completely
+//                    // If you might add navigation later, you could leave it as:
+//                    // IconButton(onClick = { /* TODO */ }) {
+//                    //     Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+//                    // }
+//                },
+//            )
+//        },
+    ) { innerPadding ->
+        Box(Modifier.padding(innerPadding)) {
+            content()
         }
     }
 }
-
 @Composable
 fun NavDrawerEntry(
     text: String,

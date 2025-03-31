@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +24,7 @@ import com.bmexcs.pickpic.presentation.viewmodels.ProfileViewModel
 import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.navigation.Route
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreenView(
     navController: NavHostController,
@@ -31,40 +34,41 @@ fun ProfileScreenView(
         viewModel.loadProfile()
     }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-//        // Profile Picture
-//        val profilePicture: Painter = painterResource(id = R.drawable.ic_launcher_foreground) //replace with actual image.
-//        Image(
-//            painter = profilePicture,
-//            contentDescription = "Profile Picture",
-//            modifier = Modifier
-//                .size(150.dp)
-//                .align(Alignment.CenterHorizontally)
-//                .clickable {
-//                    // TODO: Implement image selection logic
-//                }
-//        )
-//        Spacer(modifier = Modifier.height(16.dp))
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Profile") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(16.dp)
+        ) {
+            EditableDisplayNameField(viewModel)
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Display Name
-        EditableDisplayNameField(viewModel)
-        Spacer(modifier = Modifier.height(16.dp))
+            EditableEmailField(viewModel)
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Email
-        EditableEmailField(viewModel)
-        Spacer(modifier = Modifier.height(16.dp))
+            EditablePhoneNumberField(viewModel)
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Phone Number
-        EditablePhoneNumberField(viewModel)
-        Spacer(modifier = Modifier.height(16.dp))
+            SubmitButton(viewModel)
 
-        // Submit button
-        SubmitButton(viewModel)
+            Spacer(modifier = Modifier.weight(1f))
 
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Log Out Button
-        LogOutButton(viewModel, navController)
+            LogOutButton(viewModel, navController)
+        }
     }
 }
 
