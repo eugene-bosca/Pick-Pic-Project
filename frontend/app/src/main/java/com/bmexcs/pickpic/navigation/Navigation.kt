@@ -32,9 +32,7 @@ fun Navigation(
 
         // Profile Screen
         composable(Route.Profile.route) {
-            PickPicScaffold("Profile", navController) {
-                ProfileScreenView(navController)
-            }
+            ProfileScreenView(navController)
         }
 
         // Support Screen

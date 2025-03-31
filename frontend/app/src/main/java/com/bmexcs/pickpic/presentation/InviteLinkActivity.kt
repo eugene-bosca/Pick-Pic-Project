@@ -35,15 +35,20 @@ private fun parseDeepLink(intent: Intent?): String? {
         data = intent.data
     } else {
         Log.d(TAG, "Invalid Link: Tried to deeplink with incorrect action")
-        return ""
+        return null
     }
-    val eventId: String?
 
-    if (data != null) {
-        eventId = data.getQueryParameter("eventId")
-    } else {
-        Log.d(TAG, "Invalid Link: eventId parameter not found")
-        return ""
+    if (data == null) {
+        Log.d(TAG, "Invalid Link: URI data is null")
+        return null
     }
-    return eventId
+
+    // Check if the path matches the expected pattern: /event/{eventId}
+    val pathSegments = data.pathSegments
+    if (pathSegments.size >= 2 && pathSegments[0] == "event") {
+        return pathSegments[1] // Return the event ID which is the second path segment
+    }
+
+    Log.d(TAG, "Invalid Link: URL structure doesn't match expected pattern")
+    return null
 }
