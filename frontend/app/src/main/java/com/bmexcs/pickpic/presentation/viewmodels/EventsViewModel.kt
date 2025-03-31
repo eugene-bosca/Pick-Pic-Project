@@ -84,6 +84,14 @@ class EventsViewModel @Inject constructor(
         }
     }
 
+    private fun setPrevEvent(event: EventMetadata) {
+        imageRepository.setPrevEvent(event)
+    }
+
+    private fun addImageToCache(imageId: String, byteArray: ByteArray) {
+        imageRepository.setImageCache(imageId, byteArray)
+    }
+
     fun refresh() {
         viewModelScope.launch {
             refreshInternal()
@@ -127,7 +135,6 @@ class EventsViewModel @Inject constructor(
             if (contains(imageId)) remove(imageId) else add(imageId)
         }
     }
-
 
     fun uriToByteArray(context: Context, uri: Uri?): ByteArray? {
         var inputStream: InputStream? = null
@@ -251,30 +258,49 @@ class EventsViewModel @Inject constructor(
     }
 
     private suspend fun refreshInternal() {
-        Log.d(TAG, "Refreshing events page...")
-        getImagesByEventId(event.value.id)
+        if (!_isLoading.value) { // Prevent overlapping refreshes
+            Log.d(TAG, "Refreshing events page...")
+            getImagesByEventId(event.value.id)
+        }
     }
 
     private suspend fun getImagesByEventId(eventId: String) {
         _isLoading.value = true
 
-        val imageMetadata = eventRepository.getAllImagesMetadata(eventId)
-
-        val imageList = mutableListOf<Image>() // Using a mutableList of Image
-
-        for (metadata in imageMetadata) {
-            val byteArray = imageRepository.getImage(eventId, metadata.id)
-            if (byteArray != null) {
-                imageList.add(Image(metadata, byteArray))
-            } else {
-                println("Failed to retrieve image with metadata: $metadata")
+        // Caching related code
+        imageRepository.prevEvent.value.id.let { prevId ->
+            if (prevId != eventId) {
+                imageRepository.clearImageCache()
             }
         }
 
-        val existingIds = imageList.map { it.metadata.id }.toSet()
+        setPrevEvent(event.value)
+
+        val imageMetadata = eventRepository.getAllImagesMetadata(eventId)
+        val cachedImages = imageRepository.imagesCache.value
+        _images.value = emptyList()
+
+        for (metadata in imageMetadata) {
+                var byteArray:ByteArray?
+
+                if(cachedImages.containsKey(metadata.id)) {
+                    byteArray = cachedImages[metadata.id]
+                } else {
+                    byteArray = imageRepository.getImage(eventId, metadata.id)
+                }
+
+                if (byteArray != null) {
+                    _images.value += Image(metadata, byteArray)
+                    addImageToCache(metadata.id, byteArray)
+                } else {
+                    println("Failed to retrieve image with metadata: $metadata")
+                }
+        }
+
+        val existingIds = images.value.map { it.metadata.id }.toSet()
         _selectedImages.value = _selectedImages.value.filter { it in existingIds }.toSet()
 
-        _images.value = sortImages(imageList, filterType.value)
+        _images.value = sortImages(_images.value, filterType.value)
 
         _isLoading.value = false
     }
