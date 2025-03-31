@@ -55,7 +55,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https"
                     android:host="concrete-spider-449820-p0.web.app"
-                    android:pathPrefix="/"/>
+                    android:pathPrefix="/event"/>
             </intent-filter>
         </activity>
 
