@@ -34,9 +34,6 @@ class RankingViewModel @Inject constructor(
     private val _currentImage = MutableStateFlow<BitmapWithID?>(null)
     val currentImage = _currentImage
 
-    private val _nextImage = MutableStateFlow<BitmapWithID?>(null) // Added next image
-    val nextImage = _nextImage
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading
 
@@ -53,7 +50,7 @@ class RankingViewModel @Inject constructor(
             Log.d(TAG, "Creating unranked image queue, size = ${unrankedImageInfo.value.size}")
             unrankedImageInfo.value = ArrayDeque(eventRepository.getUnrankedImagesMetadata())
         }.invokeOnCompletion {
-            loadFirstImages() // Load two images initially
+            loadFirstImage()
         }
     }
 
@@ -75,62 +72,14 @@ class RankingViewModel @Inject constructor(
             Log.d(TAG, "Voting on imageId = ${_currentImage.value!!.id} with vote = $voteKind")
             eventRepository.voteOnImage(_currentImage.value!!.id, voteKind)
 
-            _currentImage.value = _nextImage.value // Show the pre-fetched image
-        }.invokeOnCompletion {
-            loadNextImage() // Start loading the subsequent image
-
-            _isLoading.value = false
-        }
-    }
-
-    private fun loadFirstImages() {
-        Log.d(TAG, "Loading first two images")
-
-        viewModelScope.launch {
-            _isLoading.value = true
-
-            val first = unrankedImageInfo.value.removeFirstOrNull() ?: run {
-                Log.d(TAG, "Tried to load first image but unranked image queue empty")
+            val next = unrankedImageInfo.value.removeFirstOrNull() ?: run {
+                Log.d(TAG, "Unranked image queue empty")
                 _currentImage.value = null
                 _isLoading.value = false
                 return@launch
             }
 
-            val second = unrankedImageInfo.value.removeFirstOrNull() ?: run {
-                Log.d(TAG, "Tried to load second image but unranked image queue empty")
-                _nextImage.value = null
-                _isLoading.value = false
-                return@launch
-            }
-
-            val firstByteArray = imageRepository.getImage(
-                _event.value.id,
-                first.id
-            ) ?: throw Exception("First image does not exist")
-
-            val secondByteArray = imageRepository.getImage(
-                _event.value.id,
-                second.id
-            ) ?: throw Exception("Second image does not exist")
-
-            val firstBitmap = BitmapFactory.decodeByteArray(firstByteArray, 0, firstByteArray.size)
-            val secondBitmap = BitmapFactory.decodeByteArray(secondByteArray, 0, secondByteArray.size)
-
-            _currentImage.value = BitmapWithID(first.id, firstBitmap)
-            _nextImage.value = BitmapWithID(second.id, secondBitmap)
-
-            _isLoading.value = false
-        }
-    }
-
-    private fun loadNextImage() {
-        val next = unrankedImageInfo.value.removeFirstOrNull() ?: run {
-            Log.d(TAG, "Unranked image queue empty")
-            _nextImage.value = null
-            return
-        }
-
-        viewModelScope.launch {
+            Log.d(TAG, "Loading next image")
             val imageId = next.id
 
             val byteArray = imageRepository.getImage(
@@ -139,7 +88,37 @@ class RankingViewModel @Inject constructor(
             ) ?: throw Exception("Image does not exist")
 
             val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-            _nextImage.value = BitmapWithID(imageId, bitmap)
+            _currentImage.value = BitmapWithID(imageId, bitmap)
+
+            _isLoading.value = false
+        }
+    }
+
+    private fun loadFirstImage() {
+        Log.d(TAG, "Loading first image")
+
+        val next = unrankedImageInfo.value.removeFirstOrNull() ?: run {
+            Log.d(TAG, "Tried to load first image but unranked image queue empty")
+            _currentImage.value = null
+            _isLoading.value = false
+            return
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true
+
+            val imageId = next.id
+
+            val byteArray = imageRepository.getImage(
+                _event.value.id,
+                imageId
+            ) ?: throw Exception("Image does not exist")
+
+            val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+
+            _currentImage.value = BitmapWithID(imageId, bitmap)
+
+            _isLoading.value = false
         }
     }
 }

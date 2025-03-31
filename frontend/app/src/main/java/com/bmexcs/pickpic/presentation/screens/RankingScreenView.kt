@@ -52,7 +52,6 @@ fun RankingScreenView(
     var showParticles by remember { mutableStateOf(false) }
 
     val currentBitmap by viewModel.currentImage.collectAsState()
-    val nextBitmap by viewModel.nextImage.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val event by viewModel.event.collectAsState()
     val eventName = event.name
