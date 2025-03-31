@@ -141,9 +141,7 @@ fun EventScreenView(
     ) { uris ->
         if (uris.isNotEmpty()) {
             uris.forEach { uri ->
-                viewModel.uriToByteArray(context, uri)?.let { byteArray ->
-                    viewModel.addImage(byteArray)
-                }
+                viewModel.addImage(context, uri)
             }
         }
     }

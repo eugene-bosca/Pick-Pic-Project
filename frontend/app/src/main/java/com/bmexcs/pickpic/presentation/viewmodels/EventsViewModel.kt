@@ -106,15 +106,25 @@ class EventsViewModel @Inject constructor(
         return userRepository.getUser().id == imageMetadata.uploader.id
     }
 
-    fun addImage(imageByte: ByteArray) {
+    fun addImage(context: Context, uri: Uri?) {
         viewModelScope.launch(Dispatchers.IO) {
-            imageRepository.addImage(event.value.id, imageByte)
+            uriToByteArray(context, uri)?.let { byteArray ->
+                imageRepository.addImage(event.value.id, byteArray)
+            }
+        }.invokeOnCompletion {
+            viewModelScope.launch(Dispatchers.IO) {
+                refreshInternal()
+            }
         }
     }
 
     fun deleteImage(eventId: String, imageId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             imageRepository.deleteImage(eventId, imageId)
+        }.invokeOnCompletion {
+            viewModelScope.launch(Dispatchers.IO) {
+                refreshInternal()
+            }
         }
     }
 
@@ -136,7 +146,7 @@ class EventsViewModel @Inject constructor(
         }
     }
 
-    fun uriToByteArray(context: Context, uri: Uri?): ByteArray? {
+    private fun uriToByteArray(context: Context, uri: Uri?): ByteArray? {
         var inputStream: InputStream? = null
         var byteArray: ByteArray? = null
 
