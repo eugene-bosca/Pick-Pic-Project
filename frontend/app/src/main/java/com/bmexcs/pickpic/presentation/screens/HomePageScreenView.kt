@@ -1,9 +1,11 @@
 package com.bmexcs.pickpic.presentation.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -16,13 +18,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.bmexcs.pickpic.R
 import androidx.navigation.NavHostController
 import com.bmexcs.pickpic.data.models.EventMetadata
+import com.bmexcs.pickpic.data.models.UserMetadata
 import com.bmexcs.pickpic.navigation.Route
 import com.bmexcs.pickpic.presentation.viewmodels.HomePageViewModel
 
@@ -32,12 +37,17 @@ fun HomePageScreenView(
     viewModel: HomePageViewModel = hiltViewModel(),
 ) {
     val events by viewModel.events.collectAsState()
+    val userMetadata by viewModel.userMetadata.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.fetchEvents()
+        viewModel.fetchUserMetadata()
     }
+
+    val ownedEventsCount = events.count { it.owner.id == userMetadata?.id }
+    val subscribedEventsCount = events.count { it.owner.id != userMetadata?.id }
 
     Column(
         modifier = Modifier
@@ -45,11 +55,8 @@ fun HomePageScreenView(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(R.drawable.pickpick_logo),
-            contentDescription = "PickPic Logo",
-            modifier = Modifier.size(1000.dp, 187.5.dp)
-        )
+        UserProfileCard(userMetadata, ownedEventsCount, subscribedEventsCount)
+
         Spacer(modifier = Modifier.height(32.dp))
 
         Row(
@@ -236,5 +243,90 @@ fun EventListing(
                 containerColor = Color.Transparent
             )
         )
+    }
+}
+
+@Composable
+fun UserProfileCard(userMetadata: UserMetadata?, ownedEventsCount: Int, subscribedEventsCount: Int) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .height(160.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFF7F2FA)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp), // Increased padding for better spacing
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Enlarged Circular Profile Image
+            Image(
+                painter = painterResource(id = R.drawable.penguin_logo), // Replace with actual user profile image if available
+                contentDescription = "User Profile Picture",
+                contentScale = ContentScale.Crop, // Ensures the image fills the circle
+                modifier = Modifier
+                    .size(96.dp) // Bigger logo
+                    .clip(CircleShape) // Makes it fully circular
+                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape) // Optional border for styling
+            )
+
+            Spacer(modifier = Modifier.width(24.dp))
+
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = userMetadata?.name ?: "Guest",
+                    style = MaterialTheme.typography.headlineMedium, // Larger font for name
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(24.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "$ownedEventsCount",
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = "Owned",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Text(
+                        text = "|",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "$subscribedEventsCount",
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = "Subscribed",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
     }
 }
