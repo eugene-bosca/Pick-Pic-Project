@@ -109,12 +109,20 @@ class EventsViewModel @Inject constructor(
     fun addImage(imageByte: ByteArray) {
         viewModelScope.launch(Dispatchers.IO) {
             imageRepository.addImage(event.value.id, imageByte)
+        }.invokeOnCompletion {
+            viewModelScope.launch {
+                refreshInternal()
+            }
         }
     }
 
     fun deleteImage(eventId: String, imageId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             imageRepository.deleteImage(eventId, imageId)
+        }.invokeOnCompletion {
+            viewModelScope.launch {
+                refreshInternal()
+            }
         }
     }
 
