@@ -51,6 +51,7 @@ fun HomePageScreenView(
     val ownedEventsCount = events.count { it.owner.id == userMetadata?.id }
     val subscribedEventsCount = events.count { it.owner.id != userMetadata?.id }
 
+    Box() {
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -118,23 +119,24 @@ fun HomePageScreenView(
                 }
             }
         }
-
-        // Create Event button.
-        FloatingActionButton(
-            onClick = { navController.navigate(Route.CreateEvent.route) },
-            modifier = Modifier
-                .align(Alignment.End)
-                .padding(16.dp),
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.add_circle_24px),
-                modifier = Modifier.size(36.dp),
-                contentDescription = "Create Event"
-            )
-        }
     }
+
+    // Create Event button.
+    FloatingActionButton(
+        onClick = { navController.navigate(Route.CreateEvent.route) },
+        modifier = Modifier
+            .padding(16.dp)
+            .align(Alignment.BottomEnd),
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.add_circle_24px),
+            modifier = Modifier.size(36.dp),
+            contentDescription = "Create Event"
+        )
+    }
+        }
 }
 
 @Composable
