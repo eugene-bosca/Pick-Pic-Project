@@ -286,7 +286,7 @@ fun UserProfileCard(userMetadata: UserMetadata?, ownedEventsCount: Int, subscrib
             ) {
                 Text(
                     text = userMetadata?.name ?: "Guest",
-                    style = MaterialTheme.typography.headlineMedium, // Larger font for name
+                    style = MaterialTheme.typography.headlineSmall, // Larger font for name
                     color = MaterialTheme.colorScheme.primary
                 )
 
