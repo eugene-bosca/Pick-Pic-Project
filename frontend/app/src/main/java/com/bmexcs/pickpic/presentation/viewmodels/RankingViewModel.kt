@@ -76,7 +76,7 @@ class RankingViewModel @Inject constructor(
             eventRepository.voteOnImage(_currentImage.value!!.id, voteKind)
 
             _currentImage.value = _nextImage.value // Show the pre-fetched image
-
+        }.invokeOnCompletion {
             loadNextImage() // Start loading the subsequent image
 
             _isLoading.value = false

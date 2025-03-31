@@ -309,7 +309,7 @@ fun UserProfileCard(userMetadata: UserMetadata?, ownedEventsCount: Int, subscrib
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    
+
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "$subscribedEventsCount",
