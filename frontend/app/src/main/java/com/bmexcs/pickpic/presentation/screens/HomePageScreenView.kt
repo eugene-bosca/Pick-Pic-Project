@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -58,16 +59,11 @@ fun HomePageScreenView(
     ) {
         UserProfileCard(userMetadata, ownedEventsCount, subscribedEventsCount, onClick = {navController.navigate(Route.Profile.route)})
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            InvitesButton(navController)
-            CreateEventButton(navController)
-        }
-        Spacer(modifier = Modifier.height(32.dp))
+        InvitesButton(navController)
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         when {
             isLoading && events.isEmpty() -> {
@@ -122,6 +118,22 @@ fun HomePageScreenView(
                 }
             }
         }
+
+        // Create Event button.
+        FloatingActionButton(
+            onClick = { navController.navigate(Route.CreateEvent.route) },
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(16.dp),
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.add_circle_24px),
+                modifier = Modifier.size(36.dp),
+                contentDescription = "Create Event"
+            )
+        }
     }
 }
 
@@ -130,34 +142,19 @@ fun InvitesButton(navController: NavHostController) {
     Button(
         onClick = {
             navController.navigate(Route.EventInvitation.route)
-        }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
     ) {
         Icon(
-            painter = painterResource(R.drawable.group_add_24px),
+            imageVector = Icons.Default.Mail,
             contentDescription = "Join Events Icon",
             modifier = Modifier
                 .size(36.dp)
                 .padding(end = 8.dp)
         )
         Text(" Pending Invites")
-    }
-}
-
-@Composable
-fun CreateEventButton(navController: NavHostController) {
-    Button(
-        onClick = {
-            navController.navigate(Route.CreateEvent.route)
-        }
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.add_circle_24px),
-            contentDescription = "Create Event Icon",
-            modifier = Modifier
-                .size(36.dp)
-                .padding(end = 8.dp)
-        )
-        Text("Create Event")
     }
 }
 
@@ -254,7 +251,9 @@ fun UserProfileCard(userMetadata: UserMetadata?, ownedEventsCount: Int, subscrib
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .height(160.dp)
-            .clickable { onClick() },
+            .clickable(
+                onClick = onClick
+            ),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(
