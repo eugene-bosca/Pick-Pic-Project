@@ -170,37 +170,7 @@ class UserApiService {
         }
 
     /**
-     * Deletes the specified user.
-     *
-     * **Endpoint**: `DELETE /user/{user_id}/`
-     *
-     * **Request Body**: Empty
-     *
-     * **Request Content-Type**: None
-     *
-     * **Response**: Empty
-     *
-     * **Return Type**: None
-     */
-    suspend fun delete(userId: String, token: String) = withContext(Dispatchers.IO) {
-        val endpoint = "user/$userId/"
-        val url = Api.url(endpoint)
-
-        Log.d(TAG, "DELETE: $url")
-
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "Bearer $token")
-            .delete()
-            .build()
-
-        client.newCall(request).execute().use { response ->
-            Api.handleResponseStatus(response)
-        }
-    }
-
-    /**
-     * Retrieves the list of events that the user owns or has joined.
+     * Retrieves the list of events that the user owns and has joined.
      *
      * **Endpoint**: `GET /user/{user_id}/events/`
      *
@@ -305,49 +275,6 @@ class UserApiService {
                 val result: List<Event> = gson.fromJson(body, resultType)
 
                 return@withContext result.map { EventMetadata(it) }
-            }
-        }
-
-    /**
-     * Retrieves the User given an email address.
-     *
-     * **Endpoint**: `POST /user/id/from_email/`
-     *
-     * **Request Body**: `models.UserEmails` as `List<String>`
-     *
-     * **Request Content-Type**: JSON
-     *
-     * **Response**: `List<String>`
-     *
-     * **Return Type**: `List<String>`
-     */
-    suspend fun usersFromEmails(emails: List<String>, token: String): List<String> =
-        withContext(Dispatchers.IO) {
-            val endpoint = "user/id/from_email/"
-            val url = Api.url(endpoint)
-
-            Log.d(TAG, "POST: $url")
-
-            val requestBody = gson.toJson(UserEmails(emails))
-                .toRequestBody("application/json".toMediaType())
-
-            val request = Request.Builder()
-                .url(url)
-                .addHeader("Authorization", "Bearer $token")
-                .addHeader("Content-Type", "application/json")
-                .post(requestBody)
-                .build()
-
-            client.newCall(request).execute().use { response ->
-                Api.handleResponseStatus(response)
-
-                val body = response.body?.string()
-                    ?: throw HttpException(response.code, "Empty response body")
-
-                val resultType = object : TypeToken<UserIds>() {}.type
-                val result: UserIds = gson.fromJson(body, resultType)
-
-                return@withContext result.users
             }
         }
 
