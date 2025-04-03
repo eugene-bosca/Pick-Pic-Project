@@ -7,7 +7,7 @@ import java.net.URL
 object Api {
     private const val BASE_URL = "https://pick-pic-service-627889116714.northamerica-northeast2.run.app"
 
-    private const val TAG = "ApiUtils"
+    private const val TAG = "Api"
 
     fun handleResponseStatus(response: Response): Boolean {
         val code = response.code

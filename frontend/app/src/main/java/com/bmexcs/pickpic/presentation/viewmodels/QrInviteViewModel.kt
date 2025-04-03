@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bmexcs.pickpic.data.repositories.EventRepository
 import com.bmexcs.pickpic.data.sources.EventDataSource
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
@@ -19,7 +20,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class QrInviteViewModel @Inject constructor(
-    private val eventDataSource: EventDataSource
+    private val eventRepository: EventRepository
 ) : ViewModel() {
 
     private val _inviteState = MutableStateFlow<InviteState>(InviteState.Loading)
@@ -28,7 +29,7 @@ class QrInviteViewModel @Inject constructor(
     fun fetchInviteDetails(eventId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val (obfuscatedEventId, eventName) = eventDataSource.fetchObfuscatedEventId(eventId)
+                val (obfuscatedEventId, eventName) = eventRepository.fetchObfuscatedEventId(eventId)
 
                 if (obfuscatedEventId != null && eventName != null) {
                     val inviteLink = "https://concrete-spider-449820-p0.web.app/event/${eventId}"

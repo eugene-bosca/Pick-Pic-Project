@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bmexcs.pickpic.data.models.UserMetadata
+import com.bmexcs.pickpic.data.repositories.AuthRepository
 import com.bmexcs.pickpic.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -21,6 +22,7 @@ private const val TAG = "ProfileViewModel"
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     // UI state for the profile (use StateFlow to observe profile data in the UI)
@@ -85,7 +87,7 @@ class ProfileViewModel @Inject constructor(
     // Logs the user out.
     fun logOut() {
         viewModelScope.launch {
-            userRepository.signOut()
+            authRepository.signOut()
         }
     }
 }

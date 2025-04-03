@@ -75,7 +75,12 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun initUserState() {
-        userDataSource.initUserWithFirebase()
+        val firebaseId = authDataSource.getCurrentUser().uid
+        val name = authDataSource.getCurrentUser().displayName ?: throw Exception("Empty display name")
+        val email = authDataSource.getCurrentUser().email ?: throw Exception("Empty email field")
+        val token = authDataSource.getIdToken() ?: throw Exception("Invalid Firebase ID token")
+
+        userDataSource.initUserWithFirebase(firebaseId, name, email, token)
     }
 
     private fun buildGoogleSignInRequest(): GetCredentialRequest {

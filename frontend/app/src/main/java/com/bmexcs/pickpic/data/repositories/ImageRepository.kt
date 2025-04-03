@@ -1,7 +1,7 @@
 package com.bmexcs.pickpic.data.repositories
 
 import com.bmexcs.pickpic.data.models.EventMetadata
-import com.bmexcs.pickpic.data.models.Image
+import com.bmexcs.pickpic.data.sources.AuthDataSource
 import com.bmexcs.pickpic.data.sources.ImageDataSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,7 +10,8 @@ import javax.inject.Singleton
 
 @Singleton
 class ImageRepository @Inject constructor(
-    private val imageDataSource: ImageDataSource
+    private val imageDataSource: ImageDataSource,
+    private val authDataSource: AuthDataSource
 ) {
 
     private val _prevEvent = MutableStateFlow(EventMetadata())
@@ -32,14 +33,20 @@ class ImageRepository @Inject constructor(
     }
 
     suspend fun getImage(eventId: String, imageId: String): ByteArray? {
-        return imageDataSource.getImage(eventId, imageId);
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        return imageDataSource.getImage(eventId, imageId, token);
     }
 
     suspend fun addImage(eventId: String, imageByte: ByteArray) {
-        return imageDataSource.addImage(eventId, imageByte)
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        return imageDataSource.addImage(eventId, imageByte, token)
     }
 
     suspend fun deleteImage(eventId: String, imageId: String) {
-        imageDataSource.deleteImage(eventId, imageId)
+        val token = authDataSource.getIdToken() ?: throw Exception("No user token")
+
+        imageDataSource.deleteImage(eventId, imageId, token)
     }
 }
