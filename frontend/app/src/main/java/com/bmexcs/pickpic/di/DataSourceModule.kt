@@ -1,7 +1,11 @@
 package com.bmexcs.pickpic.di
 
+import CacheImageProxy
+import com.bmexcs.pickpic.data.sources.CacheImageDataSource
 import com.bmexcs.pickpic.data.sources.EventDataSource
 import com.bmexcs.pickpic.data.sources.ImageDataSource
+import com.bmexcs.pickpic.data.sources.RealDataSource
+import com.bmexcs.pickpic.data.sources.RealImageDataSource
 import com.bmexcs.pickpic.data.sources.UserDataSource
 import dagger.Module
 import dagger.Provides
@@ -27,7 +31,17 @@ object DataSourceModule {
 
     @Provides
     @Singleton
-    fun provideImageDataSource(): ImageDataSource {
-        return ImageDataSource()
+    @RealDataSource
+    fun provideRealImageDataSource(): ImageDataSource {
+        return RealImageDataSource() // Real implementation
+    }
+
+    @Provides
+    @Singleton
+    @CacheImageDataSource
+    fun provideImageDataSource(
+        @RealDataSource realImageDataSource: ImageDataSource
+    ): ImageDataSource {
+        return CacheImageProxy(realImageDataSource) // Proxy wraps the real data source
     }
 }
