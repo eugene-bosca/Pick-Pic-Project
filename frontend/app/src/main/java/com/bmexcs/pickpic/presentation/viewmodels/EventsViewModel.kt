@@ -88,10 +88,6 @@ class EventsViewModel @Inject constructor(
         imageRepository.setPrevEvent(event)
     }
 
-    private fun addImageToCache(imageId: String, byteArray: ByteArray) {
-        imageRepository.setImageCache(imageId, byteArray)
-    }
-
     fun refresh() {
         viewModelScope.launch {
             refreshInternal()
@@ -287,21 +283,13 @@ class EventsViewModel @Inject constructor(
         setPrevEvent(event.value)
 
         val imageMetadata = eventRepository.getAllImagesMetadata(eventId)
-        val cachedImages = imageRepository.imagesCache.value
         _images.value = emptyList()
 
         for (metadata in imageMetadata) {
-                var byteArray:ByteArray?
-
-                if(cachedImages.containsKey(metadata.id)) {
-                    byteArray = cachedImages[metadata.id]
-                } else {
-                    byteArray = imageRepository.getImage(eventId, metadata.id)
-                }
+                val byteArray = imageRepository.getImage(event.value.id, metadata.id)
 
                 if (byteArray != null) {
                     _images.value += Image(metadata, byteArray)
-                    addImageToCache(metadata.id, byteArray)
                 } else {
                     println("Failed to retrieve image with metadata: $metadata")
                 }
