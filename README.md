@@ -43,10 +43,14 @@ An app that lets users curate their favourite moments with photo albums. The app
 - GitHub: [edobrowo](https://github.com/edobrowo)
 
 ---
-![image](https://github.com/user-attachments/assets/c4ff6300-17d4-45a2-af6e-3f52e2153d76)
-![image](https://github.com/user-attachments/assets/c3146691-42a2-41c3-90b7-12c8d704ffdf)
-![image](https://github.com/user-attachments/assets/20458b17-6080-4359-9997-efe0e969a64a)
-![image](https://github.com/user-attachments/assets/feb94afb-757b-4dce-a31b-64abceed4f3a)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c4ff6300-17d4-45a2-af6e-3f52e2153d76" width="45%" />
+  <img src="https://github.com/user-attachments/assets/c3146691-42a2-41c3-90b7-12c8d704ffdf" width="45%" />
+</p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/20458b17-6080-4359-9997-efe0e969a64a" width="45%" />
+  <img src="https://github.com/user-attachments/assets/feb94afb-757b-4dce-a31b-64abceed4f3a" width="45%" />
+</p>
 ---
 Please note that ChatGPT is used in files throughout this project.
 Citation: ChatGPT, response to author query. OpenAI [Online]. https://chatgpt.com/ (accessed January-April, 2025).
