@@ -8,7 +8,6 @@ import com.bmexcs.pickpic.presentation.screens.EventScreenView
 import com.bmexcs.pickpic.presentation.screens.HomePageScreenView
 import com.bmexcs.pickpic.presentation.screens.ProfileScreenView
 import com.bmexcs.pickpic.presentation.screens.RankingScreenView
-import com.bmexcs.pickpic.presentation.screens.SupportScreenView
 import com.bmexcs.pickpic.presentation.screens.AuthScreenView
 import com.bmexcs.pickpic.presentation.screens.QrInviteView
 import com.bmexcs.pickpic.presentation.screens.CreateEventScreenView
@@ -33,13 +32,6 @@ fun Navigation(
         // Profile Screen
         composable(Route.Profile.route) {
             ProfileScreenView(navController)
-        }
-
-        // Support Screen
-        composable(Route.Support.route) {
-            PickPicScaffold("Support", navController) {
-                SupportScreenView(navController)
-            }
         }
 
         // Event Screen
