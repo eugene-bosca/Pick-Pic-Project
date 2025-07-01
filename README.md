@@ -1,24 +1,6 @@
 An app that lets users curate their favourite moments with photo albums. The app creates *events*, shared albums that users invite each other to. These albums integrate with the native Android photo apps for seamless album creation and storage. Users can then rank photos using a swipe-based interface, similar to Tinder. Users can either swipe on individual photos or choose between two randomly selected images. Using an ELO-like ranking system, the app generates a list of top photos, which users can selectively choose from to create an album, or download premade "best-of" albums (e.g., top 20 photos). Additionally, the app can detect and group similar photos, allowing users to rank them, with the highest-rated becoming the representative photo for broader comparison.
 
-
-## Team Member Information
-**Jordan Jamali**  
-- GitHub: [JJamali](https://github.com/JJamali)
-
-**Eugene Bosca**  
-- GitHub: [eugene-bosca](https://github.com/eugene-bosca)
-
-**LuDa Yu**  
-- GitHub: [ludayu560](https://github.com/ludayu560)
-
-**Alan Chen**
-- GitHub: [AlanWYChen](https://github.com/AlanWYChen)
-
-**Sam Zhu**  
-- GitHub: [theasdfone](https://github.com/theasdfone)
-
-**Ethan Alexander Dobrowolski**  
-- GitHub: [edobrowo](https://github.com/edobrowo)
+Made by [Jordan Jamali](https://github.com/JJamali), [Eugene Bosca](https://github.com/eugene-bosca), [LuDa Yu](https://github.com/ludayu560), [Alan Chen](https://github.com/AlanWYChen), [Sam Zhu](https://github.com/theasdfone), and [Ethan Dobrowolski](https://github.com/edobrowo)
 
 ---
 <p align="center">
